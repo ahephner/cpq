@@ -1,0 +1,63 @@
+<template>
+    <lightning-card  variant="Narrow"  title="Product Search">
+
+    <h2>I am leaving on home page for testing. Extreme Beta mode</h2>
+    <template if:false={loaded}>
+        <lightning-spinner 
+            alternative-text="Loading" 
+            size="large"></lightning-spinner>
+    </template>
+    <template if:true={loaded}> 
+        <div class="slds-grid">
+            <div class='slds-col slds-size_3-of-8'>
+                <lightning-input type="text" variant="standard" 
+                                 name="name" label="Product" 
+                                 placeholder="Search for products.."
+                                 onchange={nameChange}
+                                 onkeydown={handleKey}></lightning-input>
+            </div>
+             <div class='slds-col slds-size_2-of-8'>
+                <lightning-combobox
+                    name="prodFamily"
+                    label="Product Family"
+                    value={pf}
+                    placeholder="Select Progress"
+                    options={pfOptions}
+                    onchange={pfChange} ></lightning-combobox>
+            </div> 
+            <div class='slds-col slds-size_2-of-8'>
+                <lightning-combobox
+                name="cat"
+                label="Category"
+                value={cat}
+                placeholder="Select Progress"
+                options={catOptions}
+                onchange={catChange} ></lightning-combobox>
+            </div>
+            <div class='slds-col slds-size_1-of-8 slds-m-top_large slds-m-left_small'>   
+                <lightning-button variant="brand" label="Search" title="Search" onclick={search}></lightning-button>
+            </div>
+        </div>
+        <div class='slds-grid'>
+            <div class='slds-col slds-size_2-of-3'>
+                <lightning-datatable
+                    key-field="Id"
+                    data={prod}
+                    hide-checkbox-column
+                    load-more-offset
+                    columns={columnsList}
+                    onrowaction={handleRowAction}>
+                </lightning-datatable>
+            </div>
+            <div class='slds-col slds-size_1-of-3'>
+                <c-prod-selected selection={selection}
+                                    onupdate={handleRemove}></c-prod-selected>
+            </div> 
+    </div>
+    <!-- <div class="slds-docked-form-footer">
+        <button type="button" onclick={cancel} class="slds-button slds-button_neutral">Cancel</button>
+        <button type="button" onclick={next} class="slds-button slds-button_brand">Next</button>
+    </div> -->
+    </template>
+    </lightning-card>
+</template>

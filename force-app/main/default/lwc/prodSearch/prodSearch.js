@@ -33,6 +33,7 @@ export default class ProdSearch extends LightningElement {
     cat = 'All';
     //needs to be @track so we can follow reactive properties on an array or obj in childern
     @track selection = [];
+    newProd; 
     connectedCallback(){
         this.loaded = true; 
     }
@@ -115,12 +116,34 @@ export default class ProdSearch extends LightningElement {
     async  handleRowAction(e){
         const rowAction = e.detail.action.name; 
         const rowCode = e.detail.row.ProductCode;
+        const rowName = e.detail.row.Name;
         const rowId = e.detail.row.Id;
         console.log(rowId);
         
         if(rowAction ==='Add'){
-            this.selection = await getLastPaid({accountID: '0011D00000zhrrIQAQ', Code: rowCode})
-            console.log(this.selection);
+            this.newProd = await getLastPaid({accountID: '0011D00000zhrrIQAQ', Code: rowCode})
+            if(this.newProd != null){
+                console.log(this.newProd);
+                
+                this.selection = [
+                    ...this.selection, {
+                        id: rowId,
+                        name: rowName,
+                        lastPaid: this.newProd.Unit_Price__c,
+                        lastMarg: this.newProd.Margin__c
+                    }
+                ]
+            }else{
+                this.selection = [
+                    ...this.selection, {
+                        id: rowId,
+                        name: rowName,
+                        lastPaid: 0,
+                        lastMarg: 0
+                    }
+                ]
+            }
+            
             
             
         }

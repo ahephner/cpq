@@ -7,6 +7,8 @@
                     <lightning-icon icon-name="utility:close" name={sp.id} size='small' class='hover'
                     alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
                     <span class="slds-p-left_small">{sp.name}</span>
+                    <span class="slds-p-left_small">{sp.lastPaid}</span>
+                    <span class="slds-p-left_small">{sp.lastMarg}</span>
                    </li>
                 </template>
             </ul>

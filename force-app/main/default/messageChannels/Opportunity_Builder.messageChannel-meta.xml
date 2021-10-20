@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<LightingMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Opportunity_Builder</masterLabel>
+    <isExposed>true</isExposed>
+    <description>Message Channel to pass App updates</description>
+    <lightningMessageFields>
+        <fieldName>productCode</fieldName>
+        <description>Pass Selected Product Code to other Commponents</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>priceBookId</fieldName>
+        <description>selectedPricebookId</description>
+    </lightningMessageFields>
+        <lightningMessageFields>
+        <fieldName>productId</fieldName>
+        <description>product2 Id not the price book entry id</description>
+    </lightningMessageFields>
+</LightingMessageChannel>

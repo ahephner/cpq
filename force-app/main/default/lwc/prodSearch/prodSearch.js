@@ -1,6 +1,7 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
-import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import { MessageContext, publish} from 'lightning/messageService';
+import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 const columnsList = [
     {type: 'button', 
      initialWidth: 75,typeAttributes:{
@@ -37,6 +38,10 @@ export default class ProdSearch extends LightningElement {
     connectedCallback(){
         this.loaded = true; 
     }
+
+    //Subscribe to Message Channel
+    @wire(MessageContext)
+    messageContext; 
     //get set new product family/category search we will get dynamic in a later time
     get pfOptions(){
         return [
@@ -113,39 +118,20 @@ export default class ProdSearch extends LightningElement {
          },2000)
      }
      //Handles adding the products to this.Selection array when the green add button is hit on the product table
-    async  handleRowAction(e){
+     handleRowAction(e){
         const rowAction = e.detail.action.name; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
         const rowId = e.detail.row.Id;
-        console.log(rowId);
         
         if(rowAction ==='Add'){
-            this.newProd = await getLastPaid({accountID: '0011D00000zhrrIQAQ', Code: rowCode})
-            if(this.newProd != null){
-                console.log(this.newProd);
-                
-                this.selection = [
-                    ...this.selection, {
-                        id: rowId,
-                        name: rowName,
-                        lastPaid: this.newProd.Unit_Price__c,
-                        lastMarg: this.newProd.Margin__c
-                    }
-                ]
-            }else{
-                this.selection = [
-                    ...this.selection, {
-                        id: rowId,
-                        name: rowName,
-                        lastPaid: 0,
-                        lastMarg: 0
-                    }
-                ]
-            }
-            
-            
-            
+             const payload = {
+                 productCode: rowCode,
+                 priceBookId: this.hcPriceBookId,
+                 productId: rowId
+             }         
+    //send it 
+            publish(this.messageContext, Opportunity_Builder, payload); 
         }
     }
 //This gets updated by the child appSelected with the id of a product that was selected

@@ -1,19 +1,31 @@
 <template>
     <lightning-card  variant="Narrow"  title="Selected Products" icon-name="utility:cart">
-        <template if:true={selection}>
-            <ul class='slds-m-top-small'>
+        <template if:true={prodFound}>
+            <div class='slds-grid'>
+                <div class='slds-col slds-size_1-of-1'>
                 <template for:each={selection} for:item="sp" >
-                   <li key={sp.id} class='slds-m-horizontal_xx-small slds-m-bottom_x-small'>
-                    <lightning-icon icon-name="utility:close" name={sp.id} size='small' class='hover'
-                    alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
-                    <span class="slds-p-left_small">{sp.name}</span>
-                    <span class="slds-p-left_small">{sp.lastPaid}</span>
-                    <span class="slds-p-left_small">{sp.lastMarg}</span>
-                   </li>
+                    <div key={sp.id} class='slds-m-horizontal_xx-small slds-m-bottom_x-small slds-grid'>
+                        <div class="slds-col slds-size_2-of-12">
+                            <p class='pName'>{sp.name}</p>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <p class='pName'>units</p>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <p class='pName'>unit price</p>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <p class='pName'>{sp.lastPaid}</p>
+                        </div>
+                        <div class="slds-col slds-size_2-of-12">
+                            <p class='pName'>{sp.lastMarg}</p>
+                        </div>
+                    </div>
                 </template>
-            </ul>
+            </div>
+            </div>
         </template>
-        <template if:false={selection}>
+        <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>
                 <h4>Added Products will appear here</h4>
                 <h6>We will add rates and pricing after this</h6>

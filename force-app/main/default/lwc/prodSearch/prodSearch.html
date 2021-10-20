@@ -1,7 +1,5 @@
 <template>
     <lightning-card  variant="Narrow"  title="Product Search">
-
-    <h2>I am leaving on home page for testing. Extreme Beta mode</h2>
     <template if:false={loaded}>
         <lightning-spinner 
             alternative-text="Loading" 
@@ -50,16 +48,6 @@
                 </lightning-datatable>
             </div>
             </div>
-            <div class='slds-grid'>
-            <div class='slds-col'>
-                <c-prod-selected selection={selection}
-                                    onupdate={handleRemove}></c-prod-selected>
-            </div> 
-    </div>
-    <!-- <div class="slds-docked-form-footer">
-        <button type="button" onclick={cancel} class="slds-button slds-button_neutral">Cancel</button>
-        <button type="button" onclick={next} class="slds-button slds-button_brand">Next</button>
-    </div> -->
     </template>
     </lightning-card>
 </template>

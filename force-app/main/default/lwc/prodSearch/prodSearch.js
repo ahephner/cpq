@@ -1,7 +1,9 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, track, wire, api } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
 import { MessageContext, publish} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
+import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
+import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 const columnsList = [
     {type: 'button', 
      initialWidth: 75,typeAttributes:{
@@ -23,8 +25,8 @@ const columnsList = [
     type:'currency', cellAttributes:{alignment:'center'}},
 ]
 export default class ProdSearch extends LightningElement {
-    //hardcoded id's
-    hcPriceBookId = '01s2M000008dTCeQAM';
+    @api recordId; 
+    priceBookId;
     @track loaded = false;
     columnsList = columnsList; 
     prod;
@@ -39,6 +41,20 @@ export default class ProdSearch extends LightningElement {
         this.loaded = true; 
     }
 
+    @wire(getRecord,{recordId:'$recordId', fields:[PRICE_BOOK]})
+        loadFields({data, error}){
+            if(data){
+                this.priceBookId = getFieldValue(data,PRICE_BOOK);
+            }else if(error){
+                let message = 'Unknown error';
+            if (Array.isArray(error.body)) {
+                message = error.body.map(e => e.message).join(', ');
+            } else if (typeof error.body.message === 'string') {
+                message = error.body.message;
+            }
+                console.log(message); 
+            }
+        }
     //Subscribe to Message Channel
     @wire(MessageContext)
     messageContext; 
@@ -47,7 +63,8 @@ export default class ProdSearch extends LightningElement {
         return [
             {label: 'All', value:'All'}, 
             {label: 'Foliar-Pak', value:'Foliar-Pak'},
-            {label: 'BASF', value:'BASF'}
+            {label: 'BASF', value:'BASF'}, 
+            {label: 'FMC', value:'FMC'}
         ]
     }
     get catOptions(){
@@ -62,6 +79,7 @@ export default class ProdSearch extends LightningElement {
 
     nameChange(event){
         this.searchKey = event.target.value.toLowerCase();
+        console.log('pb id ' +this.priceBookId);
       }
 
       //handle enter key tagged. maybe change to this.searhKey === undefined
@@ -85,7 +103,7 @@ export default class ProdSearch extends LightningElement {
       search(){
         this.loaded = false; 
        
-        searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.hcPriceBookId })
+        searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.priceBookId })
         .then((result) => {
            //can't use dot notation on native tables 
            //will use map next to do math on floor type. 

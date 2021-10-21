@@ -2,9 +2,13 @@
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
-import { APPLICATION_SCOPE,MessageContext, publish, subscribe, unsubscribe} from 'lightning/messageService';
+import { APPLICATION_SCOPE,MessageContext, subscribe, unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
+import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
+import ACC from '@salesforce/schema/Opportunity.AccountId';
+import STAGE from '@salesforce/schema/Opportunity.StageName';
 
+const FIELDS = [ACC, STAGE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
     productId; //not the pbe the actual product id
@@ -12,6 +16,8 @@ export default class ProdSelected extends LightningElement {
     priceBookId;
     unitCost;
     prodFound = false
+    accountId;
+    stage;
     @track selection = []
 //for message service
     subscritption = null;
@@ -51,9 +57,22 @@ export default class ProdSelected extends LightningElement {
         unsubscribe(this.subscription);
         this.subscription = null;
     }
-
+//get record values
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE]})
+        loadFields({data, error}){
+            if(data){
+                this.accountId = getFieldValue(data, ACC);
+                this.stage = getFieldValue(data, STAGE);
+                console.log('accid '+this.accountId);
+            }else if(error){
+                console.log('error '+JSON.stringify(error));
+                
+            }
+        }
     async handleNewProd(){
-        this.newProd = await getLastPaid({accountID: '0011D00000zhrrIQAQ', Code: this.productCode})
+        console.log(this.accountId + 'account id');
+        
+        this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         if(this.newProd != null){
             console.log(this.newProd);
             

@@ -59,7 +59,7 @@ export default class ProdSelected extends LightningElement {
             
             this.selection = [
                 ...this.selection, {
-                    id: this.productId,
+                    Id: this.productId,
                     name: this.productCode,
                     qty: 0,
                     Unit_Price__c:0,
@@ -73,7 +73,7 @@ export default class ProdSelected extends LightningElement {
         }else{
             this.selection = [
                 ...this.selection, {
-                    id: this.productId,
+                    Id: this.productId,
                     name: this.productCode,
                     qyt: 0,
                     Unit_Price__c: 0,
@@ -84,7 +84,7 @@ export default class ProdSelected extends LightningElement {
                     Total_Price__c: 0
                 }
             ]
-        }   //this.selection.forEach(x => console.log(x))
+        }   this.selection.forEach(x => console.log(x))
          
     }
     //Handle Pricing change here
@@ -92,27 +92,53 @@ export default class ProdSelected extends LightningElement {
     newPrice(e){
         window.clearTimeout(this.delay);
         let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        console.log(e.target.name);
+        console.log(e.target);
+        
         
         this.delay = setTimeout(()=>{
             this.selection[index].Unit_Price__c = e.detail.value;
             this.selection[index].Unit_Price__c = Number(this.selection[index].Unit_Price__c);
-            console.log('unit Price '+this.selection[index].Unit_Price__c, typeof this.selection[index].Unit_Price__c);
-            console.log('cost before  '+this.selection[index].unitCost,typeof this.selection[index].unitCost);
-            
             
             if(this.selection[index].Unit_Price__c > 0){
                 this.selection[index].Margin__c = Number((1 - (this.selection[index].unitCost /this.selection[index].Unit_Price__c))*100).toFixed(2)
-                this.selection[index].Total_Price__c = this.lineTotal(this.selection[index].qty, this.selection[index].Unit_Price__c);
+                this.selection[index].Total_Price__c = (this.selection[index].qty * this.selection[index].Unit_Price__c).toFixed(2);
+                console.log('tp '+this.selection[index].Total_Price__c);
+                
             }
         }, 1000)
         
     }
 
-    newMargin(e){
-        console.log('new Margin');
+    newMargin(m){
+        window.clearTimeout(this.delay)
+        let index = this.selection.findIndex(prod => prod.Id === m.target.name)
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this.delay = setTimeout(()=>{
+                this.selection[index].Margin__c = Number(m.detail.value);
+                if(1- this.selection[index].Margin__c/100 > 0){
+                    this.selection[index].Unit_Price__c = Number(this.selection[index].unitCost /(1- this.selection[index].Margin__c/100)).toFixed(2);
+                    this.selection[index].Total_Price__c = Number(this.selection[index].Units_Required__c * this.selection[index].Unit_Price__c).toFixed(2)
+                    this.selection[index].Total_Price__c = this.lineTotal(this.selection[index].qty, this.selection[index].Unit_Price__c);                
+                }else{
+                    this.selection[index].Unit_Price__c = 0;
+                    this.selection[index].Unit_Price__c = this.selection[index].Unit_Price__c.toFixed(2);
+                    this.selection[index].Total_Price__c = Number(this.selection[index].Units_Required__c * this.selection[index].Unit_Price__c).toFixed(2)   
+                 
+                }
+    },1500)
         
     }
-
+    
+    newQTY(e){
+        let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        this.selection[index].qty = Number(e.detail.value);
+        if(this.selection[index].Unit_Price__c >0){
+            this.selection[index].Total_Price__c = (this.selection[index].qty * this.selection[index].Unit_Price__c).toFixed(2); 
+            console.log('qty change '+this.selection[index].Total_Price__c);
+            
+        }
+    }
     removeProd(x){
         let xId = x.target.name; 
         this.dispatchEvent(new CustomEvent('update', {

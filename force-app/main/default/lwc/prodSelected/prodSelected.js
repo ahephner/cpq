@@ -9,7 +9,8 @@ export default class ProdSelected extends LightningElement {
     @api recordId;
     productId; //not the pbe the actual product id
     productCode;
-    priceBookId
+    priceBookId;
+    unitCost;
     prodFound = false
     @track selection = []
 //for message service
@@ -27,7 +28,6 @@ export default class ProdSelected extends LightningElement {
     }
     //subscribe to channel
     subscribeToMessageChannel(){
-        console.log('listening');
         
         if(!this.subscritption){
             this.subscritption = subscribe(
@@ -43,6 +43,7 @@ export default class ProdSelected extends LightningElement {
         this.productCode = mess.productCode;
         this.priceBookId = mess.priceBookId; 
         this.productId = mess.productId;
+        this.unitCost = mess.unitPrice;
         this.handleNewProd(); 
         this.prodFound = true; 
     }
@@ -60,8 +61,13 @@ export default class ProdSelected extends LightningElement {
                 ...this.selection, {
                     id: this.productId,
                     name: this.productCode,
+                    qty: 0,
+                    Unit_Price__c:0,
+                    Margin__c: 0,
+                    unitCost: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
-                    lastMarg: this.newProd.Margin__c
+                    lastMarg: (this.newProd.Margin__c / 100),
+                    Total_Price__c: 0
                 }
             ]
         }else{
@@ -69,13 +75,44 @@ export default class ProdSelected extends LightningElement {
                 ...this.selection, {
                     id: this.productId,
                     name: this.productCode,
+                    qyt: 0,
+                    Unit_Price__c: 0,
                     lastPaid: 0,
-                    lastMarg: 0
+                    lastMarg: 0, 
+                    Margin__c: 0,
+                    unitCost: this.unitCost,
+                    Total_Price__c: 0
                 }
             ]
-        }    
+        }   //this.selection.forEach(x => console.log(x))
+         
     }
-    
+    //Handle Pricing change here
+    lineTotal = (units, charge)=> (units * charge).toFixed(2);
+    newPrice(e){
+        window.clearTimeout(this.delay);
+        let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        
+        this.delay = setTimeout(()=>{
+            this.selection[index].Unit_Price__c = e.detail.value;
+            this.selection[index].Unit_Price__c = Number(this.selection[index].Unit_Price__c);
+            console.log('unit Price '+this.selection[index].Unit_Price__c, typeof this.selection[index].Unit_Price__c);
+            console.log('cost before  '+this.selection[index].unitCost,typeof this.selection[index].unitCost);
+            
+            
+            if(this.selection[index].Unit_Price__c > 0){
+                this.selection[index].Margin__c = Number((1 - (this.selection[index].unitCost /this.selection[index].Unit_Price__c))*100).toFixed(2)
+                this.selection[index].Total_Price__c = this.lineTotal(this.selection[index].qty, this.selection[index].Unit_Price__c);
+            }
+        }, 1000)
+        
+    }
+
+    newMargin(e){
+        console.log('new Margin');
+        
+    }
+
     removeProd(x){
         let xId = x.target.name; 
         this.dispatchEvent(new CustomEvent('update', {

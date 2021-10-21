@@ -96,6 +96,7 @@ export default class ProdSearch extends LightningElement {
                 x.Floor = x.Product2.Floor_Type__c
             })
             this.prod = result;
+            console.log(this.prod)
             this.error = undefined;
             
         })
@@ -122,13 +123,15 @@ export default class ProdSearch extends LightningElement {
         const rowAction = e.detail.action.name; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
+        const rowUPrice = e.detail.row.UnitPrice; 
         const rowId = e.detail.row.Id;
         
         if(rowAction ==='Add'){
              const payload = {
                  productCode: rowCode,
                  priceBookId: this.hcPriceBookId,
-                 productId: rowId
+                 productId: rowId, 
+                 unitPrice: rowUPrice
              }         
     //send it 
             publish(this.messageContext, Opportunity_Builder, payload); 

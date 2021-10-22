@@ -15,6 +15,7 @@ export default class ProdSelected extends LightningElement {
     productCode;
     priceBookId;
     unitCost;
+    productName; 
     prodFound = false
     accountId;
     stage;
@@ -47,7 +48,7 @@ export default class ProdSelected extends LightningElement {
     
     handleMessage(mess){
         this.productCode = mess.productCode;
-        this.priceBookId = mess.priceBookId; 
+        this.productName = mess.productName; 
         this.productId = mess.productId;
         this.unitCost = mess.unitPrice;
         this.handleNewProd(); 
@@ -70,7 +71,7 @@ export default class ProdSelected extends LightningElement {
             }
         }
     async handleNewProd(){
-        console.log(this.accountId + 'account id');
+        //console.log(this.accountId + 'account id');
         
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         if(this.newProd != null){
@@ -79,7 +80,8 @@ export default class ProdSelected extends LightningElement {
             this.selection = [
                 ...this.selection, {
                     Id: this.productId,
-                    name: this.productCode,
+                    name: this.productName,
+                    code: this.productCode,
                     qty: 0,
                     Unit_Price__c:0,
                     Margin__c: 0,
@@ -93,8 +95,9 @@ export default class ProdSelected extends LightningElement {
             this.selection = [
                 ...this.selection, {
                     Id: this.productId,
-                    name: this.productCode,
-                    qyt: 0,
+                    name: this.productName,
+                    code: this.productCode,
+                    qty: 0,
                     Unit_Price__c: 0,
                     lastPaid: 0,
                     lastMarg: 0, 
@@ -111,9 +114,6 @@ export default class ProdSelected extends LightningElement {
     newPrice(e){
         window.clearTimeout(this.delay);
         let index = this.selection.findIndex(prod => prod.Id === e.target.name)
-        console.log(e.target.name);
-        console.log(e.target);
-        
         
         this.delay = setTimeout(()=>{
             this.selection[index].Unit_Price__c = e.detail.value;
@@ -159,11 +159,14 @@ export default class ProdSelected extends LightningElement {
         }
     }
     removeProd(x){
-        let xId = x.target.name; 
-        this.dispatchEvent(new CustomEvent('update', {
-            detail: xId
-        })); 
-        //console.log('selected id '+ xId);
+        let index = this.selection.findIndex(prod => prod.Id === x.target.name)
+        console.log('removeProd '+ index);
         
+        if(index >= 0){
+            let cf = confirm('Do you want to remove this entry?')
+            if(cf ===true){
+                this.selection.splice(index, 1);
+            }
+        }      
     }
 }

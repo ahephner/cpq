@@ -3,7 +3,30 @@
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
             <div class='slds-grid header'>
-                
+                <!-- <div class='slds-col slds-size_2-of-12'>
+                    <p class='header'>Product Name</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Qty</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Price</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 ">
+                    <p class='header'>Last Paid</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Last Margin</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Margin %</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Total</p>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <p class='header'>Comment</p>
+                </div> -->
                 <div class='slds-col slds-size_2-of-12 slds-align_absolute-center'>
                     <p class='header'>Product Name</p>
                 </div>
@@ -35,7 +58,13 @@
                 <div class='slds-col slds-size_1-of-1'>
                 <template for:each={selection} for:item="sp" >
                     <div key={sp.Id} class='slds-m-horizontal_xx-small slds-m-bottom_x-small slds-grid'>
+                        <!-- <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                            <lightning-icon icon-name="utility:close" name={sp.Id} size='small' class='hover'
+                            alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
+                        </div> -->
                         <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
+                            <lightning-icon icon-name="utility:close" name={sp.Id} size='x-small' class='hover'
+                            alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
                             <p class='pName'>{sp.name}</p>
                         </div>
                         <!-- user qty -->
@@ -82,8 +111,7 @@
         </template>
         <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>
-                <h4>Added Products will appear here</h4>
-                <h6>We will add rates and pricing after this</h6>
+                <h4>Selected products will appear hear</h4>
             </div>
         </template>
     </lightning-card>

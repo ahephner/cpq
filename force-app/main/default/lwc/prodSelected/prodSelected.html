@@ -73,24 +73,24 @@
                                         value={sp.qty} onchange={newQTY}></lightning-input>
                         </div>
                         <!-- user price -->
-                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='price' type="number"  
                                         label="" name={sp.Id} 
                                         value={sp.Unit_Price__c} onchange={newPrice} 
                                         formatter="currency" step="0.01"></lightning-input>
                         </div>
                         <!-- last paid -->
-                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
                             <lightning-input type="number" name="lastPaid"  label='' 
                                         value={sp.lastPaid} formatter="currency" readonly></lightning-input>
                         </div>
                         <!-- last margin -->
-                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_large">
                             <lightning-input type="number" name="lastMarg" label="" 
                                         value={sp.lastMarg} formatter="percent" step="0.01" readonly=""></lightning-input>   
                         </div>
                         <!-- user margin can be changed or set -->
-                        <div class="slds-col slds-size_1-of-12">
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='liquid' type="number"  
                                             label="" name={sp.Id} 
                                             value={sp.Margin__c} onchange={newMargin} step="0.01" ></lightning-input>

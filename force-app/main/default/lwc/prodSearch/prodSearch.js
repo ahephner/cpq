@@ -1,6 +1,9 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire, api } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
-import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import { MessageContext, publish} from 'lightning/messageService';
+import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
+import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
+import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 const columnsList = [
     {type: 'button', 
      initialWidth: 75,typeAttributes:{
@@ -22,8 +25,8 @@ const columnsList = [
     type:'currency', cellAttributes:{alignment:'center'}},
 ]
 export default class ProdSearch extends LightningElement {
-    //hardcoded id's
-    hcPriceBookId = '01s2M000008dTCeQAM';
+    @api recordId; 
+    priceBookId;
     @track loaded = false;
     columnsList = columnsList; 
     prod;
@@ -37,12 +40,31 @@ export default class ProdSearch extends LightningElement {
     connectedCallback(){
         this.loaded = true; 
     }
+
+    @wire(getRecord,{recordId:'$recordId', fields:[PRICE_BOOK]})
+        loadFields({data, error}){
+            if(data){
+                this.priceBookId = getFieldValue(data,PRICE_BOOK);
+            }else if(error){
+                let message = 'Unknown error';
+            if (Array.isArray(error.body)) {
+                message = error.body.map(e => e.message).join(', ');
+            } else if (typeof error.body.message === 'string') {
+                message = error.body.message;
+            }
+                console.log(message); 
+            }
+        }
+    //Subscribe to Message Channel
+    @wire(MessageContext)
+    messageContext; 
     //get set new product family/category search we will get dynamic in a later time
     get pfOptions(){
         return [
             {label: 'All', value:'All'}, 
             {label: 'Foliar-Pak', value:'Foliar-Pak'},
-            {label: 'BASF', value:'BASF'}
+            {label: 'BASF', value:'BASF'}, 
+            {label: 'FMC', value:'FMC'}
         ]
     }
     get catOptions(){
@@ -57,6 +79,7 @@ export default class ProdSearch extends LightningElement {
 
     nameChange(event){
         this.searchKey = event.target.value.toLowerCase();
+        console.log('pb id ' +this.priceBookId);
       }
 
       //handle enter key tagged. maybe change to this.searhKey === undefined
@@ -80,7 +103,7 @@ export default class ProdSearch extends LightningElement {
       search(){
         this.loaded = false; 
        
-        searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.hcPriceBookId })
+        searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.priceBookId })
         .then((result) => {
            //can't use dot notation on native tables 
            //will use map next to do math on floor type. 
@@ -91,6 +114,7 @@ export default class ProdSearch extends LightningElement {
                 x.Floor = x.Product2.Floor_Type__c
             })
             this.prod = result;
+            console.log(this.prod)
             this.error = undefined;
             
         })
@@ -113,39 +137,23 @@ export default class ProdSearch extends LightningElement {
          },2000)
      }
      //Handles adding the products to this.Selection array when the green add button is hit on the product table
-    async  handleRowAction(e){
+     handleRowAction(e){
         const rowAction = e.detail.action.name; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
+        const rowUPrice = e.detail.row.UnitPrice; 
         const rowId = e.detail.row.Id;
-        console.log(rowId);
+    
         
         if(rowAction ==='Add'){
-            this.newProd = await getLastPaid({accountID: '0011D00000zhrrIQAQ', Code: rowCode})
-            if(this.newProd != null){
-                console.log(this.newProd);
-                
-                this.selection = [
-                    ...this.selection, {
-                        id: rowId,
-                        name: rowName,
-                        lastPaid: this.newProd.Unit_Price__c,
-                        lastMarg: this.newProd.Margin__c
-                    }
-                ]
-            }else{
-                this.selection = [
-                    ...this.selection, {
-                        id: rowId,
-                        name: rowName,
-                        lastPaid: 0,
-                        lastMarg: 0
-                    }
-                ]
-            }
-            
-            
-            
+             const payload = {
+                 productCode: rowCode,
+                 productId: rowId, 
+                 unitPrice: rowUPrice,
+                 productName: rowName
+             }         
+    //send it 
+            publish(this.messageContext, Opportunity_Builder, payload); 
         }
     }
 //This gets updated by the child appSelected with the id of a product that was selected

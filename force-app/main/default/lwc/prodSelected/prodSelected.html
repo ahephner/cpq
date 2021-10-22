@@ -1,22 +1,117 @@
 <template>
     <lightning-card  variant="Narrow"  title="Selected Products" icon-name="utility:cart">
-        <template if:true={selection}>
-            <ul class='slds-m-top-small'>
+        <template if:true={prodFound}>
+            <!-- Set Table Headers here -->
+            <div class='slds-grid header'>
+                <!-- <div class='slds-col slds-size_2-of-12'>
+                    <p class='header'>Product Name</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Qty</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Price</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 ">
+                    <p class='header'>Last Paid</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Last Margin</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Margin %</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Total</p>
+                </div>
+                <div class="slds-col slds-size_2-of-12">
+                    <p class='header'>Comment</p>
+                </div> -->
+                <div class='slds-col slds-size_2-of-12 slds-align_absolute-center'>
+                    <p class='header'>Product Name</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                    <p class='header'>Qty</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                    <p class='header'>Price</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center ">
+                    <p class='header'>Last Paid</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                    <p class='header'>Last Margin</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                    <p class='header'>Margin %</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                    <p class='header'>Total</p>
+                </div>
+                <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
+                    <p class='header'>Comment</p>
+                </div>
+            
+            </div>
+            <!--Table cells here-->
+            <div class='slds-grid'>
+                <div class='slds-col slds-size_1-of-1'>
                 <template for:each={selection} for:item="sp" >
-                   <li key={sp.id} class='slds-m-horizontal_xx-small slds-m-bottom_x-small'>
-                    <lightning-icon icon-name="utility:close" name={sp.id} size='small' class='hover'
-                    alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
-                    <span class="slds-p-left_small">{sp.name}</span>
-                    <span class="slds-p-left_small">{sp.lastPaid}</span>
-                    <span class="slds-p-left_small">{sp.lastMarg}</span>
-                   </li>
+                    <div key={sp.Id} class='slds-m-horizontal_xx-small slds-m-bottom_x-small slds-grid'>
+                        <!-- <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                            <lightning-icon icon-name="utility:close" name={sp.Id} size='small' class='hover'
+                            alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
+                        </div> -->
+                        <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
+                            <lightning-icon icon-name="utility:close" name={sp.Id} size='x-small' class='hover'
+                            alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
+                            <p class='pName'>{sp.name}</p>
+                        </div>
+                        <!-- user qty -->
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                            <lightning-input type="number" name={sp.Id}
+                                        value={sp.qty} onchange={newQTY}></lightning-input>
+                        </div>
+                        <!-- user price -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
+                            <lightning-input class='price' type="number"  
+                                        label="" name={sp.Id} 
+                                        value={sp.Unit_Price__c} onchange={newPrice} 
+                                        formatter="currency" step="0.01"></lightning-input>
+                        </div>
+                        <!-- last paid -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
+                            <lightning-input type="number" name="lastPaid"  label='' 
+                                        value={sp.lastPaid} formatter="currency" readonly></lightning-input>
+                        </div>
+                        <!-- last margin -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_large">
+                            <lightning-input type="number" name="lastMarg" label="" 
+                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly=""></lightning-input>   
+                        </div>
+                        <!-- user margin can be changed or set -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
+                            <lightning-input class='liquid' type="number"  
+                                            label="" name={sp.Id} 
+                                            value={sp.Margin__c} onchange={newMargin} step="0.01" ></lightning-input>
+                        </div>
+                        <!-- total price -->
+                        <div class='slds-col slds-size_1-of-12'>
+                            <lightning-input type="number" name="input4" formatter="currency"
+                                             readonly value={sp.Total_Price__c} label="" ></lightning-input>
+                        </div>
+                        <!--comments-->
+                        <div class='slds-col slds-size_2-of-12'>
+                            <lightning-input type="text" label=""></lightning-input>
+                        </div>
+                    </div>
                 </template>
-            </ul>
+            </div>
+            </div>
         </template>
-        <template if:false={selection}>
+        <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>
-                <h4>Added Products will appear here</h4>
-                <h6>We will add rates and pricing after this</h6>
+                <h4>Selected products will appear hear</h4>
             </div>
         </template>
     </lightning-card>

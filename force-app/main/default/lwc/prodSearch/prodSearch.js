@@ -148,7 +148,8 @@ export default class ProdSearch extends LightningElement {
         if(rowAction ==='Add'){
              const payload = {
                  productCode: rowCode,
-                 productId: rowId, 
+                 productId: e.detail.row.Product2Id,
+                 pbeId: rowId, 
                  unitPrice: rowUPrice,
                  productName: rowName
              }         
@@ -156,16 +157,5 @@ export default class ProdSearch extends LightningElement {
             publish(this.messageContext, Opportunity_Builder, payload); 
         }
     }
-//This gets updated by the child appSelected with the id of a product that was selected
-//it then sets a var as the idea finds the index then removes it from the array
-handleRemove(x){
-    //console.log('connected');
-    const prodId = x.detail;
-    console.log('prodId '+ prodId);  
-    const index = this.selection.findIndex(item => item.id === prodId);
-    console.log('index '+ index);
-    this.selection.splice(index, 1);
-    //console.log(this.selection);
-    
-}
+
 }

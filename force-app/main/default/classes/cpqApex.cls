@@ -7,7 +7,7 @@ public class cpqApex {
       string pf = family; 
       string pbId = priceBookId; 
       system.debug(pf);
-      String query = 'Select '
+      String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, '
                 + '  Product2.Floor_Type__c, Product2.Floor_Price__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND'; 

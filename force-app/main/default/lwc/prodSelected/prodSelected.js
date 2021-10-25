@@ -4,6 +4,7 @@ import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import { APPLICATION_SCOPE,MessageContext, subscribe, unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
+import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
@@ -11,7 +12,8 @@ import STAGE from '@salesforce/schema/Opportunity.StageName';
 const FIELDS = [ACC, STAGE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
-    productId; //not the pbe the actual product id
+    pbeId; 
+    productId; 
     productCode;
     priceBookId;
     unitCost;
@@ -48,11 +50,13 @@ export default class ProdSelected extends LightningElement {
     
     handleMessage(mess){
         this.productCode = mess.productCode;
-        this.productName = mess.productName; 
-        this.productId = mess.productId;
+        this.productName = mess.productName;
+        this.productId = mess.productId 
+        this.pbeId = mess.pbeId;
         this.unitCost = mess.unitPrice;
         this.handleNewProd(); 
         this.prodFound = true; 
+
     }
     unsubscribeToMessageChannel() {
         unsubscribe(this.subscription);
@@ -79,31 +83,39 @@ export default class ProdSelected extends LightningElement {
             
             this.selection = [
                 ...this.selection, {
-                    Id: this.productId,
+                    sObjectType: 'OpportunityLineItem',
+                    Id: this.pbeId,
+                    PricebookEntryId: this.pbeId,
+                    Product2Id: this.productId,
                     name: this.productName,
-                    code: this.productCode,
-                    qty: 0,
+                    ProductCode: this.productCode,
+                    Quantity: 0,
                     Unit_Price__c:0,
                     Margin__c: 0,
-                    unitCost: this.unitCost,
+                    Cost__c: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
                     lastMarg: (this.newProd.Margin__c / 100),
-                    Total_Price__c: 0
+                    Total_Price__c: 0,
+                    OpportunityId: this.recordId
                 }
             ]
         }else{
             this.selection = [
                 ...this.selection, {
-                    Id: this.productId,
+                    sObjectType: 'OpportunityLineItem',
+                    PricebookEntryId: this.pbeId,
+                    Id: this.pbeId,
+                    Product2Id: this.productId,
                     name: this.productName,
-                    code: this.productCode,
-                    qty: 0,
+                    ProductCode: this.productCode,
+                    Quantity: 0,
                     Unit_Price__c: 0,
                     lastPaid: 0,
                     lastMarg: 0, 
                     Margin__c: 0,
-                    unitCost: this.unitCost,
-                    Total_Price__c: 0
+                    Cost__c: this.unitCost,
+                    Total_Price__c: 0,
+                    OpportunityId: this.recordId
                 }
             ]
         }   this.selection.forEach(x => console.log(x))
@@ -120,8 +132,8 @@ export default class ProdSelected extends LightningElement {
             this.selection[index].Unit_Price__c = Number(this.selection[index].Unit_Price__c);
             
             if(this.selection[index].Unit_Price__c > 0){
-                this.selection[index].Margin__c = Number((1 - (this.selection[index].unitCost /this.selection[index].Unit_Price__c))*100).toFixed(2)
-                this.selection[index].Total_Price__c = (this.selection[index].qty * this.selection[index].Unit_Price__c).toFixed(2);
+                this.selection[index].Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].Unit_Price__c))*100).toFixed(2)
+                this.selection[index].Total_Price__c = (this.selection[index].Quantity * this.selection[index].Unit_Price__c).toFixed(2);
                 console.log('tp '+this.selection[index].Total_Price__c);
                 
             }
@@ -136,9 +148,9 @@ export default class ProdSelected extends LightningElement {
         this.delay = setTimeout(()=>{
                 this.selection[index].Margin__c = Number(m.detail.value);
                 if(1- this.selection[index].Margin__c/100 > 0){
-                    this.selection[index].Unit_Price__c = Number(this.selection[index].unitCost /(1- this.selection[index].Margin__c/100)).toFixed(2);
+                    this.selection[index].Unit_Price__c = Number(this.selection[index].Cost__c /(1- this.selection[index].Margin__c/100)).toFixed(2);
                     this.selection[index].Total_Price__c = Number(this.selection[index].Units_Required__c * this.selection[index].Unit_Price__c).toFixed(2)
-                    this.selection[index].Total_Price__c = this.lineTotal(this.selection[index].qty, this.selection[index].Unit_Price__c);                
+                    this.selection[index].Total_Price__c = this.lineTotal(this.selection[index].Quantity, this.selection[index].Unit_Price__c);                
                 }else{
                     this.selection[index].Unit_Price__c = 0;
                     this.selection[index].Unit_Price__c = this.selection[index].Unit_Price__c.toFixed(2);
@@ -151,9 +163,9 @@ export default class ProdSelected extends LightningElement {
     
     newQTY(e){
         let index = this.selection.findIndex(prod => prod.Id === e.target.name)
-        this.selection[index].qty = Number(e.detail.value);
+        this.selection[index].Quantity = Number(e.detail.value);
         if(this.selection[index].Unit_Price__c >0){
-            this.selection[index].Total_Price__c = (this.selection[index].qty * this.selection[index].Unit_Price__c).toFixed(2); 
+            this.selection[index].Total_Price__c = (this.selection[index].Quantity * this.selection[index].Unit_Price__c).toFixed(2); 
             console.log('qty change '+this.selection[index].Total_Price__c);
             
         }
@@ -168,5 +180,18 @@ export default class ProdSelected extends LightningElement {
                 this.selection.splice(index, 1);
             }
         }      
+    }
+
+    //Save Products
+    saveProducts(){
+        this.selection = delete this.selection.Id;
+        console.log('sending '+JSON.stringify(this.selection))
+        createProducts({olList: this.selection})
+        .then(result=>{
+            console.log(result);
+            
+        }).catch(error=>{
+            JSON.stringify(error)
+        })
     }
 }

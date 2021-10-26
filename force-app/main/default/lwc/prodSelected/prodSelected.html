@@ -1,32 +1,9 @@
 <template>
     <lightning-card  variant="Narrow"  title="Selected Products" icon-name="utility:cart">
+        <lightning-button variant="success" label="Select Price Books" title="priceBook" onclick={openModal}></lightning-button>
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
             <div class='slds-grid header'>
-                <!-- <div class='slds-col slds-size_2-of-12'>
-                    <p class='header'>Product Name</p>
-                </div>
-                <div class="slds-col slds-size_1-of-12">
-                    <p class='header'>Qty</p>
-                </div>
-                <div class="slds-col slds-size_1-of-12">
-                    <p class='header'>Price</p>
-                </div>
-                <div class="slds-col slds-size_1-of-12 ">
-                    <p class='header'>Last Paid</p>
-                </div>
-                <div class="slds-col slds-size_1-of-12">
-                    <p class='header'>Last Margin</p>
-                </div>
-                <div class="slds-col slds-size_1-of-12">
-                    <p class='header'>Margin %</p>
-                </div>
-                <div class="slds-col slds-size_1-of-12">
-                    <p class='header'>Total</p>
-                </div>
-                <div class="slds-col slds-size_2-of-12">
-                    <p class='header'>Comment</p>
-                </div> -->
                 <div class='slds-col slds-size_2-of-12 slds-align_absolute-center'>
                     <p class='header'>Product Name</p>
                 </div>
@@ -76,7 +53,7 @@
                         <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='price' type="number"  
                                         label="" name={sp.Id} 
-                                        value={sp.Unit_Price__c} onchange={newPrice} 
+                                        value={sp.UnitPrice} onchange={newPrice} 
                                         formatter="currency" step="0.01"></lightning-input>
                         </div>
                         <!-- last paid -->
@@ -117,4 +94,7 @@
             </div>
         </template>
     </lightning-card>
+    <!-- Price Book Selection -->
+    <c-price-book-selector
+                        onnewpb={updatePB}></c-price-book-selector>
 </template>

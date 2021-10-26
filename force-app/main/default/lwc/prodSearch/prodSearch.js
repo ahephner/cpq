@@ -1,6 +1,6 @@
 import { LightningElement, track, wire, api } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
-import { MessageContext, publish} from 'lightning/messageService';
+import { MessageContext, publish, subscribe, APPLICATION_SCOPE} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
@@ -39,25 +39,42 @@ export default class ProdSearch extends LightningElement {
     newProd; 
     connectedCallback(){
         this.loaded = true; 
+        this.subscribeToMessageChannel();
     }
-
-    @wire(getRecord,{recordId:'$recordId', fields:[PRICE_BOOK]})
-        loadFields({data, error}){
-            if(data){
-                this.priceBookId = getFieldValue(data,PRICE_BOOK);
-            }else if(error){
-                let message = 'Unknown error';
-            if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
-            } else if (typeof error.body.message === 'string') {
-                message = error.body.message;
-            }
-                console.log(message); 
-            }
+        //Subscribe to Message Channel
+        @wire(MessageContext)
+        messageContext; 
+    
+    subscribeToMessageChannel(){
+        
+        if(!this.subscritption){
+            this.subscritption = subscribe(
+                this.messageContext,
+                Opportunity_Builder,
+                (message) => this.handleMessage(message),
+                {scope:APPLICATION_SCOPE}
+            );
         }
-    //Subscribe to Message Channel
-    @wire(MessageContext)
-    messageContext; 
+    }
+    // @wire(getRecord,{recordId:'$recordId', fields:[PRICE_BOOK]})
+    //     loadFields({data, error}){
+    //         if(data){
+    //             this.priceBookId = getFieldValue(data,PRICE_BOOK);
+    //         }else if(error){
+    //             let message = 'Unknown error';
+    //         if (Array.isArray(error.body)) {
+    //             message = error.body.map(e => e.message).join(', ');
+    //         } else if (typeof error.body.message === 'string') {
+    //             message = error.body.message;
+    //         }
+    //             console.log(message); 
+    //         }
+    //     }
+
+        handleMessage(mess){
+            this.priceBookId = mess.priceBookId;
+            log('three price book '+ this.priceBookId);
+        }
     //get set new product family/category search we will get dynamic in a later time
     get pfOptions(){
         return [

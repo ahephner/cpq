@@ -9,14 +9,14 @@ import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
-
+import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 const FIELDS = [ACC, STAGE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
     pbeId; 
     productId; 
     productCode;
-    priceBookId;
+    pbId;
     unitCost;
     sId; 
     productName; 
@@ -65,12 +65,13 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
                 this.stage = getFieldValue(data, STAGE);
-                console.log('accid '+this.accountId);
+                this.pbId = getFieldValue(data, PRICE_BOOK); 
+                console.log('pbeId '+this.pbId);
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -86,7 +87,7 @@ export default class ProdSelected extends LightningElement {
             this.selection = [
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
-                    Id: this.pbeId,
+                    Id: this.productId,
                     PricebookEntryId: this.sId,
                     Product2Id: this.productId,
                     name: this.productName,
@@ -106,7 +107,7 @@ export default class ProdSelected extends LightningElement {
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
                     PricebookEntryId: this.sId,
-                    Id: this.pbeId,
+                    Id: this.productId,
                     Product2Id: this.productId,
                     name: this.productName,
                     ProductCode: this.productCode,
@@ -186,32 +187,30 @@ export default class ProdSelected extends LightningElement {
 
     //Save Products
     saveProducts(){
-      
         console.log('sending '+JSON.stringify(this.selection))
         createProducts({olList: this.selection})
         .then(result=>{
             console.log(result);
-            
+
         }).catch(error=>{
             JSON.stringify(error)
         })
     }
-
+//Price Book Information 
+//we get the inital price book but can change it based on the new screen 
     //open price book selector
-    openModal(){
-        console.log('open?');
-        
+    openPriceBookSelector(){        
         this.template.querySelector('c-price-book-selector').openMe();
     }
 
     updatePB(event){
-        const pb = event.detail;
-        console.log('price book 2 '+pb);
-        
-        const payload = {
-            priceBookId: pb
-        }
+        this.pbId = event.detail; 
+    }
 
-        //publish(this.messageContext, Opportunity_Builder, payload);
+    //open price book search
+    openProdSearch(){
+        console.log('open?');
+        
+        this.template.querySelector('c-prod-search').openPriceScreen(); 
     }
 }

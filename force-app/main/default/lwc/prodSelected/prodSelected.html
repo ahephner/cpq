@@ -1,6 +1,7 @@
 <template>
     <lightning-card  variant="Narrow"  title="Selected Products" icon-name="utility:cart">
-        <lightning-button variant="success" label="Select Price Books" title="priceBook" onclick={openModal}></lightning-button>
+        <lightning-button variant="success" label="Select Price Books" title="priceBook" onclick={openPriceBookSelector}></lightning-button>
+        <lightning-button variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button>
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
             <div class='slds-grid header'>
@@ -94,6 +95,9 @@
             </div>
         </template>
     </lightning-card>
+    <!-- price search -->
+    <c-prod-search
+                price-book-id={pbId}></c-prod-search>
     <!-- Price Book Selection -->
     <c-price-book-selector
                         onnewpb={updatePB}></c-price-book-selector>

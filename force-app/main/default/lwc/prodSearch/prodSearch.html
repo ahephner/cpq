@@ -1,4 +1,5 @@
 <template>
+    <template if:true={openPricing}>
     <lightning-card  variant="Narrow"  title="Product Search">
     <template if:false={loaded}>
         <lightning-spinner 
@@ -52,4 +53,5 @@
         </div>            
     </template>
     </lightning-card>
+    </template>
 </template>

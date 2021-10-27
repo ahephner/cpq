@@ -136,14 +136,14 @@ export default class ProdSearch extends LightningElement {
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
         const rowUPrice = e.detail.row.UnitPrice; 
-        const rowProducId = e.detail.row.Product2Id;
+        const rowProductId = e.detail.row.Product2Id;
     
     
         
         if(rowAction ==='Add'){
              const payload = {
                  productCode: rowCode,
-                 productId: rowProducId, 
+                 productId: rowProductId, 
                  unitPrice: rowUPrice,
                  productName: rowName
              }         

@@ -82,7 +82,7 @@ export default class ProdSelected extends LightningElement {
         this.sId = await getStandardId({prodCode: this.productCode})
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         if(this.newProd != null){
-            console.log(this.newProd);
+            //console.log(this.newProd);
             
             this.selection = [
                 ...this.selection, {

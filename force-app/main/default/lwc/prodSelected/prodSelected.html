@@ -1,5 +1,11 @@
 <template>
     <lightning-card  variant="Narrow"  title="Selected Products" icon-name="utility:cart">
+        <template if:false={loaded}>
+            <lightning-spinner 
+                alternative-text="Loading" 
+                size="large"></lightning-spinner>
+        </template>
+    <template if:true={loaded}>
         <lightning-button variant="success" label="Select Price Books" title="priceBook" onclick={openPriceBookSelector}></lightning-button>
         <lightning-button variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button>
         <template if:true={prodFound}>
@@ -48,7 +54,7 @@
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                             <lightning-input type="number" name={sp.Id}
-                                        value={sp.qty} onchange={newQTY}></lightning-input>
+                                        value={sp.Quantity} onchange={newQTY}></lightning-input>
                         </div>
                         <!-- user price -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
@@ -94,6 +100,7 @@
                 <h4>Selected products will appear hear</h4>
             </div>
         </template>
+    </template>
     </lightning-card>
     <!-- price search -->
     <c-prod-search

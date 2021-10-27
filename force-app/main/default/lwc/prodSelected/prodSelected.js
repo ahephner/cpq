@@ -3,6 +3,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import getStandardId from '@salesforce/apex/cpqApex.getStandardId';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe, unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
@@ -23,6 +24,7 @@ export default class ProdSelected extends LightningElement {
     prodFound = false
     accountId;
     stage;
+    loaded = true; 
     @track selection = []
 //for message service
     subscritption = null;
@@ -160,7 +162,7 @@ export default class ProdSelected extends LightningElement {
                     this.selection[index].Total_Price__c = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)   
                  
                 }
-    },1500)
+    },1000)
         
     }
     
@@ -187,13 +189,36 @@ export default class ProdSelected extends LightningElement {
 
     //Save Products
     saveProducts(){
+        this.loaded = false; 
         console.log('sending '+JSON.stringify(this.selection))
         createProducts({olList: this.selection})
         .then(result=>{
-            console.log(result);
-
+            this.selection = result; 
+        }).then(()=>{
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Products Saved',
+                    variant: 'success',
+                }),
+            );
         }).catch(error=>{
-            JSON.stringify(error)
+            console.log(JSON.stringify(error))
+            let message = 'Unknown error';
+            if (Array.isArray(error.body)) {
+                message = error.body.map(e => e.message).join(', ');
+            } else if (typeof error.body.message === 'string') {
+                message = error.body.message;
+            }
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error loading contact',
+                    message,
+                    variant: 'error',
+                }),
+            );
+        }).finally(()=>{
+            this.loaded = true; 
         })
     }
 //Price Book Information 

@@ -12,6 +12,10 @@
         <description>selectedPricebookId</description>
     </lightningMessageFields>
     <lightningMessageFields>
+        <fieldName>pbeId</fieldName>
+        <description>selected product name</description>
+    </lightningMessageFields>
+    <lightningMessageFields>
         <fieldName>productId</fieldName>
         <description>product2 Id not the price book entry id</description>
     </lightningMessageFields>

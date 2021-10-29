@@ -1,0 +1,36 @@
+<template>
+    <template if:true={openModal}>
+    <!-- Modal/Popup Box LWC starts here -->
+    <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <!-- Modal/Popup Box LWC header here -->
+            <header class="slds-modal__header">
+                <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModal}>
+                    <lightning-icon icon-name="utility:close"
+                        alternative-text="close"
+                        variant="inverse"
+                        size="small" ></lightning-icon>
+                    <span class="slds-assistive-text">Close</span>
+                </button>
+            </header>
+            <!-- Modal/Popup Box LWC body starts here -->
+            <div class="slds-modal__content slds-p-around_medium prodBody" id="modal-content-id-1">
+                <lightning-combobox
+                    name='box'
+                    class='areaBox'
+                    label="Area"
+                    value={value}
+                    placeholder="Select a Price Book"
+                    options={bookOptions}
+                    onchange={selectBook} ></lightning-combobox>
+            </div>
+            <!-- Modal/Popup Box LWC footer starts here -->
+            <footer class="slds-modal__footer">
+                <button class="slds-button slds-button_neutral" onclick={closeModal} title="Cancel">Cancel</button>
+                <button class="slds-button slds-button_brand" onclick={submitBook} title="OK">Save</button>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

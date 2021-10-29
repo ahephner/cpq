@@ -2,8 +2,7 @@ import { LightningElement, track, wire, api } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
 import { MessageContext, publish} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
-import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
-import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
+
 const columnsList = [
     {type: 'button', 
      initialWidth: 75,typeAttributes:{
@@ -26,8 +25,9 @@ const columnsList = [
 ]
 export default class ProdSearch extends LightningElement {
     @api recordId; 
-    priceBookId;
-    @track loaded = false;
+    @api priceBookId;
+    @track openPricing = false;
+    loaded  = false
     columnsList = columnsList; 
     prod;
     error;
@@ -37,24 +37,18 @@ export default class ProdSearch extends LightningElement {
     //needs to be @track so we can follow reactive properties on an array or obj in childern
     @track selection = [];
     newProd; 
-    connectedCallback(){
-        this.loaded = true; 
+    
+    @api
+    openPriceScreen(){
+        console.log('i hear you');
+        
+        this.openPricing = true;
+        this.loaded = true;  
     }
 
-    @wire(getRecord,{recordId:'$recordId', fields:[PRICE_BOOK]})
-        loadFields({data, error}){
-            if(data){
-                this.priceBookId = getFieldValue(data,PRICE_BOOK);
-            }else if(error){
-                let message = 'Unknown error';
-            if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
-            } else if (typeof error.body.message === 'string') {
-                message = error.body.message;
-            }
-                console.log(message); 
-            }
-        }
+    closePriceScreen(){
+        this.openPricing = false; 
+    }
     //Subscribe to Message Channel
     @wire(MessageContext)
     messageContext; 
@@ -79,7 +73,7 @@ export default class ProdSearch extends LightningElement {
 
     nameChange(event){
         this.searchKey = event.target.value.toLowerCase();
-        console.log('pb id ' +this.priceBookId);
+        
       }
 
       //handle enter key tagged. maybe change to this.searhKey === undefined
@@ -114,7 +108,7 @@ export default class ProdSearch extends LightningElement {
                 x.Floor = x.Product2.Floor_Type__c
             })
             this.prod = result;
-            console.log(this.prod)
+            //console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
         })
@@ -142,13 +136,14 @@ export default class ProdSearch extends LightningElement {
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
         const rowUPrice = e.detail.row.UnitPrice; 
-        const rowId = e.detail.row.Id;
+        const rowProductId = e.detail.row.Product2Id;
+    
     
         
         if(rowAction ==='Add'){
              const payload = {
                  productCode: rowCode,
-                 productId: rowId, 
+                 productId: rowProductId, 
                  unitPrice: rowUPrice,
                  productName: rowName
              }         

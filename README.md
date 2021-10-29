@@ -1,6 +1,6 @@
 # Salesforce DX Project: Next Steps
 
-Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
+The markup branch contains the ability to search multiple pricebooks. Have not made changes since it was tested and met our requirements. At that point it was decided one price book per one opp so this is not needed on 10/29/2021
 
 ## How Do You Plan to Deploy Your Changes?
 

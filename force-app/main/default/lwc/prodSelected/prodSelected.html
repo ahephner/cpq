@@ -6,7 +6,6 @@
                 size="large"></lightning-spinner>
         </template>
     <template if:true={loaded}>
-        <!--<lightning-button variant="success" label="Select Price Books" title="priceBook" onclick={openPriceBookSelector}></lightning-button>--> 
         <lightning-button variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button>
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
@@ -82,7 +81,7 @@
                         <!-- total price -->
                         <div class='slds-col slds-size_1-of-12'>
                             <lightning-input type="number" name="input4" formatter="currency"
-                                             readonly value={sp.Total_Price__c} label="" ></lightning-input>
+                                             readonly value={sp.TotalPrice} label="" ></lightning-input>
                         </div>
                         <!--comments-->
                         <div class='slds-col slds-size_2-of-12'>
@@ -106,6 +105,4 @@
     <c-prod-search
                 price-book-id={pbId}></c-prod-search>
     <!-- Price Book Selection -->
-    <c-price-book-selector
-                        onnewpb={updatePB}></c-price-book-selector>
 </template>

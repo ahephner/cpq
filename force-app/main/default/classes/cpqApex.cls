@@ -1,4 +1,15 @@
-public class cpqApex {
+public with sharing class cpqApex {
+    
+    //get pricebooks
+    @AuraEnabled(cacheable = true)
+    public static list<priceBookWrapper> getPriceBooks(){
+        list<priceBookWrapper> pw = new list<priceBookWrapper>();
+        
+        for(Pricebook2 x :[select id, name from Pricebook2 where IsActive = true]){
+            pw.add(new priceBookWrapper(x.name, x.id));
+        }
+        return pw; 
+    }
 	//Product Search
 	@AuraEnabled 
   public static PricebookEntry[] searchProduct(string searchKey, string cat, string family, string priceBookId){
@@ -30,7 +41,13 @@ public class cpqApex {
        system.debug(query);	 
       return Database.query(query); 
   } 
-    
+    @AuraEnabled(cacheable = true)
+    public static id getStandardId(string prodCode){
+        id sID = [SELECT Id FROM PricebookEntry WHERE Pricebook2.Name LIKE '%Standard%' AND Product2.ProductCode =: prodCode limit 1].Id;
+        system.debug('prodCode '+ prodCode);
+        system.debug('sId '+ sId);
+        return sId; 
+    }
     @AuraEnabled(cacheable=true)
     public static Sales_Doc_Detail__c getLastPaid(string accountID, string Code){
         sales_doc_detail__c order = null; 
@@ -44,7 +61,59 @@ public class cpqApex {
         system.debug(order);
         return order; 
     }
+    //get saved opportunity line items
+    @AuraEnabled
+    public static list<OpportunityLineItem> getProducts(string oppId){
+        list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode, TotalPrice,
+                                          Quantity, UnitPrice,Margin_Percent__c, Cost__c, OpportunityId from OpportunityLineItem
+                                         	where opportunityId =: oppId];
+        system.debug(opLi);
+        return opLi; 
+    }
     
+    //save products
+    @AuraEnabled
+    public static List<OpportunityLineItem> createProducts(List<OpportunityLineItem> olList){
+        system.debug('Opp Line ' + olList);
+        list<OpportunityLineItem> toUpsert = new list<OpportunityLineItem>();
+        
+        for(OpportunityLineItem x : olList){
+            OpportunityLineItem ol = new OpportunityLineItem();
+            if(String.isBlank(x.Id)){
+                //ol.Id = x.Id;
+                system.debug(x.ProductCode); 
+            ol.PricebookEntryId = x.PricebookEntryId;
+            ol.Product2Id = x.Product2Id;
+            ol.Quantity = x.Quantity;
+            ol.UnitPrice = x.UnitPrice;
+            ol.Margin__c = x.Margin_Percent__c;
+            ol.Cost__c = x.Cost__c;
+            //ol.TotalPrice = x.TotalPrice; 
+            ol.OpportunityId = x.OpportunityId;
+        }else if(!String.isBlank(x.Id)){
+            system.debug(x.Name);
+            ol.Id = x.Id; 
+            //ol.PricebookEntryId = x.PricebookEntryId;
+            //ol.Product2Id = x.Product2Id;
+            ol.Quantity = x.Quantity;
+            ol.UnitPrice = x.UnitPrice;
+            ol.Margin__c = x.Margin_Percent__c;
+            ol.Cost__c = x.Cost__c;
+            //ol.TotalPrice = x.TotalPrice; 
+            //ol.OpportunityId = x.OpportunityId;
+        }
+            
+      
+            toUpsert.add(ol);
+        }
+        
+        try{
+            Database.upsert(toUpsert);
+        }catch(exception e){
+            system.debug(e);
+        }
+        return olList; 
+    }
     
     //will look for similar cat products if nothing above is returned. 
     @AuraEnabled

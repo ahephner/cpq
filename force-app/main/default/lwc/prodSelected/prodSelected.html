@@ -40,25 +40,25 @@
             <div class='slds-grid'>
                 <div class='slds-col slds-size_1-of-1'>
                 <template for:each={selection} for:item="sp" >
-                    <div key={sp.Id} class='slds-m-horizontal_xx-small slds-m-bottom_x-small slds-grid'>
+                    <div key={sp.ProductCode} class='slds-m-horizontal_xx-small slds-m-bottom_x-small slds-grid'>
                         <!-- <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                             <lightning-icon icon-name="utility:close" name={sp.Id} size='small' class='hover'
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
                         </div> -->
                         <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
-                            <lightning-icon icon-name="utility:close" name={sp.Id} size='x-small' class='hover'
+                            <lightning-icon icon-name="utility:close" name={sp.ProductCode} size='x-small' class='hover'
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
                             <p class='pName'>{sp.name}</p>
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.Id}
+                            <lightning-input type="number" name={sp.ProductCode}
                                         value={sp.Quantity} onchange={newQTY}></lightning-input>
                         </div>
                         <!-- user price -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='price' type="number"  
-                                        label="" name={sp.Id} 
+                                        label="" name={sp.ProductCode} 
                                         value={sp.UnitPrice} onchange={newPrice} 
                                         formatter="currency" step="0.01"></lightning-input>
                         </div>
@@ -75,8 +75,8 @@
                         <!-- user margin can be changed or set -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='liquid' type="number"  
-                                            label="" name={sp.Id} 
-                                            value={sp.Margin__c} onchange={newMargin} step="0.01" ></lightning-input>
+                                            label="" name={sp.ProductCode} 
+                                            value={sp.Margin_Percent__c} onchange={newMargin} step="0.01" ></lightning-input>
                         </div>
                         <!-- total price -->
                         <div class='slds-col slds-size_1-of-12'>

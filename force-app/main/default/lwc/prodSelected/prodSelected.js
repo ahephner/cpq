@@ -8,6 +8,7 @@ import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} fro
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
+import { deleteRecord } from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
@@ -88,14 +89,14 @@ export default class ProdSelected extends LightningElement {
             this.selection = [
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
-                    Id: this.productId,
+                    Id: '',
                     PricebookEntryId: this.pbeId,
                     Product2Id: this.productId,
                     name: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 0,
                     UnitPrice:0,
-                    Margin__c: 0,
+                    Margin_Percent__c: 0,
                     Cost__c: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
                     lastMarg: (this.newProd.Margin__c / 100),
@@ -108,7 +109,7 @@ export default class ProdSelected extends LightningElement {
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
                     PricebookEntryId: this.pbeId,
-                    Id: this.productId,
+                    Id: undefined,
                     Product2Id: this.productId,
                     name: this.productName,
                     ProductCode: this.productCode,
@@ -116,7 +117,7 @@ export default class ProdSelected extends LightningElement {
                     UnitPrice: 0,
                     lastPaid: 0,
                     lastMarg: 0, 
-                    Margin__c: 0,
+                    Margin_Percent__c: 0,
                     Cost__c: this.unitCost,
                     TotalPrice: 0,
                     OpportunityId: this.recordId
@@ -129,14 +130,14 @@ export default class ProdSelected extends LightningElement {
     lineTotal = (units, charge)=> (units * charge).toFixed(2);
     newPrice(e){
         window.clearTimeout(this.delay);
-        let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
         
         this.delay = setTimeout(()=>{
             this.selection[index].UnitPrice = e.detail.value;
             this.selection[index].UnitPrice = Number(this.selection[index].UnitPrice);
             
             if(this.selection[index].UnitPrice > 0){
-                this.selection[index].Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
+                this.selection[index].Margin_Percent__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
                 this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2);
                 console.log('tp '+this.selection[index].TotalPrice);
                 
@@ -147,12 +148,21 @@ export default class ProdSelected extends LightningElement {
 
     newMargin(m){
         window.clearTimeout(this.delay)
-        let index = this.selection.findIndex(prod => prod.Id === m.target.name)
+        let index = this.selection.findIndex(prod => prod.ProductCode === m.target.name)
+        console.log('margin index '+index);
+        
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         this.delay = setTimeout(()=>{
-                this.selection[index].Margin__c = Number(m.detail.value);
-                if(1- this.selection[index].Margin__c/100 > 0){
-                    this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].Margin__c/100)).toFixed(2);
+                this.selection[index].Margin_Percent__c = Number(m.detail.value);
+                console.log('new margin value '+this.selection[index].Margin_Percent__c)
+                console.log('type of '+ typeof this.selection[index].Margin_Percent__c );
+                
+                if(1- this.selection[index].Margin_Percent__c/100 > 0){
+                    this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].Margin_Percent__c/100)).toFixed(2);
+                    console.log('cost '+this.selection[index].Cost__c);
+                    
+                    console.log('margin cal '+(1- this.selection[index].Margin_Percent__c/100))
+                    
                     this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)
                     this.selection[index].TotalPrice = this.lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
                 }else{
@@ -166,7 +176,9 @@ export default class ProdSelected extends LightningElement {
     }
     
     newQTY(e){
-        let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
+        console.log('index '+index);
+        
         this.selection[index].Quantity = Number(e.detail.value);
         if(this.selection[index].UnitPrice >0){
             this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
@@ -175,13 +187,18 @@ export default class ProdSelected extends LightningElement {
         }
     }
     removeProd(x){
-        let index = this.selection.findIndex(prod => prod.Id === x.target.name)
-        console.log('removeProd '+ index);
+        let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
+        let id = this.selection[index].Id; 
         
         if(index >= 0){
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
                 this.selection.splice(index, 1);
+                if(id != undefined){
+                    console.log('deleting prod');
+                    
+                    deleteRecord(id); 
+                }
             }
         }      
     }
@@ -238,8 +255,8 @@ export default class ProdSelected extends LightningElement {
                                                             ProductCode: x.Product2.ProductCode,
                                                             Quantity: x.Quantity,
                                                             UnitPrice:x.UnitPrice,
-                                                            Margin__c: x.Margin_Percent__c,
-                                                            Cost__c: x.Unit_Cost__c,
+                                                            Margin_Percent__c: x.Margin_Percent__c,
+                                                            Cost__c: x.Cost__c,
                                                             //lastPaid: this.newProd.Unit_Price__c,
                                                             //lastMarg: (this.newProd.Margin__c / 100),
                                                             TotalPrice: x.TotalPrice,

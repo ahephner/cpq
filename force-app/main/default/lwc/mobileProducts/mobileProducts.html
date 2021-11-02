@@ -1,0 +1,29 @@
+<template>
+    <div class='target'>
+    <lightning-layout multiple-rows="true">
+    <template if:true={loaded} for:each={prod} for:item='item'>
+        <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
+        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
+        <div class='slds-grid slds-wrap'>
+        <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
+            <h2 class="slds-text-heading_medium slds-m-bottom_medium">
+                <lightning-input value={item.Product_Name__c} type='text' readonly></lightning-input>
+            </h2>
+        </div>
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+            <lightning-button-icon icon-name="utility:edit" name={item.Id}  onclick={edit} alternative-text="Edit" class="slds-m-left_xx-small" title="Edit"></lightning-button-icon>
+        </div>
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+                <lightning-input value={item.UnitPrice} type='number' formater='currency' label='Unit Price' read-only={item.readOnly}></lightning-input>
+                <lightning-input value={item.Quantity} type='number' label='Qty' read-only={item.readOnly}></lightning-input>
+            </div>
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+                <lightning-input value={item.Margin_Percent__c} type='number' formater='percent' label='Margin' read-only={item.readOnly}></lightning-input>
+                <lightning-input value={item.TotalPrice} type='number' formater='currency' label='Total Price' readonly></lightning-input>
+            </div>
+        </div>
+        </lightning-layout-item>
+    </template>
+</lightning-layout>
+</div>
+</template>

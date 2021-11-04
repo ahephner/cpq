@@ -96,7 +96,7 @@ export default class ProdSelected extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 0,
                     UnitPrice:0,
-                    Margin_Percent__c: 0,
+                    CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
                     lastMarg: (this.newProd.Margin__c / 100),
@@ -117,7 +117,7 @@ export default class ProdSelected extends LightningElement {
                     UnitPrice: 0,
                     lastPaid: 0,
                     lastMarg: 0, 
-                    Margin_Percent__c: 0,
+                    CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     TotalPrice: 0,
                     OpportunityId: this.recordId
@@ -137,7 +137,7 @@ export default class ProdSelected extends LightningElement {
             this.selection[index].UnitPrice = Number(this.selection[index].UnitPrice);
             
             if(this.selection[index].UnitPrice > 0){
-                this.selection[index].Margin_Percent__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
+                this.selection[index].CPQ_Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
                 this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2);
                 console.log('tp '+this.selection[index].TotalPrice);
                 
@@ -153,15 +153,15 @@ export default class ProdSelected extends LightningElement {
         
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         this.delay = setTimeout(()=>{
-                this.selection[index].Margin_Percent__c = Number(m.detail.value);
-                console.log('new margin value '+this.selection[index].Margin_Percent__c)
-                console.log('type of '+ typeof this.selection[index].Margin_Percent__c );
+                this.selection[index].CPQ_Margin__c = Number(m.detail.value);
+                console.log('new margin value '+this.selection[index].CPQ_Margin__c)
+                console.log('type of '+ typeof this.selection[index].CPQ_Margin__c );
                 
-                if(1- this.selection[index].Margin_Percent__c/100 > 0){
-                    this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].Margin_Percent__c/100)).toFixed(2);
+                if(1- this.selection[index].CPQ_Margin__c/100 > 0){
+                    this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].CPQ_Margin__c/100)).toFixed(2);
                     console.log('cost '+this.selection[index].Cost__c);
                     
-                    console.log('margin cal '+(1- this.selection[index].Margin_Percent__c/100))
+                    console.log('margin cal '+(1- this.selection[index].CPQ_Margin__c/100))
                     
                     this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)
                     this.selection[index].TotalPrice = this.lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
@@ -255,7 +255,7 @@ export default class ProdSelected extends LightningElement {
                                                             ProductCode: x.Product2.ProductCode,
                                                             Quantity: x.Quantity,
                                                             UnitPrice:x.UnitPrice,
-                                                            Margin_Percent__c: x.Margin_Percent__c,
+                                                            CPQ_Margin__c: x.CPQ_Margin__c,
                                                             Cost__c: x.Cost__c,
                                                             //lastPaid: this.newProd.Unit_Price__c,
                                                             //lastMarg: (this.newProd.Margin__c / 100),

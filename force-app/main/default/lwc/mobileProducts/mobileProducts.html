@@ -11,15 +11,22 @@
             </h2>
         </div>
         <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-            <lightning-button-icon icon-name="utility:edit" name={item.Id}  onclick={edit} alternative-text="Edit" class="slds-m-left_xx-small" title="Edit"></lightning-button-icon>
+            <lightning-button-icon icon-name={toggleIcon} name={item.Id}  onclick={edit} alternative-text="Edit" class="slds-m-left_xx-small" title="Edit"></lightning-button-icon>
         </div>
+    <!-- Unit Price -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                <lightning-input value={item.UnitPrice} type='number' formater='currency' label='Unit Price' read-only={item.readOnly}></lightning-input>
-                <lightning-input value={item.Quantity} type='number' label='Qty' read-only={item.readOnly}></lightning-input>
+                <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
+                                name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
+    <!-- Qty -->
+                <lightning-input value={item.Quantity} type='number' label='Qty' 
+                                name ={item.Id} read-only={item.readOnly} onchange={handleQty}></lightning-input>
             </div>
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                <lightning-input value={item.Margin_Percent__c} type='number' formater='percent' label='Margin' read-only={item.readOnly}></lightning-input>
-                <lightning-input value={item.TotalPrice} type='number' formater='currency' label='Total Price' readonly></lightning-input>
+    <!-- Margin -->
+                <lightning-input value={item.Margin_Percent__c} type='number' formater='percent' step="0.01"
+                                name ={item.Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+    <!-- Total Price -->
+                <lightning-input value={item.TotalPrice} name ={item.Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
             </div>
         </div>
         </lightning-layout-item>

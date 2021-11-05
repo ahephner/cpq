@@ -2,12 +2,13 @@
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
-import getStandardId from '@salesforce/apex/cpqApex.getStandardId';
+import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { APPLICATION_SCOPE,MessageContext, publish, subscribe, unsubscribe} from 'lightning/messageService';
+import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
+import { deleteRecord } from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
@@ -34,6 +35,7 @@ export default class ProdSelected extends LightningElement {
     // Standard lifecycle hooks used to subscribe and unsubsubscribe to the message channel
     connectedCallback() {
         this.subscribeToMessageChannel();
+        this.loadProducts(); 
     }
 
     disconnectedCallback() {
@@ -73,15 +75,13 @@ export default class ProdSelected extends LightningElement {
                 this.accountId = getFieldValue(data, ACC);
                 this.stage = getFieldValue(data, STAGE);
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
-                console.log('pbeId '+this.pbId);
+                
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
             }
         }
     async handleNewProd(){
-        //console.log(this.accountId + 'account id');
-        this.sId = await getStandardId({prodCode: this.productCode})
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         if(this.newProd != null){
             //console.log(this.newProd);
@@ -89,18 +89,18 @@ export default class ProdSelected extends LightningElement {
             this.selection = [
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
-                    Id: this.productId,
-                    PricebookEntryId: this.sId,
+                    Id: '',
+                    PricebookEntryId: this.pbeId,
                     Product2Id: this.productId,
                     name: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 0,
                     UnitPrice:0,
-                    Margin__c: 0,
+                    CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
                     lastMarg: (this.newProd.Margin__c / 100),
-                    Total_Price__c: 0,
+                    TotalPrice: 0,
                     OpportunityId: this.recordId
                 }
             ]
@@ -108,8 +108,8 @@ export default class ProdSelected extends LightningElement {
             this.selection = [
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
-                    PricebookEntryId: this.sId,
-                    Id: this.productId,
+                    PricebookEntryId: this.pbeId,
+                    Id: undefined,
                     Product2Id: this.productId,
                     name: this.productName,
                     ProductCode: this.productCode,
@@ -117,9 +117,9 @@ export default class ProdSelected extends LightningElement {
                     UnitPrice: 0,
                     lastPaid: 0,
                     lastMarg: 0, 
-                    Margin__c: 0,
+                    CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
-                    Total_Price__c: 0,
+                    TotalPrice: 0,
                     OpportunityId: this.recordId
                 }
             ]
@@ -130,16 +130,16 @@ export default class ProdSelected extends LightningElement {
     lineTotal = (units, charge)=> (units * charge).toFixed(2);
     newPrice(e){
         window.clearTimeout(this.delay);
-        let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
         
         this.delay = setTimeout(()=>{
             this.selection[index].UnitPrice = e.detail.value;
             this.selection[index].UnitPrice = Number(this.selection[index].UnitPrice);
             
             if(this.selection[index].UnitPrice > 0){
-                this.selection[index].Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
-                this.selection[index].Total_Price__c = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2);
-                console.log('tp '+this.selection[index].Total_Price__c);
+                this.selection[index].CPQ_Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
+                this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2);
+                console.log('tp '+this.selection[index].TotalPrice);
                 
             }
         }, 1000)
@@ -148,18 +148,27 @@ export default class ProdSelected extends LightningElement {
 
     newMargin(m){
         window.clearTimeout(this.delay)
-        let index = this.selection.findIndex(prod => prod.Id === m.target.name)
+        let index = this.selection.findIndex(prod => prod.ProductCode === m.target.name)
+        console.log('margin index '+index);
+        
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         this.delay = setTimeout(()=>{
-                this.selection[index].Margin__c = Number(m.detail.value);
-                if(1- this.selection[index].Margin__c/100 > 0){
-                    this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].Margin__c/100)).toFixed(2);
-                    this.selection[index].Total_Price__c = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)
-                    this.selection[index].Total_Price__c = this.lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
+                this.selection[index].CPQ_Margin__c = Number(m.detail.value);
+                console.log('new margin value '+this.selection[index].CPQ_Margin__c)
+                console.log('type of '+ typeof this.selection[index].CPQ_Margin__c );
+                
+                if(1- this.selection[index].CPQ_Margin__c/100 > 0){
+                    this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].CPQ_Margin__c/100)).toFixed(2);
+                    console.log('cost '+this.selection[index].Cost__c);
+                    
+                    console.log('margin cal '+(1- this.selection[index].CPQ_Margin__c/100))
+                    
+                    this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)
+                    this.selection[index].TotalPrice = this.lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
                 }else{
                     this.selection[index].UnitPrice = 0;
                     this.selection[index].UnitPrice = this.selection[index].UnitPrice.toFixed(2);
-                    this.selection[index].Total_Price__c = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)   
+                    this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)   
                  
                 }
     },1000)
@@ -167,22 +176,29 @@ export default class ProdSelected extends LightningElement {
     }
     
     newQTY(e){
-        let index = this.selection.findIndex(prod => prod.Id === e.target.name)
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
+        console.log('index '+index);
+        
         this.selection[index].Quantity = Number(e.detail.value);
         if(this.selection[index].UnitPrice >0){
-            this.selection[index].Total_Price__c = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
-            console.log('qty change '+this.selection[index].Total_Price__c);
+            this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
+            console.log('qty change '+this.selection[index].TotalPrice);
             
         }
     }
     removeProd(x){
-        let index = this.selection.findIndex(prod => prod.Id === x.target.name)
-        console.log('removeProd '+ index);
+        let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
+        let id = this.selection[index].Id; 
         
         if(index >= 0){
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
                 this.selection.splice(index, 1);
+                if(id != undefined){
+                    console.log('deleting prod');
+                    
+                    deleteRecord(id); 
+                }
             }
         }      
     }
@@ -221,21 +237,38 @@ export default class ProdSelected extends LightningElement {
             this.loaded = true; 
         })
     }
-//Price Book Information 
-//we get the inital price book but can change it based on the new screen 
-    //open price book selector
-    openPriceBookSelector(){        
-        this.template.querySelector('c-price-book-selector').openMe();
+    //on load get products
+    loadProducts(){
+        getProducts({oppId: this.recordId})
+            .then(result=>{
+                if(result){
+                    this.prodFound = true; 
+                    //result.forEach(x=>console.log(x))
+                    this.selection  = result.map(x =>{
+    
+                                                return   {
+                                                            sObjectType: 'OpportunityLineItem',
+                                                            Id: x.Id,
+                                                            PricebookEntryId: x.PricebookEntryId,
+                                                            Product2Id: x.Product2Id,
+                                                            name: x.Product2.Name,
+                                                            ProductCode: x.Product2.ProductCode,
+                                                            Quantity: x.Quantity,
+                                                            UnitPrice:x.UnitPrice,
+                                                            CPQ_Margin__c: x.CPQ_Margin__c,
+                                                            Cost__c: x.Cost__c,
+                                                            //lastPaid: this.newProd.Unit_Price__c,
+                                                            //lastMarg: (this.newProd.Margin__c / 100),
+                                                            TotalPrice: x.TotalPrice,
+                                                            OpportunityId: this.recordId
+                                                        }
+                                                        });
+                }
+                
+            })
     }
-
-    updatePB(event){
-        this.pbId = event.detail; 
-    }
-
     //open price book search
     openProdSearch(){
-        console.log('open?');
-        
         this.template.querySelector('c-prod-search').openPriceScreen(); 
     }
 }

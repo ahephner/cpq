@@ -1,5 +1,5 @@
 <template>
-    <div class='target'>
+    <div class='slds-scrollable_y target'>
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>
         <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
@@ -12,11 +12,17 @@
         </div>
     <!-- button group -->
         <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_medium'>
-            <lightning-button-icon icon-name={item.icon} name={item.Id}  onclick={edit} alternative-text="Edit" class="slds-m-left_xx-small" title="Edit"></lightning-button-icon>
-            <template if:true={item.buttonGroup}>
-                <lightning-button class='slds-m-left_small' variant="destructive" name={item.Id} label="Delete" title="Delete" onclick={handleDelete}></lightning-button>
-        </template>
+            <div class="slds-p-around_medium lgc-bg">
+                <lightning-button-menu alternative-text="Show menu" variant="border-filled" name={item.Id} 
+                                       icon-size="xx-small"  onselect={handleAction} icon-name="utility:threedots">
+                    <lightning-menu-item value="Edit" label="Edit"></lightning-menu-item>
+                    <lightning-menu-item value="Info" label="Info"></lightning-menu-item>
+                    <lightning-menu-item value="Delete" label="Delete" class='btnOptions'></lightning-menu-item>
+                </lightning-button-menu>
+            </div>
         </div>    
+    <!--Shows pricing info stuff the rep can edit-->
+        <template if:false={item.showInfo}>
     <!-- Unit Price -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
@@ -32,6 +38,22 @@
     <!-- Total Price -->
                 <lightning-input value={item.TotalPrice} name ={item.Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
             </div>
+        </template>
+    <!--Shows more info like inventory if we can link it some how and costs-->    
+        <template if:true={item.showInfo}>
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+                <lightning-input value='3' type='number' 
+                                name ={item.Id} label='Inventory at my locaton' readonly></lightning-input>
+                <lightning-input value='75' type='number' formatter="currency" label='Last Paid' 
+                                name ={item.Id} readonly></lightning-input>
+            </div>
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+                <lightning-input value='150' type='number' formatter="currency" label='Floor Price' 
+                                name ={item.Id} readonly></lightning-input>
+                <lightning-input value='ATS' type='text'  label='Floor Type' 
+                                name ={item.Id} readonly></lightning-input>
+            </div>
+        </template>
         </div>
         </lightning-layout-item>
     </template>

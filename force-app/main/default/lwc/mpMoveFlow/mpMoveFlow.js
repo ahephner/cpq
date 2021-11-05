@@ -4,7 +4,7 @@ import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 export default class MobileProducts extends LightningElement {
-    showDelete = false; 
+    showDelete = false;  
     @track prod = [] 
     @api backUp = [];
     @api results; 
@@ -28,30 +28,67 @@ export default class MobileProducts extends LightningElement {
     load(p){
         let readOnly
         let icon
-        let buttonGroup
+        let showInfo 
         this.prod =  p.map(x=>{
             readOnly = true;
-            buttonGroup = false; 
+            showInfo = false;  
             icon = 'utility:edit'
-            return {...x, readOnly, icon, buttonGroup}
+            return {...x, readOnly, icon, showInfo}
         })
         this.backUp = [...this.prod]
         this.showSpinner = false; 
     }
-
-    edit(e){
-        let index = this.prod.findIndex(x=>x.Id === e.target.name)
-        //need to do more in here like show a delete button.
-        if(this.prod[index].icon === 'utility:edit'){
-            this.prod[index].icon = 'utility:close';
-            this.prod[index].readOnly = false;
-            this.prod[index].buttonGroup = true
-        } else{
-            this.prod[index].icon = 'utility:edit';
-            this.prod[index].readOnly = true;
-            this.prod[index].buttonGroup = false; 
+    handleAction(e){
+        let action = e.detail.value
+        let index = this.prod.findIndex(x => x.Id === e.target.name)
+        
+        switch (action) {
+            case 'Edit':
+                this.edit(index)
+                break;
+            case 'Info':
+                this.info(index)
+                break; 
+            case 'Delete':
+                this.handleDelete(index);
+                break; 
+            default:
+                console.log('default action');
+                break;
         }
+        
     }
+       edit(index){
+           if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
+            this.prod[index].readOnly = true;
+           }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === true){
+            this.prod[index].showInfo = false; 
+            this.prod[index].readOnly = false;
+           }else{
+               this.prod[index].readOnly = false
+           }
+       }
+
+       info(index){
+           if(this.prod[index].showInfo === true){
+            this.prod[index].showInfo = false;
+           }else{
+            this.prod[index].showInfo = true; 
+           }
+       }
+    // edit(e){
+    //     let index = this.prod.findIndex(x=>x.Id === e.target.name)
+    //     //need to do more in here like show a delete button.
+    //     if(this.prod[index].icon === 'utility:edit'){
+    //         this.prod[index].icon = 'utility:close';
+    //         this.prod[index].readOnly = false;
+    //         this.prod[index].buttonGroup = true
+    //     } else{
+    //         this.prod[index].icon = 'utility:edit';
+    //         this.prod[index].readOnly = true;
+    //         this.prod[index].buttonGroup = false; 
+    //     }
+    // }
 
     //Handle value changes
     handleQty(qty){
@@ -91,8 +128,7 @@ export default class MobileProducts extends LightningElement {
         },500)
     }
 //delete individual line items. 
-    handleDelete(x){
-        let index = this.prod.findIndex(prod => prod.Id === x.target.name)
+    handleDelete(index){
         let id = this.prod[index].Id;
 
         if(index>-1){

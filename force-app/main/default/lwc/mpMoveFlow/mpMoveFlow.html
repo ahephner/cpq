@@ -1,0 +1,47 @@
+<template>
+    <div class='target'>
+    <lightning-layout multiple-rows="true">
+    <template if:false={showSpinner} for:each={prod} for:item='item'>
+        <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
+        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
+        <div class='slds-grid slds-wrap'>
+        <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
+            <h2 class="slds-text-heading_medium slds-m-bottom_medium">
+                <lightning-input value={item.Product_Name__c} type='text' readonly></lightning-input>
+            </h2>
+        </div>
+    <!-- button group -->
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_medium'>
+            <lightning-button-icon icon-name={item.icon} name={item.Id}  onclick={edit} alternative-text="Edit" class="slds-m-left_xx-small" title="Edit"></lightning-button-icon>
+            <template if:true={item.buttonGroup}>
+                <lightning-button class='slds-m-left_small' variant="destructive" name={item.Id} label="Delete" title="Delete" onclick={handleDelete}></lightning-button>
+        </template>
+        </div>    
+    <!-- Unit Price -->
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+                <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
+                                name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
+    <!-- Qty -->
+                <lightning-input value={item.Quantity} type='number' label='Qty' 
+                                name ={item.Id} read-only={item.readOnly} onchange={handleQty}></lightning-input>
+            </div>
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+    <!-- Margin -->
+                <lightning-input value={item.CPQ_Margin__c} type='number' formater='percent' step="0.01"
+                                name ={item.Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+    <!-- Total Price -->
+                <lightning-input value={item.TotalPrice} name ={item.Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
+            </div>
+        </div>
+        </lightning-layout-item>
+    </template>
+</lightning-layout>
+<template if:true={showSpinner}>
+    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+</template> 
+</div>
+<footer class="slds-modal__footer">
+    <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
+    <button class="slds-button slds-button_brand" onclick={saveMobile} title="OK">Save</button>
+</footer>
+</template>

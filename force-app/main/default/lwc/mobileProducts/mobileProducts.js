@@ -1,12 +1,15 @@
 import { deleteRecord } from 'lightning/uiRecordApi';
 import { LightningElement, api, track } from 'lwc';
+import createProducts from '@salesforce/apex/cpqApex.createProducts';
+import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 export default class MobileProducts extends LightningElement {
     showDelete = false; 
     @track prod = [] 
     @api backUp = [];
+    @api results; 
     prodData; 
-    loaded = true; 
+    showSpinner = true; 
     connectedCallback(){
         //this.load(this.products);
         //this.load(this.prod); 
@@ -33,8 +36,7 @@ export default class MobileProducts extends LightningElement {
             return {...x, readOnly, icon, buttonGroup}
         })
         this.backUp = [...this.prod]
-        console.log('prod '+this.prod);
-        console.log('backUp '+this.backUp);
+        this.showSpinner = false; 
     }
 
     edit(e){
@@ -86,13 +88,6 @@ export default class MobileProducts extends LightningElement {
                 this.prod[index].UnitPrice = (cost/num).toFixed(2);
                 this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice;
             }
-            
-            
-            // if((1- (this.prod[index].CPQ_Margin__c/100)) > 0){
-            //     this.prod[index].UnitPrice = Number(this.prod[index].Cost__c / (1- this.selection[index].CPQ_Margin__c/100)).toFixed(2)
-            //     console.log('up '+ this.prod[index].UnitPrice);
-                
-            // }
         },500)
     }
 //delete individual line items. 
@@ -110,6 +105,39 @@ export default class MobileProducts extends LightningElement {
     }
 //save products
     saveMobile(){
+        this.showSpinner = true; 
+        let data = [...this.prod];
+        console.log('in save '+ data)
+        createProducts({olList: this.prod})
+        .then(result => {
+            this.prod = result;
+            this.showSpinner = false; 
+            //un comment this if you want to move the flow screen to a next action
+            // let mess = 'success';
+            // const attributeChange = new FlowAttributeChangeEvent('results', mess);
+            // this.dispatchEvent(attributeChange);
+            // this.handleNext(); 
+        }).catch(error=>{
+            console.log(JSON.stringify(error))
+            let message = 'Unknown error';
+            if (Array.isArray(error.body)) {
+                message = error.body.map(e => e.message).join(', ');
+            } else if (typeof error.body.message === 'string') {
+                message = error.body.message;
+            }
+            //un comment this if you want to move the flow screen to a next action
+            // const attributeChangeBad = new FlowAttributeChangeEvent('results', message);
+            // this.dispatchEvent(attributeChangeBad);
+            // this.handleNext(); 
+        })
+    }
+//cancel set values back the original
+    handleCancel(){
+        this.prod = this.backUp;
+    }
 
+    handleNext(){
+        const nextNav = new FlowNavigationNextEvent();
+        this.dispatchEvent(nextNav);
     }
 }

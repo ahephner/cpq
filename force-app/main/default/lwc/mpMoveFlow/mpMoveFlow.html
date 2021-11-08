@@ -1,4 +1,15 @@
 <template>
+    <template if:true={addProducts}>
+        <c-mobile-search></c-mobile-search>
+    </template>
+    <template if:false={addProducts}>
+    <div class="slds-align_absolute-center">
+        <figure>
+            <lightning-icon icon-name="action:new" size="small" onclick={openProducts}
+                        alternative-text="Add Product" title="Add Products"></lightning-icon>
+                        <figcaption>Add Products</figcaption>
+        </figure>
+    </div>
     <div class='slds-scrollable_y target'>
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>
@@ -66,4 +77,5 @@
     <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
     <button class="slds-button slds-button_brand" onclick={saveMobile} title="OK">Save</button>
 </footer>
+</template>
 </template>

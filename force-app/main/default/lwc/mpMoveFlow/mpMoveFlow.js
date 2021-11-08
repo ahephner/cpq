@@ -5,6 +5,7 @@ import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEve
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
+    addProducts = false; 
     @track prod = [] 
     @api backUp = [];
     @api results; 
@@ -175,5 +176,11 @@ export default class MobileProducts extends LightningElement {
     handleNext(){
         const nextNav = new FlowNavigationNextEvent();
         this.dispatchEvent(nextNav);
+    }
+
+    openProducts(){
+        // this.template.querySelector('c-mobile-search').openSearch();
+        this.addProducts = true; 
+        
     }
 }

@@ -1,0 +1,25 @@
+<template>
+ <template if:true={loaded}>
+    <div class='slds-grid'>
+        <div class='slds-col slds-size_1-of-2'>
+        <div onkeyup={handleKeyUp}>
+                <lightning-input
+                name="enter-search"
+                label="Search when user hits the 'enter' key"
+                type="search"
+            ></lightning-input>
+        <!-- filters here? -->
+        </div>
+    </div>
+        <!-- search Results -->
+        <!--dont let first results push view port-->
+    </div>
+    <footer class="slds-modal__footer slds-align_absolute-center">
+        <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
+        <button class="slds-button slds-button_brand" onclick={handleSave} title="OK">Save</button>
+    </footer>
+</template>
+    <template if:false={loaded}>
+        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+    </template>
+</template>

@@ -1,6 +1,8 @@
 <template>
     <template if:true={addProducts}>
-        <c-mobile-search></c-mobile-search>
+        <c-mobile-search
+                        onnewprod={handleNewProduct}>
+                    </c-mobile-search>
     </template>
     <template if:false={addProducts}>
     <div class="slds-align_absolute-center">

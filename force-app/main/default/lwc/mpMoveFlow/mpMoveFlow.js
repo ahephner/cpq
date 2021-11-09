@@ -90,7 +90,10 @@ export default class MobileProducts extends LightningElement {
     //         this.prod[index].buttonGroup = false; 
     //     }
     // }
-
+    handleNewProduct(prod){
+        console.log('prod '+prod.detail);
+        
+    }
     //Handle value changes
     handleQty(qty){
         let index = this.prod.findIndex(prod => prod.Id === qty.target.name);

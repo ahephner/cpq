@@ -33,7 +33,7 @@ export default class MobileProducts extends LightningElement {
 //setting products from passed in from the flow
     set products(data){
         this.prodData = data; 
-        this.load(this.prodData);
+        this.load(this.prodData);        
     }
     // @api get recordId(){
     //     return this.recId;
@@ -43,6 +43,8 @@ export default class MobileProducts extends LightningElement {
     //     this.rec = val;
     // }
     load(p){
+        console.log('load');
+        
         let readOnly
         let icon
         let showInfo 
@@ -202,6 +204,17 @@ export default class MobileProducts extends LightningElement {
         // this.template.querySelector('c-mobile-search').openSearch();
         this.addProducts = true; 
     }
+
+    handleRemLast(y){
+            let index = this.prod.findIndex(prod => prod.ProductCode === y.detail);  
+            console.log(index);
+             
+            if(index > -1){
+                this.prod.splice(index, 1);
+            }else{
+                return; 
+            }    
+    }
     //New product selected from mobile search
     //!!Unit Cost is Unit Price on pbe. That is the api name. 
     //The lable is list price. 
@@ -211,7 +224,13 @@ export default class MobileProducts extends LightningElement {
         this.productId = prod.detail.Product2Id;
         this.pbeId = prod.detail.Id;
         this.unitCost = prod.detail.UnitPrice
-        this.getPrevSale();
+        //check if they already have it on the order
+        let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
+        if(alreadyThere < 0){
+            this.getPrevSale();
+        }else{
+            return; 
+        }
     }
 
     async getPrevSale(){

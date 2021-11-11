@@ -2,7 +2,8 @@
     <template if:true={addProducts}>
         <c-mobile-search
                         onnewprod={handleNewProduct}
-                        onclose={handleCloseSearch}>
+                        onclose={handleCloseSearch}
+                        onremove={handleRemLast}>
                     </c-mobile-search>
     </template>
     <template if:false={addProducts}>
@@ -76,7 +77,7 @@
     <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
 </template> 
 </div>
-<footer class="slds-modal__footer">
+<footer class="slds-modal__footer slds-align_absolute-center">
     <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
     <button class="slds-button slds-button_brand" onclick={saveMobile} title="OK">Save</button>
 </footer>

@@ -27,9 +27,9 @@
                     </div> 
                     <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
                         <figure class='slds-float_right'>
-                            <lightning-icon icon-name="standard:task2" size="small" name={x.Id} 
-                            onclick={addProduct} alternative-text="Add Product" title="Add Products"></lightning-icon>
-                                        <figcaption>Add</figcaption>
+                            <lightning-button-icon icon-name={x.icon} size="small" name={x.Id} 
+                                onclick={findProduct} alternative-text="Add Product" title="Add Products"></lightning-button-icon>
+                                        <figcaption>{x.title}</figcaption>
                         </figure>
                     </div> 
                 <!-- Unit Price -->

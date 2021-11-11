@@ -17,6 +17,8 @@
             <propertyType name="T" extends="SObject" label="Input Type" description="Generic sObject data type used for input sObject properties" />
             <property name="products" type="{T[]}" label="Products" description='List of Products'  />
             <property name='results' type='string' label='results' description='to indicate to the flow if the save was successful'/>
+            <property name="oppId" type="String" />
+            <property name="totalPrice" type="Integer" label='totalPrice' description='total price of order'/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

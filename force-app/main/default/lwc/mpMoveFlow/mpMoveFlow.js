@@ -1,57 +1,112 @@
 import { deleteRecord } from 'lightning/uiRecordApi';
 import { LightningElement, api, track } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
+import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 export default class MobileProducts extends LightningElement {
-    showDelete = false; 
+    showDelete = false;  
+    addProducts = false; 
     @track prod = [] 
     @api backUp = [];
     @api results; 
+    @api oppId; 
+    @api totalPrice;
+    recId;
     prodData; 
-    showSpinner = true; 
+    showSpinner = true;
+    productCode;
+    productName;
+    productId;
+    pbeId;
+    unitCost;
+
+    //on screen load
     connectedCallback(){
-        //this.load(this.products);
-        //this.load(this.prod); 
+        //console.log('load '+this.oppId)
     }
-    
+    //get products passed in from the flow
     @api 
     get products(){
         return this.prodData || [];
     } 
-
+//setting products from passed in from the flow
     set products(data){
         this.prodData = data; 
-        console.log(1, this.prodData)
         this.load(this.prodData);
     }
+    // @api get recordId(){
+    //     return this.recId;
+    // }
+
+    // set recordId(val){
+    //     this.rec = val;
+    // }
     load(p){
         let readOnly
         let icon
-        let buttonGroup
+        let showInfo 
         this.prod =  p.map(x=>{
             readOnly = true;
-            buttonGroup = false; 
+            showInfo = false;  
             icon = 'utility:edit'
-            return {...x, readOnly, icon, buttonGroup}
+            return {...x, readOnly, icon, showInfo}
         })
         this.backUp = [...this.prod]
         this.showSpinner = false; 
     }
 
-    edit(e){
-        let index = this.prod.findIndex(x=>x.Id === e.target.name)
-        //need to do more in here like show a delete button.
-        if(this.prod[index].icon === 'utility:edit'){
-            this.prod[index].icon = 'utility:close';
-            this.prod[index].readOnly = false;
-            this.prod[index].buttonGroup = true
-        } else{
-            this.prod[index].icon = 'utility:edit';
-            this.prod[index].readOnly = true;
-            this.prod[index].buttonGroup = false; 
+    handleAction(e){
+        let action = e.detail.value
+        let index = this.prod.findIndex(x => x.Id === e.target.name)
+        
+        switch (action) {
+            case 'Edit':
+                this.edit(index)
+                break;
+            case 'Info':
+                this.info(index)
+                break; 
+            case 'Delete':
+                this.handleDelete(index);
+                break; 
+            default:
+                console.log('default action');
+                break;
         }
+        
     }
+       edit(index){
+           if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
+            this.prod[index].readOnly = true;
+           }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === true){
+            this.prod[index].showInfo = false; 
+            this.prod[index].readOnly = false;
+           }else{
+               this.prod[index].readOnly = false
+           }
+       }
+
+       info(index){
+           if(this.prod[index].showInfo === true){
+            this.prod[index].showInfo = false;
+           }else{
+            this.prod[index].showInfo = true; 
+           }
+       }
+    // edit(e){
+    //     let index = this.prod.findIndex(x=>x.Id === e.target.name)
+    //     //need to do more in here like show a delete button.
+    //     if(this.prod[index].icon === 'utility:edit'){
+    //         this.prod[index].icon = 'utility:close';
+    //         this.prod[index].readOnly = false;
+    //         this.prod[index].buttonGroup = true
+    //     } else{
+    //         this.prod[index].icon = 'utility:edit';
+    //         this.prod[index].readOnly = true;
+    //         this.prod[index].buttonGroup = false; 
+    //     }
+    // }
 
     //Handle value changes
     handleQty(qty){
@@ -91,8 +146,7 @@ export default class MobileProducts extends LightningElement {
         },500)
     }
 //delete individual line items. 
-    handleDelete(x){
-        let index = this.prod.findIndex(prod => prod.Id === x.target.name)
+    handleDelete(index){
         let id = this.prod[index].Id;
 
         if(index>-1){
@@ -112,8 +166,11 @@ export default class MobileProducts extends LightningElement {
         .then(result => {
             this.prod = result;
             this.showSpinner = false; 
+            let total = this.orderTotal(this.prod);
             //un comment this if you want to move the flow screen to a next action
             let mess = 'success';
+            const attChange = new FlowAttributeChangeEvent('totalPrice', total);
+            this.dispatchEvent(attChange); 
             const attributeChange = new FlowAttributeChangeEvent('results', mess);
             this.dispatchEvent(attributeChange);
             this.handleNext(); 
@@ -139,5 +196,83 @@ export default class MobileProducts extends LightningElement {
     handleNext(){
         const nextNav = new FlowNavigationNextEvent();
         this.dispatchEvent(nextNav);
+    }
+
+    openProducts(){
+        // this.template.querySelector('c-mobile-search').openSearch();
+        this.addProducts = true; 
+    }
+    //New product selected from mobile search
+    //!!Unit Cost is Unit Price on pbe. That is the api name. 
+    //The lable is list price. 
+    handleNewProduct(prod){
+        this.productCode = prod.detail.ProductCode;
+        this.productName = prod.detail.Name;
+        this.productId = prod.detail.Product2Id;
+        this.pbeId = prod.detail.Id;
+        this.unitCost = prod.detail.UnitPrice
+        this.getPrevSale();
+    }
+
+    async getPrevSale(){
+        let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
+        if(newProd !=null){
+            console.log('found '+newProd);
+            
+            this.prod =[
+                ...this.prod,{
+                    sObjectType: 'OpportunityLineItem',
+                    Id: '',
+                    PricebookEntryId: this.pbeId,
+                    Product2Id: this.productId,
+                    name: this.productName,
+                    Product_Name__c: this.productName,
+                    ProductCode: this.productCode,
+                    Quantity: 0,
+                    UnitPrice:0,
+                    CPQ_Margin__c: 0,
+                    Cost__c: this.unitCost,
+                    lastPaid: newProd.Unit_Price__c,
+                    lastMarg: (newProd.Margin__c / 100),
+                    TotalPrice: 0,
+                    readOnly: false,
+                    OpportunityId: this.oppId
+                }
+            ]
+        }else{
+            console.log('didnt find');
+            
+            this.prod = [
+                ...this.prod, {
+                    sObjectType: 'OpportunityLineItem',
+                    PricebookEntryId: this.pbeId,
+                    Id: '',
+                    Product2Id: this.productId,
+                    name: this.productName,
+                    Product_Name__c: this.productName,
+                    ProductCode: this.productCode,
+                    Quantity: 0,
+                    UnitPrice: 0,
+                    lastPaid: 0,
+                    lastMarg: 0, 
+                    CPQ_Margin__c: 0,
+                    Cost__c: this.unitCost,
+                    TotalPrice: 0,
+                    readOnly:false,
+                    OpportunityId: this.oppId
+                }
+            ]
+        }
+    }
+
+    orderTotal(products){
+        const sum = products.reduce(function(a,b){
+            return a + b.UnitPrice;
+        },0)
+        return sum; 
+    }
+
+    handleCloseSearch(){    
+        this.addProducts = false; 
     }
 }

@@ -1,7 +1,8 @@
 <template>
     <template if:true={addProducts}>
         <c-mobile-search
-                        onnewprod={handleNewProduct}>
+                        onnewprod={handleNewProduct}
+                        onclose={handleCloseSearch}>
                     </c-mobile-search>
     </template>
     <template if:false={addProducts}>

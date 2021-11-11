@@ -21,15 +21,15 @@
                 slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
                 <div class='slds-grid slds-wrap'>
                     <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                        <h2 class="slds-text-heading_medium slds-m-bottom_medium">
+                        <h6 class=" slds-m-bottom_medium">
                             <lightning-input value={x.Name} type='text' readonly></lightning-input>
-                        </h2>
+                        </h6>
                     </div> 
                     <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
-                        <figure>
-                            <lightning-icon icon-name="standard:task2" size="small" name={x.ProductCode} 
+                        <figure class='slds-float_right'>
+                            <lightning-icon icon-name="standard:task2" size="small" name={x.Id} 
                             onclick={addProduct} alternative-text="Add Product" title="Add Products"></lightning-icon>
-                                        <figcaption>Add Product</figcaption>
+                                        <figcaption>Add</figcaption>
                         </figure>
                     </div> 
                 <!-- Unit Price -->
@@ -50,7 +50,7 @@
         <!--dont let first results push view port-->
     </div>
     <footer class="slds-modal__footer slds-align_absolute-center">
-        <button class="slds-button slds-button_brand" onclick={handleSave} title="OK">Done</button>
+        <button class="slds-button slds-button_brand" onclick={handleDone} title="Done">Done</button>
     </footer>
 </template>
     <template if:false={loaded}>

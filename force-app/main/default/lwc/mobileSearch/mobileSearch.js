@@ -1,6 +1,7 @@
 import { LightningElement, api } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
 
+
 export default class MobileSearch extends LightningElement {
     queryTerm;
     cat = 'All';  
@@ -40,13 +41,18 @@ export default class MobileSearch extends LightningElement {
                     
             })
     }
-
+    findProduct(sel){
+        let index = this.prod.findIndex(item => item.Id === sel)
+        return this.prod[index];
+    }
     addProduct(e){
         let pc = e.target.name;
         //console.log('pc '+pc);
-        
+        const pd = this.findProduct(pc);
+        console.log('pd '+pd.Name, 1);
+                
         this.dispatchEvent(new CustomEvent('newprod',{
-            detail: pc
+            detail: pd
         }))
     }
 
@@ -54,8 +60,11 @@ export default class MobileSearch extends LightningElement {
     showResult(mess){
         console.log('mess ' +mess); 
     }
-    handleSave(){
-        console.log('save');
+    handleDone(){
+        console.log('dispatch');
+        
+        this.loaded = false;
+        this.dispatchEvent(new CustomEvent('close'));
         
     }
 

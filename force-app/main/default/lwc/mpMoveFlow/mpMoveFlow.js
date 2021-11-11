@@ -11,6 +11,7 @@ export default class MobileProducts extends LightningElement {
     @api backUp = [];
     @api results; 
     @api oppId; 
+    @api totalPrice;
     recId;
     prodData; 
     showSpinner = true;
@@ -165,8 +166,11 @@ export default class MobileProducts extends LightningElement {
         .then(result => {
             this.prod = result;
             this.showSpinner = false; 
+            let total = this.orderTotal(this.prod);
             //un comment this if you want to move the flow screen to a next action
             let mess = 'success';
+            const attChange = new FlowAttributeChangeEvent('totalPrice', total);
+            this.dispatchEvent(attChange); 
             const attributeChange = new FlowAttributeChangeEvent('results', mess);
             this.dispatchEvent(attributeChange);
             this.handleNext(); 
@@ -259,6 +263,13 @@ export default class MobileProducts extends LightningElement {
                 }
             ]
         }
+    }
+
+    orderTotal(products){
+        const sum = products.reduce(function(a,b){
+            return a + b.UnitPrice;
+        },0)
+        return sum; 
     }
 
     handleCloseSearch(){    

@@ -11,8 +11,26 @@
         </div>
     </div>
 <!-- filters here? -->
-    <div class='sds-col slds-size_1-of-2'></div>
-    
+   
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_medium'>
+            <div class="slds-p-around_medium lgc-bg">
+                <lightning-button-menu alternative-text="Show menu" variant="border-filled"
+                                       icon-size="xx-small"  onselect={handleFilter} icon-name="utility:filterList">
+                    <lightning-menu-item value="Family" label="Product Family"></lightning-menu-item>
+                    <lightning-menu-item value="Cat" label="Category"></lightning-menu-item>
+                </lightning-button-menu>
+            </div>
+        </div>    
+   
+       <!-- <template if:true={showFam}>
+        <lightning-combobox
+        name="prodFamily"
+        label="Product Family"
+        value={pf}
+        options={pfOptions}
+        onchange={pfChange} ></lightning-combobox>
+       </template> -->
+    <div class='slds-scrollable_y target'>
         <!-- search Results -->
         <div class='slds-col slds-size_1-of-1 outer'>
         <lightning-layout multiple-rows="true">
@@ -55,6 +73,7 @@
         </lightning-layout>
         </div>
         <!--dont let first results push view port-->
+    </div>
     </div>
     <footer class="slds-modal__footer slds-align_absolute-center">
         <button class="slds-button slds-button_brand" onclick={handleDone} title="Done">Done</button>

@@ -6,7 +6,8 @@ import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEve
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
-    addProducts = false; 
+    addProducts = false;
+    wasEdited = false;  
     @track prod = [] 
     @api backUp = [];
     @api results; 
@@ -20,7 +21,7 @@ export default class MobileProducts extends LightningElement {
     productId;
     pbeId;
     unitCost;
-
+    
     //on screen load
     connectedCallback(){
         this.showSpinner = false; 
@@ -113,6 +114,7 @@ export default class MobileProducts extends LightningElement {
 
     //Handle value changes
     handleQty(qty){
+        this.allowSave();
         let index = this.prod.findIndex(prod => prod.Id === qty.target.name);
         this.prod[index].Quantity = Number(qty.detail.value);
         //handle total price change
@@ -122,6 +124,7 @@ export default class MobileProducts extends LightningElement {
     }
 
     handlePrice(p){
+        this.allowSave();
         window.clearTimeout(this.delay);
         let index = this.prod.findIndex(prod => prod.Id === p.target.name);
         this.delay = setTimeout(()=>{
@@ -135,6 +138,7 @@ export default class MobileProducts extends LightningElement {
 
     handleMargin(m){
         //window.clearTimeout(this.delay)
+        this.allowSave();
         let index = this.prod.findIndex(prod => prod.Id === m.target.name);
         console.log('index '+index);
         
@@ -194,6 +198,7 @@ export default class MobileProducts extends LightningElement {
 //cancel set values back the original
     handleCancel(){
         this.prod = this.backUp;
+        this.wasEdited = false; 
     }
 
     handleNext(){
@@ -284,14 +289,19 @@ export default class MobileProducts extends LightningElement {
             ]
         }
     }
-
+//handle the order total and pass this back to the flow to display on success screen
     orderTotal(products){
         const sum = products.reduce(function(a,b){
             return a + b.UnitPrice;
         },0)
         return sum; 
     }
-
+//handle show the save button options
+    allowSave(){
+        if(!this.wasEdited){
+            this.wasEdited = true; 
+        }
+    }
     handleCloseSearch(){    
         this.addProducts = false; 
     }

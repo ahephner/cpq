@@ -9,9 +9,19 @@ export default class MobileSearch extends LightningElement {
     priceBookId = '01s410000077vSKAAY'; 
     @track prod =[]; 
     loaded = false;
+    showFam = false; 
     
     connectedCallback(){
         this.loaded = true; 
+    }
+//product family options needs to be fixed so it grabs all on load
+    get pfOptions(){
+        return [
+            {label: 'All', value:'All'}, 
+            {label: 'Foliar-Pak', value:'Foliar-Pak'},
+            {label: 'BASF', value:'BASF'}, 
+            {label: 'FMC', value:'FMC'}
+        ]
     }
     //searchTerm
     //!!!!!!!!!!!!!!NEED TO FIX IF STRNG IS EMPTY OR BLANK
@@ -21,6 +31,24 @@ export default class MobileSearch extends LightningElement {
             this.queryTerm = evt.target.value;
             this.search();
         }
+    }
+    handleFilter(fil){
+        let filter = fil.detail.value;
+        switch(filter){
+            case 'Family':
+                this.showFam = true;
+                break;
+            case 'Cat': 
+                console.log('cat');
+                break;
+            default:
+                console.log('default');
+                break;
+                    
+        }
+    }
+    pfChange(event){
+        this.pf = event.detail.value; 
     }
     search(){
         this.loaded = false; 

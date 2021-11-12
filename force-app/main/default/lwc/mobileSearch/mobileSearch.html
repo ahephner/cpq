@@ -20,18 +20,25 @@
                 <lightning-layout-item size="12" key={x.Id} name={x.ProductCode} class="slds-box slds-p-around_none 
                 slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
                 <div class='slds-grid slds-wrap'>
-                    <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                        <h6 class=" slds-m-bottom_medium">
-                            <lightning-input value={x.Name} type='text' readonly></lightning-input>
-                        </h6>
-                    </div> 
-                    <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
-                        <figure class='slds-float_right'>
-                            <lightning-button-icon icon-name={x.icon} size="small" name={x.Id} 
-                                onclick={findProduct} alternative-text="Add Product" title="Add Products"></lightning-button-icon>
-                                        <figcaption>{x.title}</figcaption>
-                        </figure>
-                    </div> 
+                    <div class='slds-col slds-size_1-of-1 slds-m-left_x-small'>
+                            <!--inner grid-->
+                        <div class='slds-grid'>
+                            <div class='slds-col slds-size_10-of-12'>
+                                <h6 class=" slds-m-bottom_medium">
+                                    <lightning-input value={x.Name} type='text' readonly></lightning-input>
+                                </h6>
+                            </div>
+                            <div class='slds-col slds-size_1-of-12 slds-m-left_x-small slds-m-top_x-small'>
+                                <figure class='slds-float_right'>
+                                    <lightning-icon icon-name={x.icon} size="small" name={x.Id} 
+                                        onclick={findProduct} alternative-text="Add Product" title="Add Products"></lightning-icon>
+                                                <figcaption>{x.title}</figcaption>
+                                </figure>
+                            </div> 
+                        </div> 
+                    <!--finish inner grid -->
+                    </div>
+
                 <!-- Unit Price -->
                         <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
                             <lightning-input value={x.Product2.Floor_Price__c} type='number' formater='currency' step="0.01"

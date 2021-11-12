@@ -23,6 +23,7 @@ export default class MobileProducts extends LightningElement {
 
     //on screen load
     connectedCallback(){
+        this.showSpinner = false; 
         //console.log('load '+this.oppId)
     }
     //get products passed in from the flow

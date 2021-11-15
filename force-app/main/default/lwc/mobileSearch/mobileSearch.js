@@ -14,15 +14,7 @@ export default class MobileSearch extends LightningElement {
     connectedCallback(){
         this.loaded = true; 
     }
-//product family options needs to be fixed so it grabs all on load
-    get pfOptions(){
-        return [
-            {label: 'All', value:'All'}, 
-            {label: 'Foliar-Pak', value:'Foliar-Pak'},
-            {label: 'BASF', value:'BASF'}, 
-            {label: 'FMC', value:'FMC'}
-        ]
-    }
+
     //searchTerm
     //!!!!!!!!!!!!!!NEED TO FIX IF STRNG IS EMPTY OR BLANK
     handleKeyUp(evt) {
@@ -32,23 +24,20 @@ export default class MobileSearch extends LightningElement {
             this.search();
         }
     }
-    handleFilter(fil){
-        let filter = fil.detail.value;
-        switch(filter){
-            case 'Family':
-                this.showFam = true;
-                break;
-            case 'Cat': 
-                console.log('cat');
-                break;
-            default:
-                console.log('default');
-                break;
-                    
-        }
+
+    openFilters(){
+        console.log('open filters');
+        this.template.querySelector('c-mobile-search-filters').openFilter();
     }
-    pfChange(event){
-        this.pf = event.detail.value; 
+
+    updateFilters(event){
+
+        this.cat = event.detail.cat;
+        this.pf = event.detail.pf; 
+        console.log('mobile search ');
+        console.log('cat '+this.cat);
+        console.log('pf '+this.pf);
+        
     }
     search(){
         this.loaded = false; 

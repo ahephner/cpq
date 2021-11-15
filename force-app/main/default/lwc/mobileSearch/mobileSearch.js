@@ -8,6 +8,7 @@ export default class MobileSearch extends LightningElement {
     pf = 'All';
     priceBookId = '01s410000077vSKAAY'; 
     @track prod =[]; 
+    @track items =[]; 
     loaded = false;
     showFam = false; 
     
@@ -26,18 +27,40 @@ export default class MobileSearch extends LightningElement {
     }
 
     openFilters(){
-        console.log('open filters');
+        if(this.items){
+            this.items = []
+        }
         this.template.querySelector('c-mobile-search-filters').openFilter();
     }
 
     updateFilters(event){
-
         this.cat = event.detail.cat;
-        this.pf = event.detail.pf; 
-        console.log('mobile search ');
-        console.log('cat '+this.cat);
-        console.log('pf '+this.pf);
-        
+        let catLab = event.detail.catLab
+        this.pf = event.detail.pf;  
+        this.handlePills(catLab, this.pf);
+    }
+    handlePills(cat, pf){
+        const catPill = cat !='All' ? {label:cat, name:'catPill'} : undefined;
+        const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : undefined;
+        if(catPill && pfPill){
+            this.items.push(catPill, pfPill);
+        }else if(catPill  && !pfPill){
+            this.items.push(catPill);
+        }else if(!catPill && pfPill){
+            this.items.push(pfPill);
+        }else{
+            this.items = [];
+        }
+    }
+    removePill(pill){
+        let type = pill.detail.item.name
+        let index = pill.detail.index;
+        this.items.splice(index, 1);
+        if(type === 'catPill'){
+            this.cat = 'All'
+        }else{
+            this.pf = 'All';
+        }        
     }
     search(){
         this.loaded = false; 

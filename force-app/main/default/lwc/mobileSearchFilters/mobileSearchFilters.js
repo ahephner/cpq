@@ -4,6 +4,9 @@ export default class MobileSearchFilters extends LightningElement {
     exposed = false; 
     pf = 'All';
     cat = 'All';
+    pfLabel = 'All';
+    catLabel ='All';
+
     @api
     openFilter(){
         this.exposed = true; 
@@ -38,15 +41,16 @@ export default class MobileSearchFilters extends LightningElement {
     }
     catChange(x){
         this.cat = x.detail.value; 
+        this.catLabel = x.target.options.find(opt => opt.value === x.detail.value).label; 
         
     }
     pfChange(x){
         this.pf = x.detail.value;  
-        
     }
 
-    updateFilter(x,y){
-        let filters = {cat: this.cat, pf: this.pf}
+    updateFilter(){
+        let filters = {cat: this.cat, catLab: this.catLabel, 
+                       pf: this.pf}
         
         
         const updateFilter = new CustomEvent('filterchange',{detail: filters});

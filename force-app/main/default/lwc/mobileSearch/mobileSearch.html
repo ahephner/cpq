@@ -23,7 +23,14 @@
                 class="slds-m-left_x-small"></lightning-button>
             </div>
         </div>    
-   
+<!--Display chosen filters-->
+<template if:true={items}>
+    <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
+        <p>Filters applied:</p>
+        <lightning-pill-container items={items} onitemremove={removePill}></lightning-pill-container>
+       </div>    
+</template>
+
     <div class='slds-scrollable_y target'>
         <!-- search Results -->
         <div class='slds-col slds-size_1-of-1 outer'>

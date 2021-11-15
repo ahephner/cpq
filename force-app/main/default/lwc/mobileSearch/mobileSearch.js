@@ -11,7 +11,8 @@ export default class MobileSearch extends LightningElement {
     @track items =[]; 
     loaded = false;
     showFam = false; 
-    
+    showFilters = false; 
+
     connectedCallback(){
         this.loaded = true; 
     }
@@ -24,6 +25,12 @@ export default class MobileSearch extends LightningElement {
             this.queryTerm = evt.target.value;
             this.search();
         }
+    }
+    //handle the search button click
+    handleSearch(){
+        var input = this.template.querySelector('lightning-input')
+        this.queryTerm = input.value; 
+        this.search();  
     }
 
     openFilters(){
@@ -51,6 +58,7 @@ export default class MobileSearch extends LightningElement {
         }else{
             this.items = [];
         }
+        this.showFilters = true; 
     }
     removePill(pill){
         let type = pill.detail.item.name

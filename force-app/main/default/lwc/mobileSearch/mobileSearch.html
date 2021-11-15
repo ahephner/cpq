@@ -14,17 +14,21 @@
             ></lightning-input>
         </div>
     </div>
-<!-- Open Filters Here -->
-   
-        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
+<!-- button group -->
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_small'>
             <div class="slds-p-around_medium lgc-bg">
-                <lightning-button label="" title="add filters" 
-                icon-name="utility:filterList" onclick={openFilters} 
-                class="slds-m-left_x-small"></lightning-button>
+                <lightning-button-group>
+                    <!-- search -->
+                    <lightning-button label="Search" onclick={handleSearch}></lightning-button>
+                    <!-- filter button -->
+                    <lightning-button-icon variant="border-filled"
+                    icon-name="utility:filterList" onclick={openFilters} ></lightning-button-icon>
+                </lightning-button-group>
+
             </div>
         </div>    
 <!--Display chosen filters-->
-<template if:true={items}>
+<template if:true={showFilters}>
     <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
         <p>Filters applied:</p>
         <lightning-pill-container items={items} onitemremove={removePill}></lightning-pill-container>

@@ -4,6 +4,10 @@
 }
 
 .target{
-    height: 45%;
+    height: 40rem;
     width: 100%;
+}
+
+.icon-figcaption{
+    text-align: center;
 }

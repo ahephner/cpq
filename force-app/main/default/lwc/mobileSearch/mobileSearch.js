@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
 
 
@@ -7,12 +7,15 @@ export default class MobileSearch extends LightningElement {
     cat = 'All';  
     pf = 'All';
     priceBookId = '01s410000077vSKAAY'; 
-    prod; 
+    @track prod =[]; 
+    @track items =[]; 
     loaded = false;
+    showFam = false; 
     
     connectedCallback(){
         this.loaded = true; 
     }
+
     //searchTerm
     //!!!!!!!!!!!!!!NEED TO FIX IF STRNG IS EMPTY OR BLANK
     handleKeyUp(evt) {
@@ -22,16 +25,60 @@ export default class MobileSearch extends LightningElement {
             this.search();
         }
     }
+
+    openFilters(){
+        if(this.items){
+            this.items = []
+        }
+        this.template.querySelector('c-mobile-search-filters').openFilter();
+    }
+
+    updateFilters(event){
+        this.cat = event.detail.cat;
+        let catLab = event.detail.catLab
+        this.pf = event.detail.pf;  
+        this.handlePills(catLab, this.pf);
+    }
+    handlePills(cat, pf){
+        const catPill = cat !='All' ? {label:cat, name:'catPill'} : undefined;
+        const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : undefined;
+        if(catPill && pfPill){
+            this.items.push(catPill, pfPill);
+        }else if(catPill  && !pfPill){
+            this.items.push(catPill);
+        }else if(!catPill && pfPill){
+            this.items.push(pfPill);
+        }else{
+            this.items = [];
+        }
+    }
+    removePill(pill){
+        let type = pill.detail.item.name
+        let index = pill.detail.index;
+        this.items.splice(index, 1);
+        if(type === 'catPill'){
+            this.cat = 'All'
+        }else{
+            this.pf = 'All';
+        }        
+    }
     search(){
         this.loaded = false; 
         searchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})
             .then((results)=>{
-                results.forEach(x =>{
-                    x.Name = x.Product2.Name,
-                    x.ProductCode = x.Product2.ProductCode
+                let Name;
+                let ProductCode
+                let icon;
+                let title
+                this.prod = results.map(x =>{
+                    Name = x.Product2.Name,
+                    ProductCode = x.Product2.ProductCode
+                    icon = 'action:new'
+                    title = ''
+                    return {...x, Name, ProductCode, icon, title}
                 })
-                this.prod = results; 
-                console.log(JSON.stringify(this.prod))
+                //this.prod = results; 
+                //console.log(JSON.stringify(this.prod))
                 
             }).catch((error)=>{
                 this.error = error;
@@ -41,21 +88,37 @@ export default class MobileSearch extends LightningElement {
                     
             })
     }
+    //helper function finds selected product and changes button. 
     findProduct(sel){
-        let index = this.prod.findIndex(item => item.Id === sel)
-        return this.prod[index];
+        let index = this.prod.findIndex(item => item.Id === sel.target.name)
+        
+        if(this.prod[index].icon==='action:new'){
+            this.prod[index].icon = 'action:approval'
+            this.prod[index].title = 'added!'
+            this.addProduct(this.prod[index]);
+        }else{
+            this.prod[index].icon = 'action:new'
+            this.prod[index].title = ''
+            this.removeProduct(this.prod[index])
+        }
+        return ;
     }
-    addProduct(e){
-        let pc = e.target.name;
-        //console.log('pc '+pc);
-        const pd = this.findProduct(pc);
-        console.log('pd '+pd.Name, 1);
+    addProduct(product){
+        
+        const pd = product
                 
         this.dispatchEvent(new CustomEvent('newprod',{
             detail: pd
         }))
     }
 
+    removeProduct(sProd){
+        const removeCode = sProd.ProductCode;
+
+        this.dispatchEvent(new CustomEvent('remove',{
+            detail: removeCode
+        }))
+    }
     @api
     showResult(mess){
         console.log('mess ' +mess); 

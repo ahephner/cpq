@@ -1,4 +1,8 @@
 <template>
+<!--Here is the filters page  -->
+<c-mobile-search-filters 
+                        onfilterchange={updateFilters}>
+</c-mobile-search-filters>
  <template if:true={loaded}>
     <div class='slds-grid slds-wrap'>
         <div class='slds-col slds-size_1-of-2'>
@@ -10,9 +14,24 @@
             ></lightning-input>
         </div>
     </div>
-<!-- filters here? -->
-    <div class='sds-col slds-size_1-of-2'></div>
-    
+<!-- Open Filters Here -->
+   
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
+            <div class="slds-p-around_medium lgc-bg">
+                <lightning-button label="" title="add filters" 
+                icon-name="utility:filterList" onclick={openFilters} 
+                class="slds-m-left_x-small"></lightning-button>
+            </div>
+        </div>    
+<!--Display chosen filters-->
+<template if:true={items}>
+    <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
+        <p>Filters applied:</p>
+        <lightning-pill-container items={items} onitemremove={removePill}></lightning-pill-container>
+       </div>    
+</template>
+
+    <div class='slds-scrollable_y target'>
         <!-- search Results -->
         <div class='slds-col slds-size_1-of-1 outer'>
         <lightning-layout multiple-rows="true">
@@ -20,18 +39,25 @@
                 <lightning-layout-item size="12" key={x.Id} name={x.ProductCode} class="slds-box slds-p-around_none 
                 slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
                 <div class='slds-grid slds-wrap'>
-                    <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                        <h6 class=" slds-m-bottom_medium">
-                            <lightning-input value={x.Name} type='text' readonly></lightning-input>
-                        </h6>
-                    </div> 
-                    <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
-                        <figure class='slds-float_right'>
-                            <lightning-icon icon-name="standard:task2" size="small" name={x.Id} 
-                            onclick={addProduct} alternative-text="Add Product" title="Add Products"></lightning-icon>
-                                        <figcaption>Add</figcaption>
-                        </figure>
-                    </div> 
+                    <div class='slds-col slds-size_1-of-1 slds-m-left_x-small'>
+                            <!--inner grid-->
+                        <div class='slds-grid'>
+                            <div class='slds-col slds-size_10-of-12'>
+                                <h6 class=" slds-m-bottom_medium">
+                                    <lightning-input value={x.Name} type='text' readonly></lightning-input>
+                                </h6>
+                            </div>
+                            <div class='slds-col slds-size_1-of-12 slds-m-left_x-small slds-m-top_x-small'>
+                                <figure class='slds-float_right'>
+                                    <lightning-icon icon-name={x.icon} size="small" name={x.Id} 
+                                        onclick={findProduct} alternative-text="Add Product" title="Add Products"></lightning-icon>
+                                                <figcaption>{x.title}</figcaption>
+                                </figure>
+                            </div> 
+                        </div> 
+                    <!--finish inner grid -->
+                    </div>
+
                 <!-- Unit Price -->
                         <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
                             <lightning-input value={x.Product2.Floor_Price__c} type='number' formater='currency' step="0.01"
@@ -48,6 +74,7 @@
         </lightning-layout>
         </div>
         <!--dont let first results push view port-->
+    </div>
     </div>
     <footer class="slds-modal__footer slds-align_absolute-center">
         <button class="slds-button slds-button_brand" onclick={handleDone} title="Done">Done</button>

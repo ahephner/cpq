@@ -6,7 +6,8 @@ import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEve
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
-    addProducts = false; 
+    addProducts = false;
+    wasEdited = false;  
     @track prod = [] 
     @api backUp = [];
     @api results; 
@@ -20,9 +21,10 @@ export default class MobileProducts extends LightningElement {
     productId;
     pbeId;
     unitCost;
-
+    
     //on screen load
     connectedCallback(){
+        this.showSpinner = false; 
         //console.log('load '+this.oppId)
     }
     //get products passed in from the flow
@@ -33,7 +35,7 @@ export default class MobileProducts extends LightningElement {
 //setting products from passed in from the flow
     set products(data){
         this.prodData = data; 
-        this.load(this.prodData);
+        this.load(this.prodData);        
     }
     // @api get recordId(){
     //     return this.recId;
@@ -43,6 +45,8 @@ export default class MobileProducts extends LightningElement {
     //     this.rec = val;
     // }
     load(p){
+        console.log('load');
+        
         let readOnly
         let icon
         let showInfo 
@@ -110,6 +114,7 @@ export default class MobileProducts extends LightningElement {
 
     //Handle value changes
     handleQty(qty){
+        this.allowSave();
         let index = this.prod.findIndex(prod => prod.Id === qty.target.name);
         this.prod[index].Quantity = Number(qty.detail.value);
         //handle total price change
@@ -119,6 +124,7 @@ export default class MobileProducts extends LightningElement {
     }
 
     handlePrice(p){
+        this.allowSave();
         window.clearTimeout(this.delay);
         let index = this.prod.findIndex(prod => prod.Id === p.target.name);
         this.delay = setTimeout(()=>{
@@ -132,6 +138,7 @@ export default class MobileProducts extends LightningElement {
 
     handleMargin(m){
         //window.clearTimeout(this.delay)
+        this.allowSave();
         let index = this.prod.findIndex(prod => prod.Id === m.target.name);
         console.log('index '+index);
         
@@ -191,6 +198,7 @@ export default class MobileProducts extends LightningElement {
 //cancel set values back the original
     handleCancel(){
         this.prod = this.backUp;
+        this.wasEdited = false; 
     }
 
     handleNext(){
@@ -202,6 +210,17 @@ export default class MobileProducts extends LightningElement {
         // this.template.querySelector('c-mobile-search').openSearch();
         this.addProducts = true; 
     }
+
+    handleRemLast(y){
+            let index = this.prod.findIndex(prod => prod.ProductCode === y.detail);  
+            console.log(index);
+             
+            if(index > -1){
+                this.prod.splice(index, 1);
+            }else{
+                return; 
+            }    
+    }
     //New product selected from mobile search
     //!!Unit Cost is Unit Price on pbe. That is the api name. 
     //The lable is list price. 
@@ -211,7 +230,13 @@ export default class MobileProducts extends LightningElement {
         this.productId = prod.detail.Product2Id;
         this.pbeId = prod.detail.Id;
         this.unitCost = prod.detail.UnitPrice
-        this.getPrevSale();
+        //check if they already have it on the order
+        let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
+        if(alreadyThere < 0){
+            this.getPrevSale();
+        }else{
+            return; 
+        }
     }
 
     async getPrevSale(){
@@ -264,14 +289,19 @@ export default class MobileProducts extends LightningElement {
             ]
         }
     }
-
+//handle the order total and pass this back to the flow to display on success screen
     orderTotal(products){
         const sum = products.reduce(function(a,b){
             return a + b.UnitPrice;
         },0)
         return sum; 
     }
-
+//handle show the save button options
+    allowSave(){
+        if(!this.wasEdited){
+            this.wasEdited = true; 
+        }
+    }
     handleCloseSearch(){    
         this.addProducts = false; 
     }

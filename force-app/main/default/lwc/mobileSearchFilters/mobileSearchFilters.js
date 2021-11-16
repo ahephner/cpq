@@ -56,6 +56,9 @@ export default class MobileSearchFilters extends LightningElement {
         const updateFilter = new CustomEvent('filterchange',{detail: filters});
         this.dispatchEvent(updateFilter);      
         
-        this.closeModal(); 
+        // this.closeModal(); 
+        //close filter page
+        const closeFilter = new CustomEvent('closefilter');
+        this.dispatchEvent(closeFilter)
     }
 }

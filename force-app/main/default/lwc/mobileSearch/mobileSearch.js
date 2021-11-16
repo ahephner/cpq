@@ -12,7 +12,7 @@ export default class MobileSearch extends LightningElement {
     loaded = false;
     showFam = false; 
     showFilters = false; 
-
+    openFilters = false;
     connectedCallback(){
         this.loaded = true; 
     }
@@ -33,11 +33,15 @@ export default class MobileSearch extends LightningElement {
         this.search();  
     }
 
-    openFilters(){
+    addFilters(){
         if(this.items){
             this.items = []
         }
-        this.template.querySelector('c-mobile-search-filters').openFilter();
+       // this.template.querySelector('c-mobile-search-filters').openFilter();
+       this.openFilters = true; 
+    }
+    closeFilter(){
+        this.openFilters = false;
     }
 
     updateFilters(event){

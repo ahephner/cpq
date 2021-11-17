@@ -108,7 +108,7 @@ export default class ProdSearch extends LightningElement {
                 x.Floor = x.Product2.Floor_Type__c
             })
             this.prod = result;
-            //console.log(JSON.stringify(this.prod));
+            console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
         })
@@ -138,7 +138,8 @@ export default class ProdSearch extends LightningElement {
         const rowUPrice = e.detail.row.UnitPrice; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
-        console.log('price book id '+rowId);
+        const rowAg = e.detail.row.Product2.Agency__c
+        
         
         
         if(rowAction ==='Add'){
@@ -147,7 +148,8 @@ export default class ProdSearch extends LightningElement {
                  productId: rowProductId, 
                  unitPrice: rowUPrice,
                  productName: rowName,
-                 pbeId: rowId
+                 pbeId: rowId,
+                 agencyProduct: rowAg
              }         
     //send it 
             publish(this.messageContext, Opportunity_Builder, payload); 

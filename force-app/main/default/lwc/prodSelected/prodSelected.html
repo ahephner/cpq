@@ -52,7 +52,7 @@
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.ProductCode}
+                            <lightning-input type="number" name={sp.ProductCode} min="1"
                                         value={sp.Quantity} onchange={newQTY}></lightning-input>
                         </div>
                         <!-- user price -->
@@ -60,7 +60,8 @@
                             <lightning-input class='price' type="number"  
                                         label="" name={sp.ProductCode} 
                                         value={sp.UnitPrice} onchange={newPrice} 
-                                        formatter="currency" step="0.01"></lightning-input>
+                                        formatter="currency" step="0.01"
+                                        read-only={sp.agency}></lightning-input>
                         </div>
                         <!-- last paid -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
@@ -76,7 +77,8 @@
                         <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='liquid' type="number"  
                                             label="" name={sp.ProductCode} 
-                                            value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" ></lightning-input>
+                                            value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
+                                            read-only={sp.agency}></lightning-input>
                         </div>
                         <!-- total price -->
                         <div class='slds-col slds-size_1-of-12'>

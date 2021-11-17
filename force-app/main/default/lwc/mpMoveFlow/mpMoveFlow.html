@@ -44,7 +44,7 @@
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
                                 name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
     <!-- Qty -->
-                <lightning-input value={item.Quantity} type='number' label='Qty' 
+                <lightning-input value={item.Quantity} type='number' label='Qty' min="1"
                                 name ={item.Id} read-only={item.readOnly} onchange={handleQty}></lightning-input>
             </div>
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>

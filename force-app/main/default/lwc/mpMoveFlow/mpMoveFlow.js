@@ -21,6 +21,7 @@ export default class MobileProducts extends LightningElement {
     productId;
     pbeId;
     unitCost;
+    agProduct;
     
     //on screen load
     connectedCallback(){
@@ -37,16 +38,8 @@ export default class MobileProducts extends LightningElement {
         this.prodData = data; 
         this.load(this.prodData);        
     }
-    // @api get recordId(){
-    //     return this.recId;
-    // }
 
-    // set recordId(val){
-    //     this.rec = val;
-    // }
     load(p){
-        console.log('load');
-        
         let readOnly
         let icon
         let showInfo 
@@ -57,7 +50,7 @@ export default class MobileProducts extends LightningElement {
             return {...x, readOnly, icon, showInfo}
         })
         this.backUp = [...this.prod]
-        this.showSpinner = false; 
+        this.showSpinner = false;         
     }
 
     handleAction(e){
@@ -81,14 +74,16 @@ export default class MobileProducts extends LightningElement {
         
     }
        edit(index){
-           if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
+           if(this.prod[index].Agency__c){
+                return; 
+           }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
             this.prod[index].readOnly = true;
            }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === true){
             this.prod[index].showInfo = false; 
             this.prod[index].readOnly = false;
            }else{
                this.prod[index].readOnly = false
-           }
+           }  
        }
 
        info(index){
@@ -155,11 +150,11 @@ export default class MobileProducts extends LightningElement {
 //delete individual line items. 
     handleDelete(index){
         let id = this.prod[index].Id;
-
         if(index>-1){
             let cf = confirm('Do you want to delete this line item')
             if(cf === true){
                 this.prod.splice(index, 1);
+            }if(id){
                 deleteRecord(id);
             }
         }
@@ -171,11 +166,10 @@ export default class MobileProducts extends LightningElement {
         console.log('in save '+ data)
         createProducts({olList: this.prod})
         .then(result => {
-            this.prod = result;
             this.showSpinner = false; 
             let total = this.orderTotal(this.prod);
             //un comment this if you want to move the flow screen to a next action
-            let mess = 'success';
+            let mess = result;
             const attChange = new FlowAttributeChangeEvent('totalPrice', total);
             this.dispatchEvent(attChange); 
             const attributeChange = new FlowAttributeChangeEvent('results', mess);
@@ -229,7 +223,10 @@ export default class MobileProducts extends LightningElement {
         this.productName = prod.detail.Name;
         this.productId = prod.detail.Product2Id;
         this.pbeId = prod.detail.Id;
-        this.unitCost = prod.detail.UnitPrice
+        this.unitCost = prod.detail.UnitPrice;
+        this.agProduct = prod.detail.agency;
+        console.log('agProduct '+this.agProduct);
+        
         //check if they already have it on the order
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
         if(alreadyThere < 0){
@@ -242,7 +239,7 @@ export default class MobileProducts extends LightningElement {
     async getPrevSale(){
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         if(newProd !=null){
-            console.log('found '+newProd);
+            
             
             this.prod =[
                 ...this.prod,{
@@ -253,19 +250,18 @@ export default class MobileProducts extends LightningElement {
                     name: this.productName,
                     Product_Name__c: this.productName,
                     ProductCode: this.productCode,
-                    Quantity: 0,
-                    UnitPrice:0,
+                    Quantity: 1,
+                    UnitPrice:this.agProduct ? this.unitCost: 0,
                     CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     lastPaid: newProd.Unit_Price__c,
-                    lastMarg: (newProd.Margin__c / 100),
+                    lastMarg: this.agProduct ? '' : (newProd.Margin__c / 100),
                     TotalPrice: 0,
-                    readOnly: false,
+                    readOnly: this.agProduct ? true : false,
                     OpportunityId: this.oppId
                 }
             ]
         }else{
-            console.log('didnt find');
             
             this.prod = [
                 ...this.prod, {
@@ -276,14 +272,14 @@ export default class MobileProducts extends LightningElement {
                     name: this.productName,
                     Product_Name__c: this.productName,
                     ProductCode: this.productCode,
-                    Quantity: 0,
-                    UnitPrice: 0,
+                    Quantity: 1,
+                    UnitPrice: this.agProduct ? this.unitCost : 0,
                     lastPaid: 0,
-                    lastMarg: 0, 
+                    lastMarg: this.agProduct ? 0: '', 
                     CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     TotalPrice: 0,
-                    readOnly:false,
+                    readOnly: this.agProduct ? true : false,
                     OpportunityId: this.oppId
                 }
             ]
@@ -292,7 +288,7 @@ export default class MobileProducts extends LightningElement {
 //handle the order total and pass this back to the flow to display on success screen
     orderTotal(products){
         const sum = products.reduce(function(a,b){
-            return a + b.UnitPrice;
+            return Number(a) + Number(b.TotalPrice);
         },0)
         return sum; 
     }

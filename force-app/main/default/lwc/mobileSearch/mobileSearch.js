@@ -81,13 +81,15 @@ export default class MobileSearch extends LightningElement {
                 let Name;
                 let ProductCode
                 let icon;
-                let title
+                let title;
+                let agency;
                 this.prod = results.map(x =>{
                     Name = x.Product2.Name,
                     ProductCode = x.Product2.ProductCode
+                    agency = x.Product2.Agency__c
                     icon = 'action:new'
                     title = ''
-                    return {...x, Name, ProductCode, icon, title}
+                    return {...x, Name, ProductCode, icon, title, agency}
                 })
                 //this.prod = results; 
                 //console.log(JSON.stringify(this.prod))
@@ -117,8 +119,8 @@ export default class MobileSearch extends LightningElement {
     }
     addProduct(product){
         
-        const pd = product
-                
+        const pd = product;
+        console.log(JSON.stringify(pd))
         this.dispatchEvent(new CustomEvent('newprod',{
             detail: pd
         }))

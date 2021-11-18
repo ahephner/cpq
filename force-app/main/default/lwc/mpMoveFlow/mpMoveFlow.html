@@ -44,8 +44,8 @@
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
                                 name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
     <!-- Qty -->
-                <lightning-input value={item.Quantity} type='number' label='Qty' min="1"
-                                name ={item.Id} read-only={item.readOnly} onchange={handleQty}></lightning-input>
+                <lightning-input value={item.Quantity} type='number' label='Qty' min={minUnits}
+                                name ={item.Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
             </div>
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
     <!-- Margin -->
@@ -60,13 +60,14 @@
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
                 <lightning-input value='3' type='number' 
                                 name ={item.Id} label='Inventory at my locaton' readonly></lightning-input>
-                <lightning-input value='75' type='number' formatter="currency" label='Last Paid' 
+    <!-- Last Paid -->
+                <lightning-input value={item.lastPaid} type='number' formatter="currency" label='Last Paid' 
                                 name ={item.Id} readonly></lightning-input>
             </div>
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                <lightning-input value='150' type='number' formatter="currency" label='Floor Price' 
+                <lightning-input value={item.Floor_Price__c} type='number' formatter="currency" label='Floor Price' 
                                 name ={item.Id} readonly></lightning-input>
-                <lightning-input value='ATS' type='text'  label='Floor Type' 
+                <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Id} readonly></lightning-input>
             </div>
         </template>

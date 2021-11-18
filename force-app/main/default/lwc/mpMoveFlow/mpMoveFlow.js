@@ -22,7 +22,10 @@ export default class MobileProducts extends LightningElement {
     pbeId;
     unitCost;
     agProduct;
-    
+    floorType;
+    floorPrice; 
+    //minimum amount of units per line item
+    minUnits = 1
     //on screen load
     connectedCallback(){
         this.showSpinner = false; 
@@ -41,16 +44,19 @@ export default class MobileProducts extends LightningElement {
 
     load(p){
         let readOnly
+        let editQTY; 
         let icon
         let showInfo 
         this.prod =  p.map(x=>{
             readOnly = true;
             showInfo = false;  
+            editQTY = true; 
             icon = 'utility:edit'
-            return {...x, readOnly, icon, showInfo}
+            return {...x, readOnly, icon, showInfo, editQTY}
         })
         this.backUp = [...this.prod]
-        this.showSpinner = false;         
+        this.showSpinner = false; 
+       // console.log(JSON.stringify(this.prod))        
     }
 
     handleAction(e){
@@ -73,16 +79,22 @@ export default class MobileProducts extends LightningElement {
         }
         
     }
+    //check if it's an agency product then which fields are editable at this point
        edit(index){
-           if(this.prod[index].Agency__c){
-                return; 
+           if(this.prod[index].Agency__c && this.prod[index].editQTY === true){
+                this.prod[index].editQTY = false;   
+           }else if(this.prod[index].Agency__c && this.prod[index].editQTY === false){
+                this.prod[index].editQTY = true; 
            }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
-            this.prod[index].readOnly = true;
+                this.prod[index].readOnly = true;
+                this.prod[index].editQTY = true;
            }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === true){
-            this.prod[index].showInfo = false; 
-            this.prod[index].readOnly = false;
+                this.prod[index].showInfo = false; 
+                this.prod[index].readOnly = false;
+                this.prod[index].editQTY = false;  
            }else{
-               this.prod[index].readOnly = false
+                this.prod[index].readOnly = false;
+                this.prod[index].editQTY = false; 
            }  
        }
 
@@ -225,7 +237,9 @@ export default class MobileProducts extends LightningElement {
         this.pbeId = prod.detail.Id;
         this.unitCost = prod.detail.UnitPrice;
         this.agProduct = prod.detail.agency;
-        console.log('agProduct '+this.agProduct);
+        this.floorPrice = prod.detail.Product2.Floor_Price__c;
+        this.floorType = prod.detail.Product2.Floor_Type__c;
+        console.log(this.floorType);
         
         //check if they already have it on the order
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
@@ -257,7 +271,10 @@ export default class MobileProducts extends LightningElement {
                     lastPaid: newProd.Unit_Price__c,
                     lastMarg: this.agProduct ? '' : (newProd.Margin__c / 100),
                     TotalPrice: 0,
+                    Floor_Price__c: this.floorPrice,
+                    Floor_Type__c: this.floorType,
                     readOnly: this.agProduct ? true : false,
+                    editQTY: false,
                     OpportunityId: this.oppId
                 }
             ]
@@ -279,7 +296,10 @@ export default class MobileProducts extends LightningElement {
                     CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     TotalPrice: 0,
+                    Floor_Price__c: this.floorPrice,
+                    Floor_Type__c: this.floorType,
                     readOnly: this.agProduct ? true : false,
+                    editQTY: false,
                     OpportunityId: this.oppId
                 }
             ]

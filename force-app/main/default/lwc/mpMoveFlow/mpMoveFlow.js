@@ -245,6 +245,7 @@ export default class MobileProducts extends LightningElement {
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
         if(alreadyThere < 0){
             this.getPrevSale();
+            this.wasEdited = true; 
         }else{
             return; 
         }

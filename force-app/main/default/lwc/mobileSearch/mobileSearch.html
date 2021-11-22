@@ -1,9 +1,13 @@
 <template>
 <!--Here is the filters page  -->
-<c-mobile-search-filters 
-                        onfilterchange={updateFilters}>
-</c-mobile-search-filters>
+<template if:true={openFilters}>
+    <c-mobile-search-filters 
+                            onfilterchange={updateFilters}
+                            onclosefilter={closeFilter}>
+    </c-mobile-search-filters>
+</template>    
  <template if:true={loaded}>
+     <template if:false={openFilters}>
     <div class='slds-grid slds-wrap'>
         <div class='slds-col slds-size_1-of-2'>
         <div onkeyup={handleKeyUp}>
@@ -14,26 +18,30 @@
             ></lightning-input>
         </div>
     </div>
-<!-- Open Filters Here -->
-   
-        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
+<!-- button group -->
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_small'>
             <div class="slds-p-around_medium lgc-bg">
-                <lightning-button label="" title="add filters" 
-                icon-name="utility:filterList" onclick={openFilters} 
-                class="slds-m-left_x-small"></lightning-button>
+                <lightning-button-group>
+                    <!-- search -->
+                    <lightning-button label="Search" onclick={handleSearch}></lightning-button>
+                    <!-- filter button -->
+                    <lightning-button-icon variant="border-filled"
+                    icon-name="utility:filterList" onclick={addFilters} ></lightning-button-icon>
+                </lightning-button-group>
+
             </div>
         </div>    
 <!--Display chosen filters-->
-<template if:true={items}>
+<template if:true={showFilters}>
     <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_x-small'>
         <p>Filters applied:</p>
         <lightning-pill-container items={items} onitemremove={removePill}></lightning-pill-container>
        </div>    
 </template>
 
-    <div class='slds-scrollable_y target'>
         <!-- search Results -->
-        <div class='slds-col slds-size_1-of-1 outer'>
+    <div class='slds-col slds-size_1-of-1 outer'>
+    <div class='slds-scrollable_y target'>
         <lightning-layout multiple-rows="true">
             <template for:each={prod} for:item='x'>
                 <lightning-layout-item size="12" key={x.Id} name={x.ProductCode} class="slds-box slds-p-around_none 
@@ -79,6 +87,7 @@
     <footer class="slds-modal__footer slds-align_absolute-center">
         <button class="slds-button slds-button_brand" onclick={handleDone} title="Done">Done</button>
     </footer>
+    </template>
 </template>
     <template if:false={loaded}>
         <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>

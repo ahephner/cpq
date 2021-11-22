@@ -20,7 +20,7 @@ public with sharing class cpqApex {
       system.debug(pf);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, '
-                + '  Product2.Floor_Type__c, Product2.Floor_Price__c'
+                + '  Product2.Floor_Type__c, Product2.Floor_Price__c, product2.agency__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND'; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
@@ -65,8 +65,8 @@ public with sharing class cpqApex {
     @AuraEnabled
     public static list<OpportunityLineItem> getProducts(string oppId){
         list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode, TotalPrice,
-                                          Quantity, UnitPrice,Margin_Percent__c, Cost__c, OpportunityId from OpportunityLineItem
-                                         	where opportunityId =: oppId];
+                                          product2.agency__c, Quantity, UnitPrice,CPQ_Margin__c, Cost__c, OpportunityId 
+                                          from OpportunityLineItem where opportunityId =: oppId];
         system.debug(opLi);
         return opLi; 
     }
@@ -86,7 +86,7 @@ public with sharing class cpqApex {
             ol.Product2Id = x.Product2Id;
             ol.Quantity = x.Quantity;
             ol.UnitPrice = x.UnitPrice;
-            ol.Margin__c = x.Margin_Percent__c;
+            ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
             //ol.TotalPrice = x.TotalPrice; 
             ol.OpportunityId = x.OpportunityId;
@@ -97,7 +97,7 @@ public with sharing class cpqApex {
             //ol.Product2Id = x.Product2Id;
             ol.Quantity = x.Quantity;
             ol.UnitPrice = x.UnitPrice;
-            ol.Margin__c = x.Margin_Percent__c;
+            ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
             //ol.TotalPrice = x.TotalPrice; 
             //ol.OpportunityId = x.OpportunityId;
@@ -116,8 +116,8 @@ public with sharing class cpqApex {
     }
     
     //will look for similar cat products if nothing above is returned. 
-    @AuraEnabled
-    public static PricebookEntry[] similarProducts(){
-        return null; 
-    }
+  //  @AuraEnabled
+   // public static PricebookEntry[] similarProducts(){
+   //     return null; 
+    //}
 }

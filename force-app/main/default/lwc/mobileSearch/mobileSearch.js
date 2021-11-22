@@ -11,7 +11,8 @@ export default class MobileSearch extends LightningElement {
     @track items =[]; 
     loaded = false;
     showFam = false; 
-    
+    showFilters = false; 
+    openFilters = false;
     connectedCallback(){
         this.loaded = true; 
     }
@@ -25,12 +26,23 @@ export default class MobileSearch extends LightningElement {
             this.search();
         }
     }
+    //handle the search button click
+    handleSearch(){
+        var input = this.template.querySelector('lightning-input')
+        this.queryTerm = input.value; 
+        console.log(this.queryTerm)
+        this.search();  
+    }
 
-    openFilters(){
+    addFilters(){
         if(this.items){
             this.items = []
         }
-        this.template.querySelector('c-mobile-search-filters').openFilter();
+       // this.template.querySelector('c-mobile-search-filters').openFilter();
+       this.openFilters = true; 
+    }
+    closeFilter(){
+        this.openFilters = false;
     }
 
     updateFilters(event){
@@ -51,6 +63,7 @@ export default class MobileSearch extends LightningElement {
         }else{
             this.items = [];
         }
+        this.showFilters = true; 
     }
     removePill(pill){
         let type = pill.detail.item.name
@@ -69,13 +82,15 @@ export default class MobileSearch extends LightningElement {
                 let Name;
                 let ProductCode
                 let icon;
-                let title
+                let title;
+                let agency;
                 this.prod = results.map(x =>{
                     Name = x.Product2.Name,
                     ProductCode = x.Product2.ProductCode
+                    agency = x.Product2.Agency__c
                     icon = 'action:new'
                     title = ''
-                    return {...x, Name, ProductCode, icon, title}
+                    return {...x, Name, ProductCode, icon, title, agency}
                 })
                 //this.prod = results; 
                 //console.log(JSON.stringify(this.prod))
@@ -105,8 +120,8 @@ export default class MobileSearch extends LightningElement {
     }
     addProduct(product){
         
-        const pd = product
-                
+        const pd = product;
+        console.log(JSON.stringify(pd))
         this.dispatchEvent(new CustomEvent('newprod',{
             detail: pd
         }))

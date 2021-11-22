@@ -20,6 +20,7 @@ export default class ProdSelected extends LightningElement {
     productCode;
     pbId;
     unitCost;
+    agency
     sId; 
     productName; 
     prodFound = false
@@ -60,6 +61,7 @@ export default class ProdSelected extends LightningElement {
         this.productId = mess.productId 
         this.pbeId = mess.pbeId;
         this.unitCost = mess.unitPrice;
+        this.agency = mess.agencyProduct;
         this.handleNewProd(); 
         this.prodFound = true; 
 
@@ -82,6 +84,7 @@ export default class ProdSelected extends LightningElement {
             }
         }
     async handleNewProd(){
+        //get last paid only works on new adding product
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         if(this.newProd != null){
             //console.log(this.newProd);
@@ -92,14 +95,16 @@ export default class ProdSelected extends LightningElement {
                     Id: '',
                     PricebookEntryId: this.pbeId,
                     Product2Id: this.productId,
+                    agency: this.agency,
                     name: this.productName,
                     ProductCode: this.productCode,
-                    Quantity: 0,
-                    UnitPrice:0,
-                    CPQ_Margin__c: 0,
+                    Quantity: 1,
+                    UnitPrice: this.agency ? this.unitCost: 0,
+                    CPQ_Margin__c: this.agency?'':0,
                     Cost__c: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
-                    lastMarg: (this.newProd.Margin__c / 100),
+                    lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
+                    docDate: this.newProd.Doc_Date__c,
                     TotalPrice: 0,
                     OpportunityId: this.recordId
                 }
@@ -111,19 +116,20 @@ export default class ProdSelected extends LightningElement {
                     PricebookEntryId: this.pbeId,
                     Id: undefined,
                     Product2Id: this.productId,
+                    agency: this.agency,
                     name: this.productName,
                     ProductCode: this.productCode,
-                    Quantity: 0,
-                    UnitPrice: 0,
+                    Quantity: 1,
+                    UnitPrice: this.agency ? this.unitCost: 0,
                     lastPaid: 0,
                     lastMarg: 0, 
-                    CPQ_Margin__c: 0,
+                    CPQ_Margin__c: this.agency?'':0,
                     Cost__c: this.unitCost,
                     TotalPrice: 0,
                     OpportunityId: this.recordId
                 }
             ]
-        }   this.selection.forEach(x => console.log(x))
+        }   
          
     }
     //Handle Pricing change here
@@ -209,11 +215,9 @@ export default class ProdSelected extends LightningElement {
         console.log('sending '+JSON.stringify(this.selection))
         createProducts({olList: this.selection})
         .then(result=>{
-            this.selection = result; 
-        }).then(()=>{
             this.dispatchEvent(
                 new ShowToastEvent({
-                    title: 'Success',
+                    title: result,
                     message: 'Products Saved',
                     variant: 'success',
                 }),
@@ -238,6 +242,7 @@ export default class ProdSelected extends LightningElement {
         })
     }
     //on load get products
+    //get last paid next
     loadProducts(){
         getProducts({oppId: this.recordId})
             .then(result=>{
@@ -255,8 +260,9 @@ export default class ProdSelected extends LightningElement {
                                                             ProductCode: x.Product2.ProductCode,
                                                             Quantity: x.Quantity,
                                                             UnitPrice:x.UnitPrice,
-                                                            CPQ_Margin__c: x.CPQ_Margin__c,
+                                                            CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
                                                             Cost__c: x.Cost__c,
+                                                            agency: x.Product2.Agency__c,
                                                             //lastPaid: this.newProd.Unit_Price__c,
                                                             //lastMarg: (this.newProd.Margin__c / 100),
                                                             TotalPrice: x.TotalPrice,

@@ -27,4 +27,8 @@
         <fieldName>productName</fieldName>
         <description>selected product name</description>
     </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>agencyProduct</fieldName>
+        <description>selected product is agency or not</description>
+    </lightningMessageFields>
 </LightingMessageChannel>

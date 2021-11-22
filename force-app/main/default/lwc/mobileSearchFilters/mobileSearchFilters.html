@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <template if:true={exposed}>
         <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large" 
         aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1">
@@ -9,26 +9,26 @@
                   <span class="slds-assistive-text slds-button__icon slds-button__icon_large slds-button_icon-inverse">Close</span>
                 </button>
                 <h5 id="modal-heading-01" class="slds-modal__title slds-hyphenate">Add Filters</h5>
-              </header>
+              </header> -->
 <!--this is the search info for products. Needs moved to appProductList comp-->
-              <div class="slds-modal__content slds-p-around_medium  prodBody" id="modal-content-id-1">
+              <!-- <div class="slds-modal__content slds-p-around_medium  prodBody" id="modal-content-id-1"> -->
             <!--Product Family-->
-                <lightning-combobox
+                <!-- <lightning-combobox
                     name="prodFamily"
                     label="Product Family"
                     value={pf}
                     options={pfOptions}
-                    onchange={pfChange} ></lightning-combobox>
+                    onchange={pfChange} ></lightning-combobox> -->
             <!--Category Filter-->
-                    <lightning-combobox
+                    <!-- <lightning-combobox
                     name="category"
                     label="Categories"
                     value={cat}
                     options={catOptions}
-                    onchange={catChange} ></lightning-combobox>
+                    onchange={catChange} ></lightning-combobox> -->
 
 
-            </div>
+            <!-- </div>
                <footer class="slds-modal__footer slds-align_absolute-center">
                 <button class="slds-button slds-button_destructive" onclick={cancel}>Cancel</button>
                 <button class="slds-button slds-button_brand" onclick={updateFilter}>Done</button>
@@ -37,4 +37,27 @@
           </section>
           <div class="slds-backdrop slds-backdrop_open"></div>
     </template>
+</template> -->
+<!-- without being a modal -->
+<template>
+    <lightning-card   title="Add Filters">
+      <lightning-combobox
+      name="prodFamily"
+      label="Product Family"
+      value={pf}
+      options={pfOptions}
+      onchange={pfChange} ></lightning-combobox>
+
+      <lightning-combobox
+                    name="category"
+                    label="Categories"
+                    value={cat}
+                    options={catOptions}
+                    onchange={catChange} ></lightning-combobox>
+
+      <footer class="slds-modal__footer slds-align_absolute-center">
+        <button class="slds-button slds-button_destructive" onclick={cancel}>Cancel</button>
+        <button class="slds-button slds-button_brand" onclick={updateFilter}>Done</button>
+      </footer> 
+    </lightning-card>
 </template>

@@ -18,9 +18,9 @@ const columnsList = [
     },
     {label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}},
     {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
-    {label: 'Status', fieldName:'Product_Status__c', cellAttributes:{alignment:'center'}},
+    {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
     {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
-    {label: 'Avg Cost', fieldName:'UnitPrice', 
+    {label: 'List Price', fieldName:'UnitPrice', 
     type:'currency', cellAttributes:{alignment:'center'}},
 ]
 export default class ProdSearch extends LightningElement {
@@ -34,19 +34,19 @@ export default class ProdSearch extends LightningElement {
     searchKey;
     pf = 'All';
     cat = 'All';
+    productsSelected = 0; 
     //needs to be @track so we can follow reactive properties on an array or obj in childern
     @track selection = [];
     newProd; 
     
     @api
     openPriceScreen(){
-        console.log('i hear you');
-        
         this.openPricing = true;
         this.loaded = true;  
     }
 
     closePriceScreen(){
+        this.productsSelected = 0; 
         this.openPricing = false; 
     }
     //Subscribe to Message Channel
@@ -96,6 +96,7 @@ export default class ProdSearch extends LightningElement {
 //search for product
       search(){
         this.loaded = false; 
+       console.log('searchKey '+this.searchKey);
        
         searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.priceBookId })
         .then((result) => {
@@ -108,7 +109,7 @@ export default class ProdSearch extends LightningElement {
                 x.Floor = x.Product2.Floor_Type__c
             })
             this.prod = result;
-            //console.log(JSON.stringify(this.prod));
+            console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
         })
@@ -132,13 +133,15 @@ export default class ProdSearch extends LightningElement {
      }
      //Handles adding the products to this.Selection array when the green add button is hit on the product table
      handleRowAction(e){
+        this.productsSelected ++; 
         const rowAction = e.detail.action.name; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
         const rowUPrice = e.detail.row.UnitPrice; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
-        console.log('price book id '+rowId);
+        const rowAg = e.detail.row.Product2.Agency__c
+        
         
         
         if(rowAction ==='Add'){
@@ -147,7 +150,8 @@ export default class ProdSearch extends LightningElement {
                  productId: rowProductId, 
                  unitPrice: rowUPrice,
                  productName: rowName,
-                 pbeId: rowId
+                 pbeId: rowId,
+                 agencyProduct: rowAg
              }         
     //send it 
             publish(this.messageContext, Opportunity_Builder, payload); 

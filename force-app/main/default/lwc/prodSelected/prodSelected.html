@@ -6,7 +6,14 @@
                 size="large"></lightning-spinner>
         </template>
     <template if:true={loaded}>
-        <lightning-button variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button>
+        <div class='slds-grid'>
+            <span class='slds-col slds-size_2-of-3'></span>
+            <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
+                <div class='slds-float_right slds-m-right_medium'>
+                    <lightning-button variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button>
+                </div>
+            </span>
+        </div>
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
             <div class='slds-grid header'>
@@ -52,7 +59,7 @@
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.ProductCode}
+                            <lightning-input type="number" name={sp.ProductCode} min="1"
                                         value={sp.Quantity} onchange={newQTY}></lightning-input>
                         </div>
                         <!-- user price -->
@@ -60,23 +67,26 @@
                             <lightning-input class='price' type="number"  
                                         label="" name={sp.ProductCode} 
                                         value={sp.UnitPrice} onchange={newPrice} 
-                                        formatter="currency" step="0.01"></lightning-input>
+                                        formatter="currency" step="0.01"
+                                        read-only={sp.agency}></lightning-input>
                         </div>
                         <!-- last paid -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
                             <lightning-input type="number" name="lastPaid"  label='' 
                                         value={sp.lastPaid} formatter="currency" readonly></lightning-input>
+                                        <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
                         </div>
                         <!-- last margin -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
                             <lightning-input type="number" name="lastMarg" label="" 
-                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly=""></lightning-input>   
+                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly></lightning-input>   
                         </div>
                         <!-- user margin can be changed or set -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
                             <lightning-input class='liquid' type="number"  
                                             label="" name={sp.ProductCode} 
-                                            value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" ></lightning-input>
+                                            value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
+                                            read-only={sp.agency}></lightning-input>
                         </div>
                         <!-- total price -->
                         <div class='slds-col slds-size_1-of-12'>
@@ -92,7 +102,14 @@
             </div>
             </div>
             <!--Buttons to save-->
-            <lightning-button variant="success" label="Save" title="save" onclick={saveProducts}></lightning-button>
+            <div class='slds-grid'>
+                <span class='slds-col slds-size_2-of-3'></span>
+                <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
+                    <div class='slds-float_right slds-m-right_medium'>
+                        <lightning-button variant="success" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                    </div>
+                </span>
+            </div>
         </template>
         <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>

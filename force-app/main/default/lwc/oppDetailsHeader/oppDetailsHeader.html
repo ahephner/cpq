@@ -1,0 +1,53 @@
+<template>
+    <lightning-card title="Opportunity Details" icon-name="standard:opportunity">
+    <!-- <div class="slds-var-m-around_medium">
+    <lightning-record-edit-form
+        object-api-name={objectApiName}
+        record-id={recordId}
+    >
+    <lightning-messages></lightning-messages>
+    <lightning-input-field
+        field-name="AccountId"
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name={name}
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name="Sales_Rep__c"
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name="Amount"
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name="StageName"
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name="CloseDate"
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name="Customer_PO__c"
+    ></lightning-input-field>
+    <lightning-input-field
+        field-name="Contact__c"
+    ></lightning-input-field>
+    <div class="slds-var-m-top_medium">
+        <lightning-button
+            variant="brand"
+            type="submit"
+            name="save"
+            label="Save"
+        ></lightning-button>
+    </div>
+</lightning-record-edit-form>
+</div> -->
+<div class="slds-var-m-around_medium">
+    <lightning-record-form
+        object-api-name={objectApiName}
+        record-id={recordId}
+        fields={fields}
+        columns="2"
+    ></lightning-record-form>
+</div>
+    </lightning-card>
+
+</template>

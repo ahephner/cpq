@@ -104,6 +104,7 @@ export default class ProdSelected extends LightningElement {
                     Cost__c: this.unitCost,
                     lastPaid: this.newProd.Unit_Price__c,
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
+                    docDate: this.newProd.Doc_Date__c,
                     TotalPrice: 0,
                     OpportunityId: this.recordId
                 }
@@ -128,7 +129,7 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
-        }   this.selection.forEach(x => console.log(x))
+        }   
          
     }
     //Handle Pricing change here
@@ -241,6 +242,7 @@ export default class ProdSelected extends LightningElement {
         })
     }
     //on load get products
+    //get last paid next
     loadProducts(){
         getProducts({oppId: this.recordId})
             .then(result=>{

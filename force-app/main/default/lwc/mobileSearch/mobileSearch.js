@@ -30,6 +30,7 @@ export default class MobileSearch extends LightningElement {
     handleSearch(){
         var input = this.template.querySelector('lightning-input')
         this.queryTerm = input.value; 
+        console.log(this.queryTerm)
         this.search();  
     }
 

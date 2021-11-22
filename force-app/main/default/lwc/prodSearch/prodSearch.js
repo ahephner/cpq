@@ -18,9 +18,9 @@ const columnsList = [
     },
     {label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}},
     {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
-    {label: 'Status', fieldName:'Product_Status__c', cellAttributes:{alignment:'center'}},
+    {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
     {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
-    {label: 'Avg Cost', fieldName:'UnitPrice', 
+    {label: 'List Price', fieldName:'UnitPrice', 
     type:'currency', cellAttributes:{alignment:'center'}},
 ]
 export default class ProdSearch extends LightningElement {
@@ -34,19 +34,19 @@ export default class ProdSearch extends LightningElement {
     searchKey;
     pf = 'All';
     cat = 'All';
+    productsSelected = 0; 
     //needs to be @track so we can follow reactive properties on an array or obj in childern
     @track selection = [];
     newProd; 
     
     @api
     openPriceScreen(){
-        console.log('i hear you');
-        
         this.openPricing = true;
         this.loaded = true;  
     }
 
     closePriceScreen(){
+        this.productsSelected = 0; 
         this.openPricing = false; 
     }
     //Subscribe to Message Channel
@@ -96,6 +96,7 @@ export default class ProdSearch extends LightningElement {
 //search for product
       search(){
         this.loaded = false; 
+       console.log('searchKey '+this.searchKey);
        
         searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.priceBookId })
         .then((result) => {
@@ -132,6 +133,7 @@ export default class ProdSearch extends LightningElement {
      }
      //Handles adding the products to this.Selection array when the green add button is hit on the product table
      handleRowAction(e){
+        this.productsSelected ++; 
         const rowAction = e.detail.action.name; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;

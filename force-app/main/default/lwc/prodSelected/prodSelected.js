@@ -271,7 +271,9 @@ export default class ProdSelected extends LightningElement {
         let codes = [];
         try{
             let results = await getProducts({oppId: this.recordId})
-            if(results){
+            if(!results){
+                return; 
+            }else if(results){
                 console.log('in results');
                 
                 results.forEach(item =>{

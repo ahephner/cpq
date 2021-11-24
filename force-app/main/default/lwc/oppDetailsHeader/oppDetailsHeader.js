@@ -7,11 +7,11 @@ import STAGE from '@salesforce/schema/Opportunity.StageName'
 import CLOSE from '@salesforce/schema/Opportunity.CloseDate'
 import PO from '@salesforce/schema/Opportunity.Customer_PO__c'
 import CONTACT from '@salesforce/schema/Opportunity.Contact__c'
-
+import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c'
 export default class OppDetailsHeader extends LightningElement{
     @api recordId;
     @api objectApiName;
-    fields = [NAME_FIELD, ACC_ID, SALES_REP, AMOUNT, STAGE, CLOSE, PO, CONTACT]
+    fields = [NAME_FIELD, ACC_ID, SALES_REP, AMOUNT, STAGE, CLOSE, PO, CONTACT, WAREHOUSE]
     handleSuccess(){
         console.log('good save!');
         

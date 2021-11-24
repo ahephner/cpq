@@ -36,6 +36,9 @@
                     <p class='header'>Margin %</p>
                 </div>
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                    <p class='header'>OH</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                     <p class='header'>Total</p>
                 </div>
                 <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
@@ -63,7 +66,7 @@
                                         value={sp.Quantity} onchange={newQTY}></lightning-input>
                         </div>
                         <!-- user price -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
                             <lightning-input class='price' type="number"  
                                         label="" name={sp.ProductCode} 
                                         value={sp.UnitPrice} onchange={newPrice} 
@@ -71,22 +74,28 @@
                                         read-only={sp.agency}></lightning-input>
                         </div>
                         <!-- last paid -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
-                            <lightning-input type="number" name="lastPaid"  label='' 
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
+                            <lightning-input type="number" name="lastPaid"  label='' class='ro' 
                                         value={sp.lastPaid} formatter="currency" readonly></lightning-input>
                                         <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
                         </div>
                         <!-- last margin -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <lightning-input type="number" name="lastMarg" label="" 
+                            <lightning-input type="number" name="lastMarg" label="" class='ro'
                                         value={sp.lastMarg} formatter="percent" step="0.01" readonly></lightning-input>   
                         </div>
                         <!-- user margin can be changed or set -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_xx-large">
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
                             <lightning-input class='liquid' type="number"  
                                             label="" name={sp.ProductCode} 
                                             value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
                                             read-only={sp.agency}></lightning-input>
+                        </div>
+                        <!-- qty at this location -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_large">
+                            <lightning-input class='liquid ro' type="number"  
+                                            label="" name={sp.ProductCode} 
+                                            value={sp.wInv} readonly></lightning-input>
                         </div>
                         <!-- total price -->
                         <div class='slds-col slds-size_1-of-12'>

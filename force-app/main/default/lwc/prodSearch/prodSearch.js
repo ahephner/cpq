@@ -22,6 +22,7 @@ const columnsList = [
     {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
     {label: 'List Price', fieldName:'UnitPrice', 
     type:'currency', cellAttributes:{alignment:'center'}},
+    {label:'Comp OH', fieldName:'qtyOnHand', cellAttributes:{alignment:'center'}}
 ]
 export default class ProdSearch extends LightningElement {
     @api recordId; 
@@ -72,7 +73,7 @@ export default class ProdSearch extends LightningElement {
     }
 
     nameChange(event){
-        this.searchKey = event.target.value.toLowerCase();
+        this.searchKey = event.target.value.trim().toLowerCase();
         
       }
 
@@ -106,7 +107,8 @@ export default class ProdSearch extends LightningElement {
                 x.Name = x.Product2.Name,
                 x.ProductCode = x.Product2.ProductCode,
                 x.Status = x.Product2.Product_Status__c,
-                x.Floor = x.Product2.Floor_Type__c
+                x.Floor = x.Product2.Floor_Type__c,
+                x.qtyOnHand = x.Product2.GP_Qty_On_Hand__c
             })
             this.prod = result;
             console.log(JSON.stringify(this.prod));

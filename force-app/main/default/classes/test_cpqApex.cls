@@ -179,7 +179,33 @@ public class test_cpqApex {
         toInsert.add(newLi);
         
         Test.startTest();
-        	List<OpportunityLineItem> inserted = cpqApex.createProducts(toInsert);
+        	string messBack = cpqApex.createProducts(toInsert);
         Test.stopTest(); 
     }  
+     @isTest
+    static void Test_inventory(){
+        product2 widget = new product2(name ='widget', IsActive= True); 
+        insert widget; 
+        product2 widget2 = new product2(name ='widget2', IsActive= True); 
+        insert widget2; 
+        //Location only wont work on this object need to do as below. 
+        //https://developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/apex_class_system_Location.htm
+        Schema.Location warehouse = new Schema.Location(Name='Warehouse', LocationType='Warehouse', IsInventoryLocation=True);
+        insert warehouse;
+        
+        ProductItem inven1 = new ProductItem(Product2Id= widget.id,LocationId =warehouse.id, QuantityOnHand=1);
+        insert inven1;
+        
+        ProductItem inven2 = new ProductItem(Product2Id= widget2.id,LocationId =warehouse.id, QuantityOnHand=2);
+        insert inven2;
+        
+        Test.startTest();
+        	list<id> idList = new list<id>();
+        	idList.add(widget.Id);
+        	idList.add(widget2.Id);
+        	list<productitem> count = cpqApex.inventoryCount(idList); 
+        	productitem count2 = cpqApex.getInventory(warehouse.id, widget.id);
+        	list<productitem> onLoadCount = cpqApex.onLoadGetInventory(warehouse.id, idList); 
+        Test.stopTest();
+    }
 }

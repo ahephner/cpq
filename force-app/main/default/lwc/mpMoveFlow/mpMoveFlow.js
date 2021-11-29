@@ -13,6 +13,7 @@ export default class MobileProducts extends LightningElement {
     @api results; 
     @api oppId; 
     @api totalPrice;
+    @api warehouseId
     recId;
     prodData; 
     showSpinner = true;
@@ -24,16 +25,17 @@ export default class MobileProducts extends LightningElement {
     agProduct;
     floorType;
     floorPrice; 
+    editAllText = 'Edit All';
     //minimum amount of units per line item
     minUnits = 1
     //on screen load
     connectedCallback(){
         this.showSpinner = false; 
-        //console.log('load '+this.oppId)
+        console.log('warehouseId '+this.warehouseId)
     }
     //get products passed in from the flow
     @api 
-    get products(){
+    get products(){  
         return this.prodData || [];
     } 
 //setting products from passed in from the flow
@@ -43,20 +45,20 @@ export default class MobileProducts extends LightningElement {
     }
 
     load(p){
-        let readOnly
-        let editQTY; 
-        let icon
-        let showInfo 
-        this.prod =  p.map(x=>{
-            readOnly = true;
-            showInfo = false;  
-            editQTY = true; 
-            icon = 'utility:edit'
-            return {...x, readOnly, icon, showInfo, editQTY}
-        })
-        this.backUp = [...this.prod]
-        this.showSpinner = false; 
-       // console.log(JSON.stringify(this.prod))        
+            let readOnly
+            let editQTY; 
+            let icon
+            let showInfo 
+            this.prod =  p.map(x=>{
+                readOnly = true;
+                showInfo = false;  
+                editQTY = true; 
+                icon = 'utility:edit'
+                return {...x, readOnly, icon, showInfo, editQTY}
+            })
+            this.backUp = [...this.prod]
+            this.showSpinner = false; 
+           // console.log(JSON.stringify(this.prod))    
     }
 
     handleAction(e){
@@ -98,6 +100,33 @@ export default class MobileProducts extends LightningElement {
            }  
        }
 
+       //edit all products at once
+       editAll(){
+           if(this.editAllText ==='Edit All'){
+               this.editAllText = 'Close All'; 
+           }else{
+               this.editAllText = 'Edit All'; 
+           }
+           for (let index = 0; index < this.prod.length; index++){
+                if(this.prod[index].Agency__c && this.prod[index].editQTY === true){
+                    this.prod[index].editQTY = false;   
+                }else if(this.prod[index].Agency__c && this.prod[index].editQTY === false){
+                    this.prod[index].editQTY = true; 
+                }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
+                    this.prod[index].readOnly = true;
+                    this.prod[index].editQTY = true;
+                }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === true){
+                    this.prod[index].showInfo = false; 
+                    this.prod[index].readOnly = false;
+                    this.prod[index].editQTY = false;  
+                }else{
+                    this.prod[index].readOnly = false;
+                    this.prod[index].editQTY = false; 
+            }
+               
+           }
+       }
+//show qty on hand 
        info(index){
            if(this.prod[index].showInfo === true){
             this.prod[index].showInfo = false;
@@ -105,20 +134,6 @@ export default class MobileProducts extends LightningElement {
             this.prod[index].showInfo = true; 
            }
        }
-    // edit(e){
-    //     let index = this.prod.findIndex(x=>x.Id === e.target.name)
-    //     //need to do more in here like show a delete button.
-    //     if(this.prod[index].icon === 'utility:edit'){
-    //         this.prod[index].icon = 'utility:close';
-    //         this.prod[index].readOnly = false;
-    //         this.prod[index].buttonGroup = true
-    //     } else{
-    //         this.prod[index].icon = 'utility:edit';
-    //         this.prod[index].readOnly = true;
-    //         this.prod[index].buttonGroup = false; 
-    //     }
-    // }
-
     //Handle value changes
     handleQty(qty){
         this.allowSave();

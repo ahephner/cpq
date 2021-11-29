@@ -14,7 +14,15 @@
                         alternative-text="Add Product" title="Add Products"></lightning-icon>
                         <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>Add Products</figcaption>
         </figure>
+        
+            <figure>
+                <lightning-icon icon-name="action:edit" size="small" onclick={editAll}
+                            class='slds-icon_container_circle slds-m-left_small' 
+                            alternative-text="Edit All" title="Edit All"></lightning-icon>
+                            <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>{editAllText}</figcaption>
+            </figure>
     </div>
+    <!--Product Cards!-->
     <div class='slds-scrollable_y' style='height:40rem; width:100%'>
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>

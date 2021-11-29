@@ -16,6 +16,7 @@ import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c'
+import {mergeById, lineTotal, onLoadProducts} from 'c/helper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
@@ -144,7 +145,7 @@ export default class ProdSelected extends LightningElement {
          
     }
     //Handle Pricing change here
-    lineTotal = (units, charge)=> (units * charge).toFixed(2);
+    
     newPrice(e){
         window.clearTimeout(this.delay);
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
@@ -181,7 +182,7 @@ export default class ProdSelected extends LightningElement {
                     console.log('margin cal '+(1- this.selection[index].CPQ_Margin__c/100))
                     
                     this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)
-                    this.selection[index].TotalPrice = this.lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
+                    this.selection[index].TotalPrice = lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
                 }else{
                     this.selection[index].UnitPrice = 0;
                     this.selection[index].UnitPrice = this.selection[index].UnitPrice.toFixed(2);
@@ -253,14 +254,7 @@ export default class ProdSelected extends LightningElement {
         })
     }
 
-    //used to merge the two arrays together. 
-    //needs to mov
-    mergeById = (a1, a2) =>
-    a1.map(itm => ({
-                    ...a2.find((item) => (item.Product2Id === itm.Product2Id)),
-                    ...itm
-                })
-                );
+;
     //on load get products
     //get last paid next
     async loadProducts(){
@@ -274,49 +268,41 @@ export default class ProdSelected extends LightningElement {
             if(!results){
                 return; 
             }else if(results){
-                console.log('in results');
-                
+
                 results.forEach(item =>{
                     inSet.add(item.Product2Id);
-                    // console.log('item '+JSON.stringify(item));
-                    
-                    //console.log('code '+item.Product2.ProductCode);
-                    
                     //inCode.add(item.Product2.ProductCode)
                 });
                 prodIdInv = [...inSet];
                // codes = [...inCode]; 
             }
-            console.log('sending '+prodIdInv);
-            
             let invenCheck = await onLoadGetInventory({locId: this.warehouse, pIds: prodIdInv});
-           
-           console.log('invenCheck '+JSON.stringify(invenCheck));
             //let lastPaid = await onLoadGetLastPaid({accountID: this.accountId, code:codes})
             //MERGE the inventory and saved products. 
-            let mergedProducts = this.mergeById(results,invenCheck);
-            this.selection = mergedProducts.map(x =>{
+            let mergedProducts = await mergeById(results,invenCheck);
+            this.selection = await onLoadProducts(mergedProducts, this.recordId); 
+        //     this.selection = mergedProducts.map(x =>{
     
-                                                    return   {
-                                                                sObjectType: 'OpportunityLineItem',
-                                                                Id: x.Id,
-                                                                PricebookEntryId: x.PricebookEntryId,
-                                                                Product2Id: x.Product2Id,
-                                                                name: x.Product2.Name,
-                                                                ProductCode: x.Product2.ProductCode,
-                                                                Quantity: x.Quantity,
-                                                                UnitPrice:x.UnitPrice,
-                                                                CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
-                                                                Cost__c: x.Cost__c,
-                                                                agency: x.Product2.Agency__c,
-                                                                wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
-                                                                //lastPaid: this.newProd.Unit_Price__c,
-                                                                //lastMarg: (this.newProd.Margin__c / 100),
-                                                                TotalPrice: x.TotalPrice,
-                                                                OpportunityId: this.recordId
-                                                            }
-                                                            })
-        }catch(error){
+        //                                             return   {
+        //                                                         sObjectType: 'OpportunityLineItem',
+        //                                                         Id: x.Id,
+        //                                                         PricebookEntryId: x.PricebookEntryId,
+        //                                                         Product2Id: x.Product2Id,
+        //                                                         name: x.Product2.Name,
+        //                                                         ProductCode: x.Product2.ProductCode,
+        //                                                         Quantity: x.Quantity,
+        //                                                         UnitPrice:x.UnitPrice,
+        //                                                         CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
+        //                                                         Cost__c: x.Cost__c,
+        //                                                         agency: x.Product2.Agency__c,
+        //                                                         wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
+        //                                                         //lastPaid: this.newProd.Unit_Price__c,
+        //                                                         //lastMarg: (this.newProd.Margin__c / 100),
+        //                                                         TotalPrice: x.TotalPrice,
+        //                                                         OpportunityId: this.recordId
+        //                                                     }
+        //                                                     })
+         }catch(error){
             let mess = error; 
             console.log('error ==> '+mess);
             

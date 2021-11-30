@@ -56,6 +56,7 @@ export default class MobileProducts extends LightningElement {
         })
         this.backUp = [...this.prod]
         this.showSpinner = false; 
+        
        // console.log(JSON.stringify(this.prod))        
     }
 

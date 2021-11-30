@@ -66,7 +66,7 @@
     <!--Shows more info like inventory if we can link it some how and costs-->    
         <template if:true={item.showInfo}>
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                <lightning-input value='3' type='number' 
+                <lightning-input value={item.wInv} type='number' 
                                 name ={item.Id} label='Inventory at my locaton' readonly></lightning-input>
     <!-- Last Paid -->
                 <lightning-input value={item.lastPaid} type='number' formatter="currency" label='Last Paid' 

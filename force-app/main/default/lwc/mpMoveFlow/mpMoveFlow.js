@@ -2,7 +2,9 @@ import { deleteRecord } from 'lightning/uiRecordApi';
 import { LightningElement, api, track } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
+import {mergeById, mobileLoad} from 'c/helper'
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
@@ -13,7 +15,7 @@ export default class MobileProducts extends LightningElement {
     @api results; 
     @api oppId; 
     @api totalPrice;
-    @api warehouseId
+    whId; 
     recId;
     prodData; 
     showSpinner = true;
@@ -31,7 +33,16 @@ export default class MobileProducts extends LightningElement {
     //on screen load
     connectedCallback(){
         this.showSpinner = false; 
-        console.log('warehouseId '+this.warehouseId)
+        if(this.prodData){
+            this.load(this.prodData)
+        }
+    }
+    @api 
+    get warehouseId(){
+        return this.whId || [];
+    }
+    set warehouseId(data){
+        this.whId = data; 
     }
     //get products passed in from the flow
     @api 
@@ -41,25 +52,57 @@ export default class MobileProducts extends LightningElement {
 //setting products from passed in from the flow
     set products(data){
         this.prodData = data; 
-        this.load(this.prodData);        
+        //this.load(this.prodData);        
     }
 
-    load(p){
-            let readOnly
-            let editQTY; 
-            let icon
-            let showInfo 
-            this.prod =  p.map(x=>{
-                readOnly = true;
-                showInfo = false;  
-                editQTY = true; 
-                icon = 'utility:edit'
-                return {...x, readOnly, icon, showInfo, editQTY}
+      async load(selItems){
+        //inventory vars
+        let inSet = new Set();
+        let prodIdInv = [];   
+        try{
+            selItems.forEach(item=>{
+                inSet.add(item.Product2Id)
             })
+            prodIdInv = [...inSet];
+            
+            if(prodIdInv){
+                console.log('wh '+ this.whId);
+                let invenCheck =  await onLoadGetInventory({locId: this.whId, pIds: prodIdInv});
+                console.log('invenCheck '+invenCheck);
+                
+                let mergedProducts =  await mergeById(selItems, invenCheck);
+                console.log('mergedProducts '+mergedProducts);
+                
+                this.prod = await mobileLoad(mergedProducts);
+                console.log('prod');
+                console.log(JSON.stringify(this.prod));
+                
+                
+            }
             this.backUp = [...this.prod]
-            this.showSpinner = false; 
-           // console.log(JSON.stringify(this.prod))    
-    }
+        }catch(error){
+
+        }finally{
+         
+         this.showSpinner = false; 
+        }
+       }
+    // load(p){
+    //         let readOnly
+    //         let editQTY; 
+    //         let icon
+    //         let showInfo 
+    //         this.prod =  p.map(x=>{
+    //             readOnly = true;
+    //             showInfo = false;  
+    //             editQTY = true; 
+    //             icon = 'utility:edit'
+    //             return {...x, readOnly, icon, showInfo, editQTY}
+    //         })
+    //         this.backUp = [...this.prod]
+    //         this.showSpinner = false; 
+    //        // console.log(JSON.stringify(this.prod))    
+    // }
 
     handleAction(e){
         let action = e.detail.value
@@ -337,4 +380,15 @@ export default class MobileProducts extends LightningElement {
     handleCloseSearch(){    
         this.addProducts = false; 
     }
+// //on load merge the products and inventory
+//      mergeById = (a1, a2) =>{
+//         console.log('mergeById');
+        
+//        let merge = a1.map(itm => ({
+//                        ...a2.find((item) => (item.Product2Id === itm.Product2Id)),
+//                        ...itm
+//                    })
+//                    )
+//                    return merge; 
+//                }
 }

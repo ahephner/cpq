@@ -5,7 +5,7 @@ import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
-import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
+//import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
@@ -72,7 +72,7 @@ export default class ProdSelected extends LightningElement {
         this.agency = mess.agencyProduct;
         this.handleNewProd(); 
         this.prodFound = true; 
-
+    
     }
     unsubscribeToMessageChannel() {
         unsubscribe(this.subscription);
@@ -112,7 +112,7 @@ export default class ProdSelected extends LightningElement {
                     UnitPrice: this.agency ? this.unitCost: 0,
                     CPQ_Margin__c: this.agency?'':0,
                     Cost__c: this.unitCost,
-                    lastPaid: this.newProd.Unit_Price__c,
+                    lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: 0,
@@ -274,13 +274,20 @@ export default class ProdSelected extends LightningElement {
                     //inCode.add(item.Product2.ProductCode)
                 });
                 prodIdInv = [...inSet];
+                
                // codes = [...inCode]; 
             }
             let invenCheck = await onLoadGetInventory({locId: this.warehouse, pIds: prodIdInv});
+            
+            
             //let lastPaid = await onLoadGetLastPaid({accountID: this.accountId, code:codes})
             //MERGE the inventory and saved products. 
             let mergedProducts = await mergeById(results,invenCheck);
+            
+            
             this.selection = await onLoadProducts(mergedProducts, this.recordId); 
+           
+            
         //     this.selection = mergedProducts.map(x =>{
     
         //                                             return   {
@@ -304,7 +311,7 @@ export default class ProdSelected extends LightningElement {
         //                                                     })
          }catch(error){
             let mess = error; 
-            console.log('error ==> '+mess);
+            console.log('error ==> '+error);
             
             this.dispatchEvent(
                 new ShowToastEvent({

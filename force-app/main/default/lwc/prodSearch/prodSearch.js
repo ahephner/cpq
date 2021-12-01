@@ -108,7 +108,7 @@ export default class ProdSearch extends LightningElement {
                 x.ProductCode = x.Product2.ProductCode,
                 x.Status = x.Product2.Product_Status__c,
                 x.Floor = x.Product2.Floor_Type__c,
-                x.qtyOnHand = x.Product2.GP_Qty_On_Hand__c
+                x.qtyOnHand = x.Product2.Total_Product_Items__c
             })
             this.prod = result;
             console.log(JSON.stringify(this.prod));

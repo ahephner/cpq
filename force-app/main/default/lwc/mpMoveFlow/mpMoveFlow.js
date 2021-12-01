@@ -2,6 +2,7 @@ import { deleteRecord } from 'lightning/uiRecordApi';
 import { LightningElement, api, track } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 import {mergeById, mobileLoad} from 'c/helper'
@@ -26,7 +27,8 @@ export default class MobileProducts extends LightningElement {
     unitCost;
     agProduct;
     floorType;
-    floorPrice; 
+    floorPrice;
+    invCount;  
     editAllText = 'Edit All';
     //minimum amount of units per line item
     minUnits = 1
@@ -288,19 +290,20 @@ export default class MobileProducts extends LightningElement {
     //New product selected from mobile search
     //!!Unit Cost is Unit Price on pbe. That is the api name. 
     //The lable is list price. 
-    handleNewProduct(prod){
-        this.productCode = prod.detail.ProductCode;
-        this.productName = prod.detail.Name;
-        this.productId = prod.detail.Product2Id;
-        this.pbeId = prod.detail.Id;
-        this.unitCost = prod.detail.UnitPrice;
-        this.agProduct = prod.detail.agency;
-        this.floorPrice = prod.detail.Product2.Floor_Price__c;
-        this.floorType = prod.detail.Product2.Floor_Type__c;
-        console.log(this.floorType);
+    handleNewProduct(prodx){
+        this.productCode = prodx.detail.ProductCode;
+        this.productName = prodx.detail.Name;
+        this.productId = prodx.detail.Product2Id;
+        this.pbeId = prodx.detail.Id;
+        this.unitCost = prodx.detail.UnitPrice;
+        this.agProduct = prodx.detail.agency;
+        this.floorPrice = prodx.detail.Product2.Floor_Price__c;
+        this.floorType = prodx.detail.Product2.Floor_Type__c;
+        console.log('pc '+this.productCode);
         
         //check if they already have it on the order
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
+        console.log('already there '+ alreadyThere)
         if(alreadyThere < 0){
             this.getPrevSale();
             this.wasEdited = true; 
@@ -311,6 +314,7 @@ export default class MobileProducts extends LightningElement {
 
     async getPrevSale(){
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
+        this.invCount = await getInventory({locId: this.whId, pId: this.productId })
         if(newProd !=null){
             
             
@@ -332,6 +336,7 @@ export default class MobileProducts extends LightningElement {
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
+                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     OpportunityId: this.oppId
@@ -357,6 +362,7 @@ export default class MobileProducts extends LightningElement {
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
+                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     OpportunityId: this.oppId

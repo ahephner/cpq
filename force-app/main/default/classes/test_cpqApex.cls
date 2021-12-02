@@ -208,4 +208,107 @@ public class test_cpqApex {
         	list<productitem> onLoadCount = cpqApex.onLoadGetInventory(warehouse.id, idList); 
         Test.stopTest();
     }
+    
+    @isTest
+    static void test_onLoadLastPaid(){
+        //list of products
+        list<string> prodList = new list<string>();
+        
+         //get record type
+        ID recordType = Schema.SObjectType.Account.getRecordTypeInfosByName().get('Customer').getRecordTypeId();
+        Account acct = new Account(); 
+        acct.name = '509-Test Comp';
+        acct.Customer_Name__c = 'New Company';
+        acct.Customer__c = '1010';
+        acct.RecordTypeId = recordType;
+        insert acct;
+
+        //create product
+        Product__c prod = new Product__c(Product_Name__c='Something', Name='123'); 
+        insert prod; 
+        
+        Product__c prod2 = new Product__c(Product_Name__c='two', Name='321'); 
+        insert prod2; 
+        
+        //add products to the list
+        prodlist.add(prod.Name);
+        prodlist.add(prod2.Name);
+        
+        //dates
+        Date d1 = Date.newInstance(2016, 12, 9);
+        Date d2 = Date.newInstance(2017, 12, 9);
+        //Create Sales Doc product 1 doc 1
+        Sales_Document__c sd = new Sales_Document__c();
+        sd.name = 'test from sf';
+        sd.sales_Doc_num__c = '454';
+        //get new account recordid
+        sd.Customer__c = acct.id;
+        sd.Doc_Type__c = 'Invoice';
+        sd.Doc_Date__c = d1; 
+        insert sd; 
+        
+        Sales_Doc_Detail__c testSale = new Sales_Doc_Detail__c();
+        testSale.name = 'Test';
+        testSale.sales_document__c = sd.ID;
+        testSale.Product__c = prod.ID;
+        testSale.Product_Code__c = prod.Name;
+        insert testSale;
+        
+        //Create Sales Doc product 1 doc 2
+        Sales_Document__c sd2 = new Sales_Document__c();
+        sd2.name = 'test doc 2';
+        sd2.sales_Doc_num__c = '455';
+        //get new account recordid
+        sd2.Customer__c = acct.id;
+        sd2.Doc_Type__c = 'Invoice';
+        sd2.Doc_Date__c = d2; 
+        insert sd2; 
+        
+        Sales_Doc_Detail__c testSale2 = new Sales_Doc_Detail__c();
+        testSale2.name = 'Test detail 2';
+        testSale2.sales_document__c = sd2.ID;
+        testSale2.Product__c = prod.ID;
+        testSale2.Product_Code__c = prod.Name;
+        insert testSale2;
+        
+        //Create Sales Doc product 2 doc 1
+        Sales_Document__c sd3 = new Sales_Document__c();
+        sd3.name = 'test doc 3';
+        sd3.sales_Doc_num__c = '456';
+        //get new account recordid
+        sd3.Customer__c = acct.id;
+        sd3.Doc_Type__c = 'Invoice';
+        sd3.Doc_Date__c = d1; 
+        insert sd3; 
+        
+        Sales_Doc_Detail__c testSale3 = new Sales_Doc_Detail__c();
+        testSale3.name = 'Test detail 3';
+        testSale3.sales_document__c = sd3.ID;
+        testSale3.Product__c = prod2.ID;
+        testSale3.Product_Code__c = prod.Name;
+        insert testSale3;
+        
+        //Create Sales Doc product 2 doc 2
+        Sales_Document__c sd4 = new Sales_Document__c();
+        sd4.name = 'test doc 4';
+        sd4.sales_Doc_num__c = '457';
+        //get new account recordid
+        sd4.Customer__c = acct.id;
+        sd4.Doc_Type__c = 'Invoice';
+        sd4.Doc_Date__c = d2; 
+        insert sd4; 
+        
+        Sales_Doc_Detail__c testSale4 = new Sales_Doc_Detail__c();
+        testSale4.name = 'Test detail 4';
+        testSale4.sales_document__c = sd4.ID;
+        testSale4.Product__c = prod2.ID;
+        testSale4.Product_Code__c = prod.Name;
+        insert testSale4;
+        
+       
+        Test.startTest();
+        	list<Sales_Doc_Detail__c> results = cpqApex.onLoadGetLastPaid(acct.id, prodlist);
+        Test.stopTest();
+    
+    }
 }

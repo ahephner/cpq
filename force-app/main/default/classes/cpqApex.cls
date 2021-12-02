@@ -18,6 +18,7 @@ public with sharing class cpqApex {
       string pf = family; 
       string pbId = priceBookId; 
       system.debug(pf);
+      system.debug(searchterm);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, '
                 + '  Product2.Floor_Type__c, Product2.Floor_Price__c, product2.agency__c, product2.Total_Product_Items__c'
@@ -147,7 +148,7 @@ public with sharing class cpqApex {
         @AuraEnabled(cacheable=true)
     public static list<ProductItem> onLoadGetInventory(string locId, list<id> pIds){
         list<ProductItem> cl; 
-        //system.debug('pIds '+pIds + ' locId '+locId);
+        system.debug('pIds '+pIds + ' locId '+locId);
         list<ProductItem> countList = [select product2id, QuantityOnHand from productitem
                                       where LocationId =: locId and product2id in:(pIds)];
         
@@ -157,25 +158,31 @@ public with sharing class cpqApex {
         //system.debug('cl ' +cl);
         return cl; 
     }
-    
-    //Get last paid
-    //@AuraEnabled(cacheable=true)
-    //public static list<Sales_Doc_Detail__c> onLoadGetLastPaid(string accountID, list<string> code){
-        //List<sales_doc_detail__c> order = null; 
-        //system.debug('accId '+accountId+' code ' + code);
-        //List<sales_doc_detail__c> orderList =  [select id,name,Unit_Price__c,Margin__c, Doc_Date__c,Product_Code__c from sales_doc_detail__c
-              //  				  	 			where Product_Code__c IN :(code) and Sales_Document__r.customer__c =: accountId
-            //    				  	 			order by Sales_Document__r.doc_date__c desc limit 1
-          //      				  	 			];
-        //if(!orderList.isEmpty()){
-          //  order = orderList;
-        //}
-       // system.debug(order);
-     //   return order;
-        
-   // } 
+    @AuraEnabled(cacheable=true)
+    public static list<Sales_Doc_Detail__c> onLoadGetLastPaid(id accountId,list<string> productCodes){
+        list<Sales_Doc_Detail__c> lastPaidList = new list<Sales_Doc_Detail__c>(); 
+		system.debug('pc '+ productCodes);
+        system.debug('accId '+ accountId);
+        try {
+            Sales_Doc_Detail__c[] temp;
+			Map<String, Sales_Doc_Detail__c[]> sales = new map<String, Sales_Doc_Detail__c[]>();
+                
+			for(Sales_Doc_Detail__c record: [select id,name,Unit_Price__c,Margin__c, Doc_Date__c, Product_Code__c from sales_doc_detail__c
+            	where Product_Code__c In: (productCodes) and Sales_Document__r.customer__c =: accountId
+            	order by Sales_Document__r.doc_date__c desc]) {
+    				if((temp = sales.get(record.Product_Code__c)) == null) {
+        				sales.put(record.Product_Code__c, temp = new Sales_Doc_Detail__c[0]);
+                   		lastPaidList.add(record); 
+    				}
+    			temp.add(record);
+            }
+            
+            return lastPaidList;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
 
-    
     //will look for similar cat products if nothing above is returned. 
   //  @AuraEnabled
    // public static PricebookEntry[] similarProducts(){

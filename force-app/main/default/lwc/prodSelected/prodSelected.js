@@ -5,7 +5,7 @@ import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
-//import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
+import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
@@ -16,7 +16,7 @@ import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c'
-import {mergeById, lineTotal, onLoadProducts} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts} from 'c/helper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
@@ -271,44 +271,34 @@ export default class ProdSelected extends LightningElement {
 
                 results.forEach(item =>{
                     inSet.add(item.Product2Id);
-                    //inCode.add(item.Product2.ProductCode)
+                    inCode.add(item.Product2.ProductCode)
                 });
                 prodIdInv = [...inSet];
                 
-               // codes = [...inCode]; 
+                codes = [...inCode]; 
             }
+            //console.log('results '+JSON.stringify(results));
+            
             let invenCheck = await onLoadGetInventory({locId: this.warehouse, pIds: prodIdInv});
+            //console.log('invCheck '+JSON.stringify(invenCheck));
             
             
-            //let lastPaid = await onLoadGetLastPaid({accountID: this.accountId, code:codes})
+            let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
+            //console.log('lp '+JSON.stringify(lastPaid));
+            
             //MERGE the inventory and saved products. 
-            let mergedProducts = await mergeById(results,invenCheck);
+            let mergedInven = await mergeInv(results,invenCheck);
+            //merge last paid saved products
+            let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
             
+            //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
+            this.selection = await onLoadProducts(mergedLastPaid, this.recordId); 
+                //console.log('selection '+JSON.stringify(mergedLastPaid));
+
+            mergedLastPaid.forEach(x=> 
+                console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)
+            )
             
-            this.selection = await onLoadProducts(mergedProducts, this.recordId); 
-           
-            
-        //     this.selection = mergedProducts.map(x =>{
-    
-        //                                             return   {
-        //                                                         sObjectType: 'OpportunityLineItem',
-        //                                                         Id: x.Id,
-        //                                                         PricebookEntryId: x.PricebookEntryId,
-        //                                                         Product2Id: x.Product2Id,
-        //                                                         name: x.Product2.Name,
-        //                                                         ProductCode: x.Product2.ProductCode,
-        //                                                         Quantity: x.Quantity,
-        //                                                         UnitPrice:x.UnitPrice,
-        //                                                         CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
-        //                                                         Cost__c: x.Cost__c,
-        //                                                         agency: x.Product2.Agency__c,
-        //                                                         wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
-        //                                                         //lastPaid: this.newProd.Unit_Price__c,
-        //                                                         //lastMarg: (this.newProd.Margin__c / 100),
-        //                                                         TotalPrice: x.TotalPrice,
-        //                                                         OpportunityId: this.recordId
-        //                                                     }
-        //                                                     })
          }catch(error){
             let mess = error; 
             console.log('error ==> '+error);

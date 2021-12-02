@@ -5,7 +5,7 @@ import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
-import {mergeById, mobileLoad} from 'c/helper'
+import {mergeInv, mobileLoad} from 'c/helper'
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
@@ -72,14 +72,9 @@ export default class MobileProducts extends LightningElement {
                 let invenCheck =  await onLoadGetInventory({locId: this.whId, pIds: prodIdInv});
                 console.log('invenCheck '+invenCheck);
                 
-                let mergedProducts =  await mergeById(selItems, invenCheck);
-                console.log('mergedProducts '+mergedProducts);
+                let mergedProducts =  await mergeInv(selItems, invenCheck);
                 
-                this.prod = await mobileLoad(mergedProducts);
-                console.log('prod');
-                console.log(JSON.stringify(this.prod));
-                
-                
+                this.prod = await mobileLoad(mergedProducts);                 
             }
             this.backUp = [...this.prod]
         }catch(error){

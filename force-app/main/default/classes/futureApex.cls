@@ -47,4 +47,38 @@ public with sharing class futureApex {
             system.debug('inven count '+counts);
             return counts; 
         }
+
+    @AuraEnabled(cacheable=true)
+    public static list<Sales_Doc_Detail__c> onLoadGetLastPaid(id accountId, list<string> productCodes){
+        list<Sales_Doc_Detail__c> lastPaidList = new list<Sales_Doc_Detail__c>(); 
+        map<string, date> sales = new map<string, date>();
+        try {
+            for(Sales_Doc_Detail__c record: [select id,name,Unit_Price__c,Margin__c, Doc_Date__c from sales_doc_detail__c
+            where Product_Code__c In: (productCodes) and Sales_Document__r.customer__c =: accountId
+            order by Sales_Document__r.doc_date__c desc]){
+                if((lastPaidList = sales.get(record.Product_Code__c)) == null){
+                    sales.put(record.Product_Code__c, record.Doc_Date__c);
+                }
+                lastPaidList.add(record)
+            }
+            system.debug('lp '+lastPaidList); 
+            return lastPaidList; 
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+
+Contact[] temp;
+Map<Id, Contact[]> mapcontacts = new map<Id, Contact[]>();
+for(Contact record: [SELECT AccountId FROM Contact]) {
+    if((temp = mapcontacts.get(record.AccountId)) == null) {
+        mapcontacts.put(record.AccountId, temp = new Contact[0]);
+    }
+    temp.add(record);
 }
+}
+
+
+(Sales_Doc_Detail__c:{Id=a0F1D000002KQIQUA4, Name=SO94350126 line 2, Unit_Price__c=450.00, Margin__c=100.00, Doc_Date__c=2021-07-14 00:00:00, Product_Code__c=FMC1035-4LB, Sales_Document__c=a0E1D000007TQ1ZUAW}, 
+Sales_Doc_Detail__c:{Id=a0F1D000002KQILUA4, Name=SO94350126 Line 1, Unit_Price__c=363.00, Margin__c=35.99, Doc_Date__c=2021-07-14 00:00:00, Product_Code__c=FMC1061-16OZ, Sales_Document__c=a0E1D000007TQ1ZUAW})

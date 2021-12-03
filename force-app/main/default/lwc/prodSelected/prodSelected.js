@@ -294,10 +294,10 @@ export default class ProdSelected extends LightningElement {
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLastPaid, this.recordId); 
                 //console.log('selection '+JSON.stringify(mergedLastPaid));
-
-            mergedLastPaid.forEach(x=> 
-                console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)
-            )
+            
+            // mergedLastPaid.forEach(x=> 
+            //     console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)
+            // )
             
          }catch(error){
             let mess = error; 

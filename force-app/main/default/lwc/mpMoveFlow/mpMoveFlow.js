@@ -4,8 +4,9 @@ import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
+import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
-import {mergeInv, mobileLoad} from 'c/helper'
+import { mobileLoad, mobileLastPaid, mobileMergeInv} from 'c/mobileHelper';
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
@@ -16,6 +17,7 @@ export default class MobileProducts extends LightningElement {
     @api results; 
     @api oppId; 
     @api totalPrice;
+    @api accId; 
     whId; 
     recId;
     prodData; 
@@ -35,6 +37,7 @@ export default class MobileProducts extends LightningElement {
     //on screen load
     connectedCallback(){
         this.showSpinner = false; 
+        console.log('acc id' +this.accId)
         if(this.prodData){
             this.load(this.prodData)
         }
@@ -59,22 +62,30 @@ export default class MobileProducts extends LightningElement {
 
       async load(selItems){
         //inventory vars
+        console.log('load');
+        
         let inSet = new Set();
         let prodIdInv = [];   
+        let inCode = new Set();
+        let codes = [];
         try{
             selItems.forEach(item=>{
-                inSet.add(item.Product2Id)
+                inSet.add(item.Product2Id);
+                inCode.add(item.ProductCode);
             })
             prodIdInv = [...inSet];
-            
+            codes = [...inCode];
             if(prodIdInv){
-                console.log('wh '+ this.whId);
+                console.log('apex calls');
+                
                 let invenCheck =  await onLoadGetInventory({locId: this.whId, pIds: prodIdInv});
-                console.log('invenCheck '+invenCheck);
                 
-                let mergedProducts =  await mergeInv(selItems, invenCheck);
+                let lastPaid = await onLoadGetLastPaid({accountId:this.accId,productCodes:codes })
+                console.log('lp '+JSON.stringify(lastPaid));
                 
-                this.prod = await mobileLoad(mergedProducts);                 
+                let mergedProducts =  await mobileMergeInv(selItems, invenCheck);
+                let mergedLastPaid = await mobileLastPaid(mergedProducts, lastPaid);
+                this.prod = await mobileLoad(mergedLastPaid);                 
             }
             this.backUp = [...this.prod]
         }catch(error){
@@ -308,7 +319,7 @@ export default class MobileProducts extends LightningElement {
     }
 
     async getPrevSale(){
-        let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
+        let newProd = await getLastPaid({accountID: this.accId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.whId, pId: this.productId })
         if(newProd !=null){
             

@@ -6,6 +6,7 @@ import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
+import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
@@ -16,7 +17,7 @@ import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory} from 'c/helper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
@@ -86,6 +87,7 @@ export default class ProdSelected extends LightningElement {
                 this.stage = getFieldValue(data, STAGE);
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
+                console.log('on load warehouse '+this.warehouse);
                 
             }else if(error){
                 console.log('error '+JSON.stringify(error));
@@ -220,6 +222,44 @@ export default class ProdSelected extends LightningElement {
             }
         }      
     }
+    //get warehouse options
+    get warehouseOptions(){
+        return [
+            {label:'200 | ATS Louisville', value:'1311D0000001O7TQAU'},
+            {label:'400 | ATS Columbus', value:'1311D0000001O7OQAU'},
+            {label:'115 | ATS Fishers', value:'1311D0000001NOaQAM'},
+            {label:'600 | ATS - Elkhart', value:'1311D0000001O7JQAU'},
+        ];
+    }
+    //check other inventory
+    async checkInventory(locId){
+        this.warehouse = locId.detail.value; 
+        this.loaded = false;
+        let data = [...this.selection];
+        let pcSet = new Set();
+        let prodCodes = [];
+        try{
+            data.forEach(x=>{
+                pcSet.add(x.ProductCode);
+            })
+            prodCodes = [...pcSet];
+
+            let inCheck = await inCounts({pc:prodCodes, locId:this.warehouse});
+            console.log('inCheck ' +JSON.stringify(inCheck));
+            this.selection = await newInventory(data, inCheck);
+            //console.log(JSON.stringify(this.selection)); 
+        }catch(error){
+            this.error = error;
+            const evt = new ShowToastEvent({
+                title: 'Error loading inventory',
+                message: this.error,
+                variant: 'warning'
+            });
+            this.dispatchEvent(evt);
+        }finally{
+            this.loaded = true;
+        }    
+    }
 
     //Save Products
     saveProducts(){
@@ -244,7 +284,7 @@ export default class ProdSelected extends LightningElement {
             }
             this.dispatchEvent(
                 new ShowToastEvent({
-                    title: 'Error loading contact',
+                    title: 'Error Saving Products',
                     message,
                     variant: 'error',
                 }),

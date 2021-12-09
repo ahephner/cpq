@@ -2,7 +2,12 @@ import { LightningElement, track, wire, api } from 'lwc';
 import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
 import { MessageContext, publish} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
-
+import { getObjectInfo, getPicklistValues} from 'lightning/uiObjectInfoApi';
+import PRODUCT_OBJ from '@salesforce/schema/Product2';
+import SUB_CAT from '@salesforce/schema/Product2.Subcategory__c';
+import PROD_FAM from '@salesforce/schema/Product2.Product_Family__c'
+/* https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.reference_lightning_ui_api_object_info */
+//import spLoc from '@salesforce/apex/futureApex.spLoc';
 const columnsList = [
     {type: 'button', 
      initialWidth: 75,typeAttributes:{
@@ -53,24 +58,21 @@ export default class ProdSearch extends LightningElement {
     //Subscribe to Message Channel
     @wire(MessageContext)
     messageContext; 
-    //get set new product family/category search we will get dynamic in a later time
-    get pfOptions(){
-        return [
-            {label: 'All', value:'All'}, 
-            {label: 'Foliar-Pak', value:'Foliar-Pak'},
-            {label: 'BASF', value:'BASF'}, 
-            {label: 'FMC', value:'FMC'}
-        ]
-    }
-    get catOptions(){
-        return [
-            {label: 'All', value: 'All'}, 
-            {label: 'Herbicide', value:'Chemicals-Herbicide'},
-            {label: 'Fungicide', value:'Chemicals-Fungicide'},
-            {label: 'Insecticide', value:'Chemicals-Insecticide'},
-            {label: 'PGR', value:'Chemicals-Growth Regulator'}, 
-        ]
-    }
+    //need this to get picklist
+    @wire(getObjectInfo, { objectApiName: PRODUCT_OBJ })
+    objectInfo;
+    //get sub category picklist
+    @wire(getPicklistValues, {
+        recordTypeId: "$objectInfo.data.defaultRecordTypeId",
+        fieldApiName: SUB_CAT
+      })
+      subCatValues;
+      //get product family picklist
+      @wire(getPicklistValues, {
+        recordTypeId: "$objectInfo.data.defaultRecordTypeId",
+        fieldApiName: PROD_FAM
+      })
+      pfValues;
 
     nameChange(event){
         this.searchKey = event.target.value.trim().toLowerCase();
@@ -79,6 +81,8 @@ export default class ProdSearch extends LightningElement {
 
       //handle enter key tagged. maybe change to this.searhKey === undefined
       handleKey(evt){
+          console.log('pf '+this.pf+' cat '+this.cat);
+          
           if(!this.searchKey){
               //console.log('sk '+this.searchKey);
               return;
@@ -88,10 +92,13 @@ export default class ProdSearch extends LightningElement {
       }
       pfChange(event){
           this.pf = event.detail.value; 
+          console.log('pf '+this.pf);
+          
       }
   
       catChange(e){
           this.cat = e.detail.value; 
+          console.log('cat '+this.cat);
       }
 
 //search for product
@@ -126,6 +133,7 @@ export default class ProdSearch extends LightningElement {
         })
         
       }
+
    
      doneLoad(){
          window.clearTimeout(this.delay); 

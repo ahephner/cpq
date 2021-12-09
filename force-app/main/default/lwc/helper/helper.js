@@ -56,7 +56,25 @@
       return prod; 
   }
   
+  //allows the user to check inventory at other locations
+  const newInventory = (selectedProd, counts) =>{
+    console.log('counts in helper')
+    console.log(JSON.stringify(counts))
+    //merge selected products on inventory where common product codes
+    let merge = selectedProd.map(prod => ({
+      ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
+                          ...prod
+                      })
+                      )
+      //loop over the joined arrays. Set inventory if there is some otherwise return 0;
+      //have to delete the key value otherwise it is cached.  
+      for(let i=0; i<merge.length; i++){
+            merge[i].wInv = merge[i].QuantityOnHand ? merge[i].QuantityOnHand:0
+            delete merge[i].QuantityOnHand; 
+      }
+    return merge;
+  }
 
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory}
 

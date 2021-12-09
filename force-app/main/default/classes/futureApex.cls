@@ -77,8 +77,46 @@ for(Contact record: [SELECT AccountId FROM Contact]) {
     }
     temp.add(record);
 }
+
+//does not work because it assumes there is always going to be a searchKey
+@AuraEnabled 
+public static sObject[] searchProductWarehouse(string searchKey, string cat, string family, string priceBookId, string location){
+    string searchterm = '%' + searchKey + '%'; 
+    string category = cat; 
+    string pf = family; 
+    string pbId = priceBookId;
+    string locId = location; 
+    system.debug(pf);
+    system.debug(searchterm);
+    String query = 'Select Id,'
+              + '  ProductCode, Name, Product_Status__c,Product_Family__c, Subcategory__c, '
+              + '  Floor_Type__c, Floor_Price__c, agency__c, Total_Product_Items__c,'
+                + ' (select id, QuantityOnHand from ProductItems where product2.name like :searchTerm and LocationId =:locId),'
+                + ' (select id, UnitPrice from PriceBookEntries where product2.name like :searchTerm  and IsActive = True and Pricebook2Id =: pbId)'
+              + ' From product2 ';  
+               
+    if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
+        query += ' where (ProductCode like :searchTerm or Name like :searchTerm)';
+    }else if (!searchterm.contains('null') && category != 'All' && pf == 'All'){
+        query += ' where (ProductCode like :searchTerm or Name like :searchTerm) and subcategory__c =:category';
+    }else if(!searchterm.contains('null') && category == 'All' && pf != 'All'){
+        query += ' where (ProductCode like :searchTerm or Name like :searchTerm) and Product_Family__c =:pf';
+    }else if (searchterm.contains('null') && category != 'All' && pf == 'All'){
+        query += ' where subcategory__c =:category';
+    }else if(searchterm.contains('null') && category == 'All' && pf != 'All'){
+        query += ' where Product_Family__c =:pf';
+    }else if(searchterm.contains('null') && category != 'All' && pf != 'All'){
+        query += ' where Product_Family__c =:pf and subcategory__c =:category'; 
+    }else{
+       
+    }		 
+     
+     list<sObject> results = Database.query(query);
+     //futureApex.invCountByWarehouse('132', results); 	
+    return results; 
 }
 
 
-(Sales_Doc_Detail__c:{Id=a0F1D000002KQIQUA4, Name=SO94350126 line 2, Unit_Price__c=450.00, Margin__c=100.00, Doc_Date__c=2021-07-14 00:00:00, Product_Code__c=FMC1035-4LB, Sales_Document__c=a0E1D000007TQ1ZUAW}, 
-Sales_Doc_Detail__c:{Id=a0F1D000002KQILUA4, Name=SO94350126 Line 1, Unit_Price__c=363.00, Margin__c=35.99, Doc_Date__c=2021-07-14 00:00:00, Product_Code__c=FMC1061-16OZ, Sales_Document__c=a0E1D000007TQ1ZUAW})
+
+}
+

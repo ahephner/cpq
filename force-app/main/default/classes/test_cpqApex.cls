@@ -184,9 +184,9 @@ public class test_cpqApex {
     }  
      @isTest
     static void Test_inventory(){
-        product2 widget = new product2(name ='widget', IsActive= True); 
+        product2 widget = new product2(name ='widget', productcode='123', IsActive= True); 
         insert widget; 
-        product2 widget2 = new product2(name ='widget2', IsActive= True); 
+        product2 widget2 = new product2(name ='widget2', productcode='456', IsActive= True); 
         insert widget2; 
         //Location only wont work on this object need to do as below. 
         //https://developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/apex_class_system_Location.htm
@@ -198,6 +198,11 @@ public class test_cpqApex {
         
         ProductItem inven2 = new ProductItem(Product2Id= widget2.id,LocationId =warehouse.id, QuantityOnHand=2);
         insert inven2;
+        string pc1 = '123';
+        string pc2 = '456';
+        list<string> pcList = new list<string>();
+        pcList.add(pc1);
+        pcList.add(pc2); 
         
         Test.startTest();
         	list<id> idList = new list<id>();
@@ -206,6 +211,7 @@ public class test_cpqApex {
         	list<productitem> count = cpqApex.inventoryCount(idList); 
         	productitem count2 = cpqApex.getInventory(warehouse.id, widget.id);
         	list<productitem> onLoadCount = cpqApex.onLoadGetInventory(warehouse.id, idList); 
+        	list<productitem> changeInventory = cpqApex.inCounts(pcList, warehouse.id); 
         Test.stopTest();
     }
     

@@ -1,3 +1,5 @@
+//due to the community using variations on the product2.productclass. We need to make sure we are only looking at the simple. 
+//Needs to be declared in any product search or product item inventory search
 public with sharing class cpqApex {
     
     //get pricebooks
@@ -16,13 +18,13 @@ public with sharing class cpqApex {
       string searchterm = '%' + searchKey + '%'; 
       string category = cat; 
       string pf = family; 
-      string pbId = priceBookId; 
-      system.debug(pf);
-      system.debug(searchterm);
+      string pbId = priceBookId;  
+      string pClass = 'Simple';
+
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, '
                 + '  Product2.Floor_Type__c, Product2.Floor_Price__c, product2.agency__c, product2.Total_Product_Items__c'
-                + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND'; 
+                + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm)';
@@ -41,16 +43,25 @@ public with sharing class cpqApex {
       }		 
        
        list<PricebookEntry> results = Database.query(query);
+	   //futureApex.invCountByWarehouse('132', results); 	
       return results; 
   } 
-    
+    //this allows the user to switch the inventory check on the product screen 
+    @AuraEnabled
+    public static list<productitem> inCounts(list<string> pc, string locId){
+        list<productitem> counts = [select QuantityOnHand, Product_Code__c from
+                                    ProductItem where Product_Class__c = 'Simple' and LocationId =: locId 
+                                    and Product_Code__c In :(pc)];
+        //system.debug(counts);
+        return counts; 
+    }
     //this is where we try and get the inventory. For now we are gonna show the inventory across all locations
     //then will get at that location on select similar to last paid. 
     @AuraEnabled(cacheable = true)
         public static list<productitem> inventoryCount(list<id> ids){
             list<productitem> counts = [select id, quantityonhand,Product2Id from productitem
-                                       where product2Id in : ids];
-            system.debug('inven count '+counts);
+                                       where product2Id in : ids and Product_Class__c = 'Simple'];
+            
             return counts; 
         }
 
@@ -79,7 +90,8 @@ public with sharing class cpqApex {
         ProductItem count = null;
         
         list<ProductItem> countList = [select id, QuantityOnHand from productitem 
-                            	  where LocationId =:locId and Product2Id =:pId limit 1];
+                            	      where Product_Class__c= 'Simple' and LocationId =:locId 
+                                      and Product2Id =:pId limit 1];
         
         if(!countList.isEmpty()){
             count = countList[0];
@@ -105,6 +117,7 @@ public with sharing class cpqApex {
             ol.UnitPrice = x.UnitPrice;
             ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
+            ol.Description = x.Description;
             //ol.TotalPrice = x.TotalPrice; 
             ol.OpportunityId = x.OpportunityId;
         }else if(!String.isBlank(x.Id)){
@@ -116,6 +129,7 @@ public with sharing class cpqApex {
             ol.UnitPrice = x.UnitPrice;
             ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
+            ol.Description = x.Description;
             //ol.TotalPrice = x.TotalPrice; 
             //ol.OpportunityId = x.OpportunityId;
         }
@@ -139,7 +153,7 @@ public with sharing class cpqApex {
     @AuraEnabled
     public static list<OpportunityLineItem> getProducts(string oppId){
         list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode, TotalPrice,
-                                          product2.agency__c, Quantity, UnitPrice,CPQ_Margin__c, Cost__c, OpportunityId 
+                                          product2.agency__c, Quantity, UnitPrice,CPQ_Margin__c, Cost__c, OpportunityId,Description 
                                           from OpportunityLineItem where opportunityId =: oppId];
         system.debug(opLi);
         return opLi; 
@@ -150,7 +164,8 @@ public with sharing class cpqApex {
         list<ProductItem> cl; 
         system.debug('pIds '+pIds + ' locId '+locId);
         list<ProductItem> countList = [select product2id, QuantityOnHand from productitem
-                                      where LocationId =: locId and product2id in:(pIds)];
+                                      where LocationId =: locId and product2id in:(pIds)
+                                      and Product_Class__c = 'Simple'];
         
         if(!countList.isEmpty()){
             cl = countList; 

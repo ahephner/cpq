@@ -7,23 +7,26 @@
         </template>
     <template if:true={loaded}>
         <div class='slds-grid'>
-            <span class='slds-col slds-size_10-of-12'></span>
-            <span class='slds-col slds-size_1-of-12 slds-m-bottom_x-small'>
+            <span class='slds-col slds-size_8-of-12'></span>
+            <span class='slds-col slds-size_4-of-12 slds-m-bottom_x-small'>
                 <div class='slds-float_right slds-m-right_medium'>
+                    <lightning-button-group>
                 <!-- Switch Warehouse inventories -->
-                <lightning-combobox
-                name="warehouse"
-                label="Warehouse Inventory"
-                value={warehouse}
-                options={warehouseOptions}
-                onchange={checkInventory} ></lightning-combobox>    
+                    <lightning-combobox
+                    name="warehouse"
+                    label="Inventory Reference"
+                    value={warehouse}
+                    options={warehouseOptions}
+                    onchange={checkInventory} ></lightning-combobox>
+                    <lightning-button class='slds-m-top_large' variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button> 
+                    </lightning-button-group>   
                 </div>
             </span>
-            <span class='slds-col slds-size_1-of-12 slds-m-bottom_x-small'>
+            <!-- <span class='slds-col slds-size_2-of-12 slds-m-bottom_x-small'>
                 <div class='slds-m-top_large slds-m-right_large'>  
                     <lightning-button variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button>
                 </div>
-            </span>
+            </span> -->
         </div>
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
@@ -60,7 +63,7 @@
             <!--Table cells here-->
             <div class='slds-grid'>
                 <div class='slds-col slds-size_1-of-1'>
-                <template for:each={selection} for:item="sp" >
+                <template for:each={selection} for:item="sp">
                     <div key={sp.ProductCode} class='slds-m-horizontal_xx-small slds-m-bottom_x-small slds-grid'>
                         <!-- <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                             <lightning-icon icon-name="utility:close" name={sp.Id} size='small' class='hover'
@@ -115,7 +118,8 @@
                         </div>
                         <!--comments-->
                         <div class='slds-col slds-size_2-of-12'>
-                            <lightning-input type="text" label=""></lightning-input>
+                            <lightning-input type="text" value={sp.Description} 
+                                             name={sp.ProductCode} onchange={newComment} label=""></lightning-input>
                         </div>
                     </div>
                 </template>

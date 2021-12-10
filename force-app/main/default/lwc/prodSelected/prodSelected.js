@@ -206,6 +206,11 @@ export default class ProdSelected extends LightningElement {
             
         }
     }
+    newComment(x){
+        let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
+        this.selection[index].Description = x.detail.value;    
+    }
+    
     removeProd(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
         let id = this.selection[index].Id; 
@@ -333,7 +338,7 @@ export default class ProdSelected extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLastPaid, this.recordId); 
-                //console.log('selection '+JSON.stringify(mergedLastPaid));
+                console.log('selection '+JSON.stringify(mergedLastPaid));
             
             // mergedLastPaid.forEach(x=> 
             //     console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)

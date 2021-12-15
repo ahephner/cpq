@@ -1,21 +1,10 @@
 import { LightningElement, api } from 'lwc';
-import { NavigationMixin } from 'lightning/navigation';
-export default class FlowRedirect extends NavigationMixin(LightningElement){
-    @api goToRecordId; 
+import { FlowNavigationNextEvent } from 'lightning/flowSupport';
+export default class FlowRedirect extends LightningElement{
+    @api goToRecordId;
     
-    connnectedCallback(){
-        this.navigateToOppPage(); 
+    goNext(){
+        const nextNav = new FlowNavigationNextEvent();
+        this.dispatchEvent(nextNav);
     }
-    navigateToOppPage() {
-        console.log('id passed in '+ this.goToRecordId);
-        
-        this[NavigationMixin.Navigate]({
-            type: 'standard__recordPage',
-            attributes: {
-                recordId: this.goToRecordId,
-                objectApiName: 'Opportunity',
-                actionName: 'view'
-            }
-        });
- }
 }

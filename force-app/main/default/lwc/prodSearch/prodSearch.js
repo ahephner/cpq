@@ -5,37 +5,16 @@ import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder_
 import { getObjectInfo, getPicklistValues} from 'lightning/uiObjectInfoApi';
 import PRODUCT_OBJ from '@salesforce/schema/Product2';
 import SUB_CAT from '@salesforce/schema/Product2.Subcategory__c';
-import PROD_FAM from '@salesforce/schema/Product2.Product_Family__c'
+import PROD_FAM from '@salesforce/schema/Product2.Product_Family__c';
 /* https://developer.salesforce.com/docs/component-library/documentation/en/lwc/lwc.reference_lightning_ui_api_object_info */
 //import spLoc from '@salesforce/apex/futureApex.spLoc';
-const columnsList = [
-    {type: 'button', 
-     initialWidth: 75,typeAttributes:{
-        label: 'Add',
-        name: 'Add',
-        title: 'Add',
-        disabled: false,
-        value: 'add',
-        variant: 'success'
-    }, 
-    cellAttributes: {
-        style: 'transform: scale(0.75)'}
-    },
-    {label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}},
-    {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
-    {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
-    {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
-    {label: 'List Price', fieldName:'UnitPrice', 
-    type:'currency', cellAttributes:{alignment:'center'}},
-    {label:'Comp OH', fieldName:'qtyOnHand', cellAttributes:{alignment:'center'}}
-]
+
 export default class ProdSearch extends LightningElement {
     @api recordId; 
     @api priceBookId;
     @track openPricing = false;
-    loaded  = false
-    columnsList = columnsList; 
-    prod;
+    loaded  = false 
+    @track prod = [];
     error;
     searchKey;
     pf = 'All';
@@ -44,7 +23,27 @@ export default class ProdSearch extends LightningElement {
     //needs to be @track so we can follow reactive properties on an array or obj in childern
     @track selection = [];
     newProd; 
-    
+    @track columnsList = [
+        {type: 'button', 
+         initialWidth: 75,typeAttributes:{
+            label: 'Add',
+            name: 'Add',
+            title: 'Add',
+            disabled: false,
+            value: 'add',
+            variant: { fieldName: 'rowVariant' },
+        }, 
+        cellAttributes: {
+            style: 'transform: scale(0.75)'}
+        },
+        {label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}},
+        {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
+        {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
+        {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
+        {label: 'List Price', fieldName:'UnitPrice', 
+        type:'currency', cellAttributes:{alignment:'center'}},
+        {label:'Comp OH', fieldName:'qtyOnHand', cellAttributes:{alignment:'center'}}
+    ]
     @api
     openPriceScreen(){
         this.openPricing = true;
@@ -81,7 +80,6 @@ export default class ProdSearch extends LightningElement {
 
       //handle enter key tagged. maybe change to this.searhKey === undefined
       handleKey(evt){
-          console.log('pf '+this.pf+' cat '+this.cat);
           
           if(!this.searchKey){
               //console.log('sk '+this.searchKey);
@@ -110,14 +108,15 @@ export default class ProdSearch extends LightningElement {
         .then((result) => {
            //can't use dot notation on native tables 
            //will use map next to do math on floor type. 
-            result.forEach(x =>{
-                x.Name = x.Product2.Name,
-                x.ProductCode = x.Product2.ProductCode,
-                x.Status = x.Product2.Product_Status__c,
-                x.Floor = x.Product2.Floor_Type__c,
-                x.qtyOnHand = x.Product2.Total_Product_Items__c
-            })
-            this.prod = result;
+            this.prod = result.map(item =>({
+                                 ...item, 
+                                 rowVariant: 'brand',
+                                 Name: item.Product2.Name, 
+                                 ProductCode: item.Product2.ProductCode,
+                                 Status: item.Product2.Product_Status__c,
+                                 Floor: item.Product2.Floor_Type__c,
+                                 qtyOnHand: item.Product2.Total_Product_Items__c
+                                }));
             console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
@@ -151,7 +150,10 @@ export default class ProdSearch extends LightningElement {
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
         const rowAg = e.detail.row.Product2.Agency__c
+        let rowVar = e.detail.row.rowVariant
+        let index = this.prod.find((item) => item.Id === rowId);
         
+        console.log('rv ' +rowVar);
         
         
         if(rowAction ==='Add'){
@@ -165,6 +167,10 @@ export default class ProdSearch extends LightningElement {
              }         
     //send it 
             publish(this.messageContext, Opportunity_Builder, payload); 
+    //update the button
+            index.rowVariant = 'success';
+            this.prod= [...this.prod]
+             
         }
     }
 //This gets updated by the child appSelected with the id of a product that was selected

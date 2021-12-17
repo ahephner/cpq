@@ -18,6 +18,7 @@ export default class MobileProducts extends LightningElement {
     @api oppId; 
     @api totalPrice;
     @api accId; 
+    wh; 
     whId; 
     recId;
     prodData; 
@@ -307,9 +308,9 @@ export default class MobileProducts extends LightningElement {
         this.floorType = prodx.detail.Product2.Floor_Type__c;
         console.log('pc '+this.productCode);
         
-        //check if they already have it on the order
+        //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
-        console.log('already there '+ alreadyThere)
+        //console.log('already there '+ alreadyThere)
         if(alreadyThere < 0){
             this.getPrevSale();
             this.wasEdited = true; 
@@ -392,15 +393,17 @@ export default class MobileProducts extends LightningElement {
     handleCloseSearch(){    
         this.addProducts = false; 
     }
-// //on load merge the products and inventory
-//      mergeById = (a1, a2) =>{
-//         console.log('mergeById');
-        
-//        let merge = a1.map(itm => ({
-//                        ...a2.find((item) => (item.Product2Id === itm.Product2Id)),
-//                        ...itm
-//                    })
-//                    )
-//                    return merge; 
-//                }
+    //wareHouse info
+    get wareHouses(){
+        return [
+            {label:'200 | ATS Louisville', value:'1311D0000001O7TQAU'},
+            {label:'400 | ATS Columbus', value:'1311D0000001O7OQAU'},
+            {label:'115 | ATS Fishers', value:'1311D0000001NOaQAM'},
+            {label:'600 | ATS - Elkhart', value:'1311D0000001O7JQAU'},
+        ]
+    }
+
+    whChange(x){
+        this.wh = x.detail.value;
+    }
 }

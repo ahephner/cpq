@@ -43,6 +43,7 @@
             ProductCode: x.Product2.ProductCode,
             Quantity: x.Quantity,
             UnitPrice:x.UnitPrice,
+            //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
             Cost__c: x.Cost__c,
             agency: x.Product2.Agency__c,

@@ -66,14 +66,18 @@ export default class ProdSelected extends LightningElement {
     
     handleMessage(mess){
         this.productCode = mess.productCode;
-        this.productName = mess.productName;
-        this.productId = mess.productId 
-        this.pbeId = mess.pbeId;
-        this.unitCost = mess.unitPrice;
-        this.agency = mess.agencyProduct;
-        this.handleNewProd(); 
-        this.prodFound = true; 
-    
+        let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
+        
+        //check if the product is already on the bill. Can't have duplicates
+        if(alreadyThere<0){
+            this.productName = mess.productName;
+            this.productId = mess.productId 
+            this.pbeId = mess.pbeId;
+            this.unitCost = mess.unitPrice;
+            this.agency = mess.agencyProduct;
+            this.handleNewProd(); 
+            this.prodFound = true;
+        }    
     }
     unsubscribeToMessageChannel() {
         unsubscribe(this.subscription);
@@ -228,12 +232,13 @@ export default class ProdSelected extends LightningElement {
         }      
     }
     //get warehouse options
+//these are hardcoded to full NEED TO GET DYNAMIC
     get warehouseOptions(){
         return [
-            {label:'200 | ATS Louisville', value:'1311D0000001O7TQAU'},
-            {label:'400 | ATS Columbus', value:'1311D0000001O7OQAU'},
-            {label:'115 | ATS Fishers', value:'1311D0000001NOaQAM'},
-            {label:'600 | ATS - Elkhart', value:'1311D0000001O7JQAU'},
+            {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
+            {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
+            {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
+            {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},
         ];
     }
     //check other inventory

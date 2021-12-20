@@ -9,5 +9,10 @@
 }
 
 .icon-figcaption{
+    padding-right: 0.25rem;
+}
+
+.iconContainer{
     text-align: center;
 }
+

@@ -33,8 +33,8 @@
                                     name="prodFamily"
                                     label="Product Family"
                                     value={pf}
-                                    placeholder="Select Progress"
-                                    options={pfOptions}
+                                    placeholder="Product Family"
+                                    options={pfValues.data.values}
                                     onchange={pfChange} ></lightning-combobox>
                             </div> 
                             <div class='slds-col slds-size_2-of-8'>
@@ -42,8 +42,8 @@
                                 name="cat"
                                 label="Category"
                                 value={cat}
-                                placeholder="Select Progress"
-                                options={catOptions}
+                                placeholder="Product Category"
+                                options={subCatValues.data.values}
                                 onchange={catChange} ></lightning-combobox>
                             </div>
                             <div class='slds-col slds-size_1-of-8 slds-m-top_large slds-m-left_small'>   

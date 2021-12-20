@@ -18,6 +18,8 @@
             <property name="products" type="{T[]}" label="Products" description='List of Products'  />
             <property name='results' type='string' label='results' description='to indicate to the flow if the save was successful'/>
             <property name="oppId" type="String" />
+            <property name="accId" type="String" label='account Id' description='Enter AccountId'/>
+            <property name='warehouseId' type='string' label='warehouseId' description='pass warehouse Id here' />
             <property name="totalPrice" type="Integer" label='totalPrice' description='total price of order'/>
         </targetConfig>
     </targetConfigs>

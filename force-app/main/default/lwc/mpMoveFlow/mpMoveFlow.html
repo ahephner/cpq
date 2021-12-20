@@ -7,14 +7,25 @@
                     </c-mobile-search>
     </template>
     <template if:false={addProducts}>
-    <div class="slds-align_absolute-center">
-        <figure>
-            <lightning-icon icon-name="action:new" size="small" onclick={openProducts}
-                        class='slds-icon_container_circle slds-m-left_small' 
-                        alternative-text="Add Product" title="Add Products"></lightning-icon>
-                        <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>Add Products</figcaption>
-        </figure>
-    </div>
+            <div class="slds-grid">
+                <div class='slds-col'>
+                    <figure class="iconContainer">
+                        <lightning-icon icon-name="action:new" size="small" onclick={openProducts}
+                                    class='slds-icon_container_circle slds-m-left_small' 
+                                    alternative-text="Add Product" title="Add Products"></lightning-icon>
+                                    <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>Add Products</figcaption>
+                    </figure>                    
+                </div>
+                <div class='slds-col'>
+                    <figure class='iconContainer'>
+                        <lightning-icon icon-name="action:edit" size="small" onclick={editAll}
+                                    class='slds-icon_container_circle slds-m-left_small' 
+                                    alternative-text="Edit All" title="Edit All"></lightning-icon>
+                                    <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>{editAllText}</figcaption>
+                    </figure>
+                </div>
+            </div>
+    <!--Product Cards!-->
     <div class='slds-scrollable_y' style='height:40rem; width:100%'>
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>
@@ -27,7 +38,7 @@
             </h2>
         </div>
     <!-- button group -->
-        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_medium'>
+        <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_medium slds-align_absolute-center'>
             <div class="slds-p-around_medium lgc-bg">
                 <lightning-button-menu alternative-text="Show menu" variant="border-filled" name={item.Id} 
                                        icon-size="small"  onselect={handleAction} icon-name="utility:threedots">
@@ -40,13 +51,14 @@
     <!--Shows pricing info stuff the rep can edit-->
         <template if:false={item.showInfo}>
     <!-- Unit Price -->
-            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+            <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
                                 name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
     <!-- Qty -->
                 <lightning-input value={item.Quantity} type='number' label='Qty' min={minUnits}
                                 name ={item.Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
             </div>
+            <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
     <!-- Margin -->
                 <lightning-input value={item.CPQ_Margin__c} type='number' formater='percent' step="0.01"
@@ -57,16 +69,20 @@
         </template>
     <!--Shows more info like inventory if we can link it some how and costs-->    
         <template if:true={item.showInfo}>
-            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-                <lightning-input value='3' type='number' 
+            <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
+    <!--Inventory  -->
+                <lightning-input value={item.wInv} type='number' 
                                 name ={item.Id} label='Inventory at my locaton' readonly></lightning-input>
     <!-- Last Paid -->
-                <lightning-input value={item.lastPaid} type='number' formatter="currency" label='Last Paid' 
+                <lightning-input value={item.lastPaidDate} type='text' formatter="currency" label='Last Paid/Date' 
                                 name ={item.Id} readonly></lightning-input>
             </div>
+            <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+    <!-- Floor Price -->
                 <lightning-input value={item.Floor_Price__c} type='number' formatter="currency" label='Floor Price' 
                                 name ={item.Id} readonly></lightning-input>
+    <!-- Floor Type -->
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Id} readonly></lightning-input>
             </div>

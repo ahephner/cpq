@@ -2,7 +2,11 @@ import { deleteRecord } from 'lightning/uiRecordApi';
 import { LightningElement, api, track } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import getInventory from '@salesforce/apex/cpqApex.getInventory';
+import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
+import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
+import { mobileLoad, mobileLastPaid, mobileMergeInv} from 'c/mobileHelper';
 
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
@@ -13,6 +17,9 @@ export default class MobileProducts extends LightningElement {
     @api results; 
     @api oppId; 
     @api totalPrice;
+    @api accId; 
+    wh; 
+    whId; 
     recId;
     prodData; 
     showSpinner = true;
@@ -23,41 +30,88 @@ export default class MobileProducts extends LightningElement {
     unitCost;
     agProduct;
     floorType;
-    floorPrice; 
+    floorPrice;
+    invCount;  
+    editAllText = 'Edit All';
     //minimum amount of units per line item
     minUnits = 1
     //on screen load
     connectedCallback(){
         this.showSpinner = false; 
-        //console.log('load '+this.oppId)
+        console.log('acc id' +this.accId)
+        if(this.prodData){
+            this.load(this.prodData)
+        }
+    }
+    @api 
+    get warehouseId(){
+        return this.whId || [];
+    }
+    set warehouseId(data){
+        this.whId = data; 
     }
     //get products passed in from the flow
     @api 
-    get products(){
+    get products(){  
         return this.prodData || [];
     } 
 //setting products from passed in from the flow
     set products(data){
         this.prodData = data; 
-        this.load(this.prodData);        
+        //this.load(this.prodData);        
     }
 
-    load(p){
-        let readOnly
-        let editQTY; 
-        let icon
-        let showInfo 
-        this.prod =  p.map(x=>{
-            readOnly = true;
-            showInfo = false;  
-            editQTY = true; 
-            icon = 'utility:edit'
-            return {...x, readOnly, icon, showInfo, editQTY}
-        })
-        this.backUp = [...this.prod]
-        this.showSpinner = false; 
-       // console.log(JSON.stringify(this.prod))        
-    }
+      async load(selItems){
+        //inventory vars
+        console.log('load');
+        
+        let inSet = new Set();
+        let prodIdInv = [];   
+        let inCode = new Set();
+        let codes = [];
+        try{
+            selItems.forEach(item=>{
+                inSet.add(item.Product2Id);
+                inCode.add(item.ProductCode);
+            })
+            prodIdInv = [...inSet];
+            codes = [...inCode];
+            if(prodIdInv){
+                console.log('apex calls');
+                
+                let invenCheck =  await onLoadGetInventory({locId: this.whId, pIds: prodIdInv});
+                
+                let lastPaid = await onLoadGetLastPaid({accountId:this.accId,productCodes:codes })
+                console.log('lp '+JSON.stringify(lastPaid));
+                
+                let mergedProducts =  await mobileMergeInv(selItems, invenCheck);
+                let mergedLastPaid = await mobileLastPaid(mergedProducts, lastPaid);
+                this.prod = await mobileLoad(mergedLastPaid);                 
+            }
+            this.backUp = [...this.prod]
+        }catch(error){
+
+        }finally{
+         
+         this.showSpinner = false; 
+        }
+       }
+    // load(p){
+    //         let readOnly
+    //         let editQTY; 
+    //         let icon
+    //         let showInfo 
+    //         this.prod =  p.map(x=>{
+    //             readOnly = true;
+    //             showInfo = false;  
+    //             editQTY = true; 
+    //             icon = 'utility:edit'
+    //             return {...x, readOnly, icon, showInfo, editQTY}
+    //         })
+    //         this.backUp = [...this.prod]
+    //         this.showSpinner = false; 
+    //        // console.log(JSON.stringify(this.prod))    
+    // }
 
     handleAction(e){
         let action = e.detail.value
@@ -98,6 +152,33 @@ export default class MobileProducts extends LightningElement {
            }  
        }
 
+       //edit all products at once
+       editAll(){
+           if(this.editAllText ==='Edit All'){
+               this.editAllText = 'Close All'; 
+           }else{
+               this.editAllText = 'Edit All'; 
+           }
+           for (let index = 0; index < this.prod.length; index++){
+                if(this.prod[index].Agency__c && this.prod[index].editQTY === true){
+                    this.prod[index].editQTY = false;   
+                }else if(this.prod[index].Agency__c && this.prod[index].editQTY === false){
+                    this.prod[index].editQTY = true; 
+                }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === false){
+                    this.prod[index].readOnly = true;
+                    this.prod[index].editQTY = true;
+                }else if(this.prod[index].readOnly === false && this.prod[index].showInfo === true){
+                    this.prod[index].showInfo = false; 
+                    this.prod[index].readOnly = false;
+                    this.prod[index].editQTY = false;  
+                }else{
+                    this.prod[index].readOnly = false;
+                    this.prod[index].editQTY = false; 
+            }
+               
+           }
+       }
+//show qty on hand 
        info(index){
            if(this.prod[index].showInfo === true){
             this.prod[index].showInfo = false;
@@ -105,20 +186,6 @@ export default class MobileProducts extends LightningElement {
             this.prod[index].showInfo = true; 
            }
        }
-    // edit(e){
-    //     let index = this.prod.findIndex(x=>x.Id === e.target.name)
-    //     //need to do more in here like show a delete button.
-    //     if(this.prod[index].icon === 'utility:edit'){
-    //         this.prod[index].icon = 'utility:close';
-    //         this.prod[index].readOnly = false;
-    //         this.prod[index].buttonGroup = true
-    //     } else{
-    //         this.prod[index].icon = 'utility:edit';
-    //         this.prod[index].readOnly = true;
-    //         this.prod[index].buttonGroup = false; 
-    //     }
-    // }
-
     //Handle value changes
     handleQty(qty){
         this.allowSave();
@@ -230,19 +297,20 @@ export default class MobileProducts extends LightningElement {
     //New product selected from mobile search
     //!!Unit Cost is Unit Price on pbe. That is the api name. 
     //The lable is list price. 
-    handleNewProduct(prod){
-        this.productCode = prod.detail.ProductCode;
-        this.productName = prod.detail.Name;
-        this.productId = prod.detail.Product2Id;
-        this.pbeId = prod.detail.Id;
-        this.unitCost = prod.detail.UnitPrice;
-        this.agProduct = prod.detail.agency;
-        this.floorPrice = prod.detail.Product2.Floor_Price__c;
-        this.floorType = prod.detail.Product2.Floor_Type__c;
-        console.log(this.floorType);
+    handleNewProduct(prodx){
+        this.productCode = prodx.detail.ProductCode;
+        this.productName = prodx.detail.Name;
+        this.productId = prodx.detail.Product2Id;
+        this.pbeId = prodx.detail.Id;
+        this.unitCost = prodx.detail.UnitPrice;
+        this.agProduct = prodx.detail.agency;
+        this.floorPrice = prodx.detail.Product2.Floor_Price__c;
+        this.floorType = prodx.detail.Product2.Floor_Type__c;
+        console.log('pc '+this.productCode);
         
-        //check if they already have it on the order
+        //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
+        //console.log('already there '+ alreadyThere)
         if(alreadyThere < 0){
             this.getPrevSale();
             this.wasEdited = true; 
@@ -252,7 +320,8 @@ export default class MobileProducts extends LightningElement {
     }
 
     async getPrevSale(){
-        let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
+        let newProd = await getLastPaid({accountID: this.accId, Code: this.productCode})
+        this.invCount = await getInventory({locId: this.whId, pId: this.productId })
         if(newProd !=null){
             
             
@@ -274,6 +343,7 @@ export default class MobileProducts extends LightningElement {
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
+                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     OpportunityId: this.oppId
@@ -299,6 +369,7 @@ export default class MobileProducts extends LightningElement {
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
+                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     OpportunityId: this.oppId
@@ -321,5 +392,18 @@ export default class MobileProducts extends LightningElement {
     }
     handleCloseSearch(){    
         this.addProducts = false; 
+    }
+    //wareHouse info
+    get wareHouses(){
+        return [
+            {label:'200 | ATS Louisville', value:'1311D0000001O7TQAU'},
+            {label:'400 | ATS Columbus', value:'1311D0000001O7OQAU'},
+            {label:'115 | ATS Fishers', value:'1311D0000001NOaQAM'},
+            {label:'600 | ATS - Elkhart', value:'1311D0000001O7JQAU'},
+        ]
+    }
+
+    whChange(x){
+        this.wh = x.detail.value;
     }
 }

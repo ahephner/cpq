@@ -84,16 +84,20 @@ export default class MobileSearch extends LightningElement {
                 let icon;
                 let title;
                 let agency;
+                let onhand; 
                 this.prod = results.map(x =>{
                     Name = x.Product2.Name,
-                    ProductCode = x.Product2.ProductCode
-                    agency = x.Product2.Agency__c
-                    icon = 'action:new'
+                    ProductCode = x.Product2.ProductCode,
+                    agency = x.Product2.Agency__c,
+                    onhand = x.Product2.Total_Product_Items__c,
+                    icon = 'action:new',
                     title = ''
-                    return {...x, Name, ProductCode, icon, title, agency}
+                    return {...x, Name, ProductCode, icon, title, agency, onhand}
                 })
                 //this.prod = results; 
-                //console.log(JSON.stringify(this.prod))
+                console.log('search');
+                
+                console.log(JSON.stringify(this.prod))
                 
             }).catch((error)=>{
                 this.error = error;

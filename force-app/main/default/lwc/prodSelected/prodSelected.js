@@ -147,8 +147,20 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
-        }   
+        }    
          
+    }
+
+    //If a user decides to uncheck a product on the search screen
+    handleRemove(y){
+        console.log('handleRemove');
+        let index = this.selection.findIndex(prod => prod.PricebookEntryId === y.detail);
+        
+        if(index > -1){
+            this.selection.splice(index, 1);
+        }else{
+            return; 
+        }   
     }
     //Handle Pricing change here
     

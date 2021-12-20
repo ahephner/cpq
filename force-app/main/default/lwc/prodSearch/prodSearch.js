@@ -24,13 +24,13 @@ export default class ProdSearch extends LightningElement {
     @track selection = [];
     newProd; 
     @track columnsList = [
-        {type: 'button', 
+        {type: 'button-icon', 
          initialWidth: 75,typeAttributes:{
-            label: 'Add',
-            name: 'Add',
+            iconName:{fieldName: 'rowName'}, 
+            name: 'add prod' ,
             title: 'Add',
             disabled: false,
-            value: 'add',
+            value: {fieldName: 'rowValue'},
             variant: { fieldName: 'rowVariant' },
         }, 
         cellAttributes: {
@@ -111,6 +111,8 @@ export default class ProdSearch extends LightningElement {
             this.prod = result.map(item =>({
                                  ...item, 
                                  rowVariant: 'brand',
+                                 rowName: 'action:new',
+                                 rowValue: 'Add',
                                  Name: item.Product2.Name, 
                                  ProductCode: item.Product2.ProductCode,
                                  Status: item.Product2.Product_Status__c,
@@ -143,17 +145,17 @@ export default class ProdSearch extends LightningElement {
      //Handles adding the products to this.Selection array when the green add button is hit on the product table
      handleRowAction(e){
         this.productsSelected ++; 
-        const rowAction = e.detail.action.name; 
+        const rowAction = e.detail.row.rowValue; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
         const rowUPrice = e.detail.row.UnitPrice; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
         const rowAg = e.detail.row.Product2.Agency__c
-        let rowVar = e.detail.row.rowVariant
+        //get that row button so we can update it  
         let index = this.prod.find((item) => item.Id === rowId);
+        console.log('rowAction '+rowAction);
         
-        console.log('rv ' +rowVar);
         
         
         if(rowAction ==='Add'){
@@ -169,8 +171,25 @@ export default class ProdSearch extends LightningElement {
             publish(this.messageContext, Opportunity_Builder, payload); 
     //update the button
             index.rowVariant = 'success';
+            index.rowValue = 'Remove'
+            index.rowName = 'action:check';
             this.prod= [...this.prod]
              
+        }else if(rowAction === 'Remove'){
+            this.productsSelected --;
+            const rowId = e.detail.row.Id;
+            console.log('id '+ rowId);
+            
+            let index = this.prod.find((item) => item.Id === rowId);
+            //update the button
+            index.rowVariant = 'brand';
+            index.rowValue = 'Add'
+            index.rowName = 'action:new';
+            this.prod= [...this.prod]
+
+            this.dispatchEvent(new CustomEvent('removeprod',{
+                detail: rowId
+            }))
         }
     }
 //This gets updated by the child appSelected with the id of a product that was selected

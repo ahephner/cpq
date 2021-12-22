@@ -52,8 +52,10 @@
         <template if:false={item.showInfo}>
     <!-- Unit Price -->
             <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
+                <div data-id={item.Id}>
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
                                 name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
+                </div>
     <!-- Qty -->
                 <lightning-input value={item.Quantity} type='number' label='Qty' min={minUnits}
                                 name ={item.Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
@@ -61,8 +63,11 @@
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
     <!-- Margin -->
+            <div data-target-id={item.Id}>
                 <lightning-input value={item.CPQ_Margin__c} type='number' formater='percent' step="0.01"
-                                name ={item.Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+                name ={item.Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+            </div>
+                
     <!-- Total Price -->
                 <lightning-input value={item.TotalPrice} name ={item.Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
             </div>

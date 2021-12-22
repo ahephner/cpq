@@ -28,6 +28,8 @@ export default class MobileProducts extends LightningElement {
     productId;
     pbeId;
     unitCost;
+    levelOne;
+    levelTwo; 
     agProduct;
     floorType;
     floorPrice;
@@ -196,25 +198,48 @@ export default class MobileProducts extends LightningElement {
             this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice; 
         }
     }
-
+    //handles showing the user prompts
+    handleWarning = (targ, lev, cost, price)=>{
+        if(price > lev){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
+            
+        }else if(price<lev && price>cost){
+            console.log('warn');
+            
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
+            
+        }else if(price<cost){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
+            
+        }
+    }
     handlePrice(p){
         this.allowSave();
         window.clearTimeout(this.delay);
         let index = this.prod.findIndex(prod => prod.Id === p.target.name);
+        let targetId = p.target.name; 
+
         this.delay = setTimeout(()=>{
             this.prod[index].UnitPrice = Number(p.detail.value);
             if(this.prod[index].UnitPrice > 0){
                 this.prod[index].CPQ_Margin__c = Number((1-(this.prod[index].Cost__c /this.prod[index].UnitPrice))*100).toFixed(2)
                 this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice;
             }
+            let lOne = Number(this.prod[index].lOne);
+            let cst = Number(this.prod[index].Cost__c);
+            let unitp = Number(this.prod[index].UnitPrice);
+            this.handleWarning(targetId,lOne, cst, unitp );
         },500)
     }
 
     handleMargin(m){
-        //window.clearTimeout(this.delay)
+        window.clearTimeout(this.delay)
         this.allowSave();
         let index = this.prod.findIndex(prod => prod.Id === m.target.name);
-        console.log('index '+index);
+        let targetId = m.target.name; 
         
         this.delay = setTimeout(()=>{
             this.prod[index].CPQ_Margin__c = Number(m.detail.value);
@@ -224,6 +249,10 @@ export default class MobileProducts extends LightningElement {
                 this.prod[index].UnitPrice = (cost/num).toFixed(2);
                 this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice;
             }
+            let lOne = Number(this.prod[index].lOne);
+            let cst = Number(this.prod[index].Cost__c);
+            let unitp = Number(this.prod[index].UnitPrice);
+            this.handleWarning(targetId,lOne, cst, unitp )
         },500)
     }
 //delete individual line items. 
@@ -306,7 +335,9 @@ export default class MobileProducts extends LightningElement {
         this.agProduct = prodx.detail.agency;
         this.floorPrice = prodx.detail.Product2.Floor_Price__c;
         this.floorType = prodx.detail.Product2.Floor_Type__c;
-        console.log('pc '+this.productCode);
+        this.levelOne = prodx.detail.Level_1_Price__c; 
+        this.levelTwo = prodx.detail.Level_2_Price__c;
+        //console.log('2 '+this.levelOne);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
@@ -336,6 +367,8 @@ export default class MobileProducts extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 1,
                     UnitPrice:this.agProduct ? this.unitCost: 0,
+                    lOne: this.agency? this.unitCost : this.levelOne,
+                    lTwo: this.levelTwo,
                     CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     lastPaid: newProd.Unit_Price__c,
@@ -362,6 +395,8 @@ export default class MobileProducts extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 1,
                     UnitPrice: this.agProduct ? this.unitCost : 0,
+                    lOne: this.agency? this.unitCost : this.levelOne,
+                    lTwo: this.levelTwo,
                     lastPaid: 0,
                     lastMarg: this.agProduct ? 0: '', 
                     CPQ_Margin__c: 0,

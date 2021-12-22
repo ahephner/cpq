@@ -17,7 +17,7 @@ import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning} from 'c/helper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
@@ -121,7 +121,7 @@ export default class ProdSelected extends LightningElement {
                     name: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 1,
-                    UnitPrice: this.agency ? this.unitCost: 0,
+                    UnitPrice: this.agency ? this.unitCost: this.levelTwo,
                     lOne: this.agency? this.unitCost : this.levelOne,
                     lTwo: this.levelTwo, 
                     CPQ_Margin__c: this.agency?'':0,
@@ -145,7 +145,7 @@ export default class ProdSelected extends LightningElement {
                     name: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 1,
-                    UnitPrice: this.agency ? this.unitCost: 0,
+                    UnitPrice: this.agency ? this.unitCost: this.levelTwo,
                     lOne: this.agency? this.unitCost : this.levelOne,
                     lTwo: this.levelTwo,
                     lastPaid: 0,
@@ -210,19 +210,6 @@ export default class ProdSelected extends LightningElement {
             let cst = Number(this.selection[index].Cost__c);
             let unitp = Number(this.selection[index].UnitPrice);
             this.handleWarning(targetId,lOne, cst, unitp )
-            // if(unitp > lOne){
-            //     this.template.querySelector(`[data-id="${targetId}"]`).style.color ="black";
-            //     this.template.querySelector(`[data-target-id="${targetId}"]`).style.color ="black";
-            //     this.goodPricing = true; 
-            // }else if(unitp<lOne && unitp>cst){
-            //     this.template.querySelector(`[data-id="${targetId}"]`).style.color ="orange";
-            //     this.template.querySelector(`[data-target-id="${targetId}"]`).style.color ="orange";
-            //     this.goodPricing = true;
-            // }else if(unitp<cst){
-            //     this.template.querySelector(`[data-id="${targetId}"]`).style.color ="red";
-            //     this.template.querySelector(`[data-target-id="${targetId}"]`).style.color ="red";
-            //     this.goodPricing = false;
-            // }
 
         }, 1000)
     }

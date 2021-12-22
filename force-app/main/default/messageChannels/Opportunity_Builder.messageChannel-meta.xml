@@ -31,4 +31,12 @@
         <fieldName>agencyProduct</fieldName>
         <description>selected product is agency or not</description>
     </lightningMessageFields>
+        <lightningMessageFields>
+        <fieldName>levelOnePrice</fieldName>
+        <description>level One Product Pricing</description>
+    </lightningMessageFields>
+        <lightningMessageFields>
+        <fieldName>levelTwoPrice</fieldName>
+        <description>level Two Product Pricing</description>
+    </lightningMessageFields>
 </LightingMessageChannel>

@@ -26,6 +26,8 @@ export default class ProdSelected extends LightningElement {
     productCode;
     pbId;
     unitCost;
+    levelOne; 
+    levelTwo; 
     agency
     sId; 
     productName; 
@@ -34,7 +36,9 @@ export default class ProdSelected extends LightningElement {
     stage;
     warehouse;
     invCount;
-    error;  
+    error;
+    goodPricing;   
+    //warn = 'color:red'
     loaded = true; 
     @track selection = []
 //for message service
@@ -75,6 +79,8 @@ export default class ProdSelected extends LightningElement {
             this.pbeId = mess.pbeId;
             this.unitCost = mess.unitPrice;
             this.agency = mess.agencyProduct;
+            this.levelOne = mess.levelOnePrice;
+            this.levelTwo = mess.levelTwoPrice;  
             this.handleNewProd(); 
             this.prodFound = true;
         }    
@@ -116,12 +122,14 @@ export default class ProdSelected extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 1,
                     UnitPrice: this.agency ? this.unitCost: 0,
+                    lOne: this.agency? this.unitCost : this.levelOne,
+                    lTwo: this.levelTwo, 
                     CPQ_Margin__c: this.agency?'':0,
                     Cost__c: this.unitCost,
                     lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
-                    TotalPrice: 0,
+                    TotalPrice: this.agency? this.unitCost : this.levelOne,
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     OpportunityId: this.recordId
                 }
@@ -138,11 +146,13 @@ export default class ProdSelected extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 1,
                     UnitPrice: this.agency ? this.unitCost: 0,
+                    lOne: this.agency? this.unitCost : this.levelOne,
+                    lTwo: this.levelTwo,
                     lastPaid: 0,
-                    lastMarg: 0, 
+                    lastMarg: 0,  
                     CPQ_Margin__c: this.agency?'':0,
                     Cost__c: this.unitCost,
-                    TotalPrice: 0,
+                    TotalPrice: this.agency? this.unitCost : this.levelOne,
                     wInv: !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     OpportunityId: this.recordId
                 }
@@ -162,11 +172,29 @@ export default class ProdSelected extends LightningElement {
             return; 
         }   
     }
+
+    handleWarning = (targ, lev, cost, price)=>{
+        if(price > lev){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
+            this.goodPricing = true; 
+        }else if(price<lev && price>cost){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
+            this.goodPricing = true;
+        }else if(price<cost){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
+            this.goodPricing = false;
+        }
+    }
     //Handle Pricing change here
-    
     newPrice(e){
         window.clearTimeout(this.delay);
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
+        //let targetId = this.selection.find(ele => ele.ProductCode === e.target.name);
+        let targetId = e.target.name; 
+        
         
         this.delay = setTimeout(()=>{
             this.selection[index].UnitPrice = e.detail.value;
@@ -174,18 +202,36 @@ export default class ProdSelected extends LightningElement {
             
             if(this.selection[index].UnitPrice > 0){
                 this.selection[index].CPQ_Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].UnitPrice))*100).toFixed(2)
-                this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2);
-                console.log('tp '+this.selection[index].TotalPrice);
-                
+                this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2);    
+
             }
+            //Alert the user if the pricing is good. If an item is below floor don't allow a save. Could push that item to special order
+            let lOne = Number(this.selection[index].lOne);
+            let cst = Number(this.selection[index].Cost__c);
+            let unitp = Number(this.selection[index].UnitPrice);
+            this.handleWarning(targetId,lOne, cst, unitp )
+            // if(unitp > lOne){
+            //     this.template.querySelector(`[data-id="${targetId}"]`).style.color ="black";
+            //     this.template.querySelector(`[data-target-id="${targetId}"]`).style.color ="black";
+            //     this.goodPricing = true; 
+            // }else if(unitp<lOne && unitp>cst){
+            //     this.template.querySelector(`[data-id="${targetId}"]`).style.color ="orange";
+            //     this.template.querySelector(`[data-target-id="${targetId}"]`).style.color ="orange";
+            //     this.goodPricing = true;
+            // }else if(unitp<cst){
+            //     this.template.querySelector(`[data-id="${targetId}"]`).style.color ="red";
+            //     this.template.querySelector(`[data-target-id="${targetId}"]`).style.color ="red";
+            //     this.goodPricing = false;
+            // }
+
         }, 1000)
-        
     }
+    
 
     newMargin(m){
         window.clearTimeout(this.delay)
         let index = this.selection.findIndex(prod => prod.ProductCode === m.target.name)
-        console.log('margin index '+index);
+        let targetId = m.target.name; 
         
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         this.delay = setTimeout(()=>{
@@ -207,6 +253,12 @@ export default class ProdSelected extends LightningElement {
                     this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)   
                  
                 }
+                //Alert the user if the pricing is good. If an item is below floor don't allow a save. Could push that item to special order
+            let lOne = Number(this.selection[index].lOne);
+            let cst = Number(this.selection[index].Cost__c);
+            let unitp =  Number(this.selection[index].UnitPrice);
+            
+            this.handleWarning(targetId,lOne, cst, unitp )
     },1000)
         
     }

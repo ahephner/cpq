@@ -119,6 +119,8 @@ export default class ProdSearch extends LightningElement {
                                  Floor: item.Product2.Floor_Type__c,
                                  qtyOnHand: item.Product2.Total_Product_Items__c
                                 }));
+            console.log('returned products');
+            
             console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
@@ -148,7 +150,9 @@ export default class ProdSearch extends LightningElement {
         const rowAction = e.detail.row.rowValue; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
-        const rowUPrice = e.detail.row.UnitPrice; 
+        const rowFloorPrice = e.detail.row.UnitPrice;
+        const rowLevelOne = e.detail.row.Level_1_Price__c;
+        const rowLevelTwo = e.detail.row.Level_2_Price__c; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
         const rowAg = e.detail.row.Product2.Agency__c
@@ -162,7 +166,9 @@ export default class ProdSearch extends LightningElement {
              const payload = {
                  productCode: rowCode,
                  productId: rowProductId, 
-                 unitPrice: rowUPrice,
+                 unitPrice: rowFloorPrice,
+                 levelOnePrice: rowLevelOne,
+                 levelTwoPrice: rowLevelTwo,
                  productName: rowName,
                  pbeId: rowId,
                  agencyProduct: rowAg
@@ -177,6 +183,7 @@ export default class ProdSearch extends LightningElement {
              
         }else if(rowAction === 'Remove'){
             this.productsSelected --;
+            console.log('productsSelect '+this.productsSelected)
             const rowId = e.detail.row.Id;
             console.log('id '+ rowId);
             

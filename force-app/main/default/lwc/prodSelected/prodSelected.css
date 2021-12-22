@@ -14,3 +14,15 @@
 .price{
     margin-left: 35%;
 }
+
+.tooLow{
+    -webkit-text-fill-color: #f54049;
+}
+
+.warn{
+    -webkit-text-fill-color: #edd11a;
+}
+
+.goodPrice{
+    -webkit-text-fill-color: black;
+}

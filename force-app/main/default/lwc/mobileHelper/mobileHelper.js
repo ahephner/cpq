@@ -31,6 +31,9 @@
 
 //used for the mobile loading
 const mobileLoad = (products) =>{
+  console.log('helper');
+  
+    console.log(JSON.stringify(products));
     
     let prod = products.map(x=>{
       return {

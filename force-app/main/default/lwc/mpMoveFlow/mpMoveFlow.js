@@ -88,7 +88,8 @@ export default class MobileProducts extends LightningElement {
                 
                 let mergedProducts =  await mobileMergeInv(selItems, invenCheck);
                 let mergedLastPaid = await mobileLastPaid(mergedProducts, lastPaid);
-                this.prod = await mobileLoad(mergedLastPaid);                 
+                this.prod = await mobileLoad(mergedLastPaid);  
+                            
             }
             this.backUp = [...this.prod]
         }catch(error){
@@ -117,7 +118,7 @@ export default class MobileProducts extends LightningElement {
 
     handleAction(e){
         let action = e.detail.value
-        let index = this.prod.findIndex(x => x.Id === e.target.name)
+        let index = this.prod.findIndex(x => x.Product2Id === e.target.name)
         
         switch (action) {
             case 'Edit':
@@ -191,7 +192,7 @@ export default class MobileProducts extends LightningElement {
     //Handle value changes
     handleQty(qty){
         this.allowSave();
-        let index = this.prod.findIndex(prod => prod.Id === qty.target.name);
+        let index = this.prod.findIndex(prod => prod.Product2Id === qty.target.name);
         this.prod[index].Quantity = Number(qty.detail.value);
         //handle total price change
         if(this.prod[index].UnitPrice > 0){
@@ -200,6 +201,8 @@ export default class MobileProducts extends LightningElement {
     }
     //handles showing the user prompts
     handleWarning = (targ, lev, cost, price)=>{
+        console.log(1, targ, 2, lev, 3, cost, 4, price);
+        
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
             this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
@@ -219,9 +222,11 @@ export default class MobileProducts extends LightningElement {
     handlePrice(p){
         this.allowSave();
         window.clearTimeout(this.delay);
-        let index = this.prod.findIndex(prod => prod.Id === p.target.name);
+        let index = this.prod.findIndex(prod => prod.Product2Id === p.target.name);
+        
         let targetId = p.target.name; 
-
+        
+        
         this.delay = setTimeout(()=>{
             this.prod[index].UnitPrice = Number(p.detail.value);
             if(this.prod[index].UnitPrice > 0){
@@ -231,6 +236,8 @@ export default class MobileProducts extends LightningElement {
             let lOne = Number(this.prod[index].lOne);
             let cst = Number(this.prod[index].Cost__c);
             let unitp = Number(this.prod[index].UnitPrice);
+            console.log(1, targetId, 2, lOne, 3, cst, 4, unitp);
+            
             this.handleWarning(targetId,lOne, cst, unitp );
         },500)
     }
@@ -238,7 +245,7 @@ export default class MobileProducts extends LightningElement {
     handleMargin(m){
         window.clearTimeout(this.delay)
         this.allowSave();
-        let index = this.prod.findIndex(prod => prod.Id === m.target.name);
+        let index = this.prod.findIndex(prod => prod.Product2Id === m.target.name);
         let targetId = m.target.name; 
         
         this.delay = setTimeout(()=>{

@@ -33,6 +33,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
+    //console.log(JSON.stringify(products))
       let prod = products.map(x =>{
         return   {
             sObjectType: 'OpportunityLineItem',
@@ -42,10 +43,11 @@
             name: x.Product2.Name,
             ProductCode: x.Product2.ProductCode,
             Quantity: x.Quantity,
-            UnitPrice:x.UnitPrice,
+            lOne: x.Level_1_Price__c,
+            UnitPrice:x.CPQ_Unit_Price__c,
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
-            Cost__c: x.Cost__c,
+            Cost__c: x.UnitPrice,
             agency: x.Product2.Agency__c,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,

@@ -6,6 +6,7 @@ import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
+import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
@@ -37,8 +38,8 @@ export default class ProdSelected extends LightningElement {
     warehouse;
     invCount;
     error;
-    goodPricing;   
-    //warn = 'color:red'
+    goodPricing = true;   
+    hasRendered = true; 
     loaded = true; 
     @track selection = []
 //for message service
@@ -50,8 +51,11 @@ export default class ProdSelected extends LightningElement {
     connectedCallback() {
         this.subscribeToMessageChannel();
         this.loadProducts(); 
+        
     }
-
+    renderedCallback(){
+        this.initPriceCheck();
+    }
     disconnectedCallback() {
         this.unsubscribeToMessageChannel();
     }
@@ -173,21 +177,6 @@ export default class ProdSelected extends LightningElement {
         }   
     }
 
-    handleWarning = (targ, lev, cost, price)=>{
-        if(price > lev){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
-            this.goodPricing = true; 
-        }else if(price<lev && price>cost){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
-            this.goodPricing = true;
-        }else if(price<cost){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
-            this.goodPricing = false;
-        }
-    }
     //Handle Pricing change here
     newPrice(e){
         window.clearTimeout(this.delay);
@@ -286,10 +275,10 @@ export default class ProdSelected extends LightningElement {
 //these are hardcoded to full NEED TO GET DYNAMIC
     get warehouseOptions(){
         return [
-            {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
-            {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
-            {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
-            {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},
+            {label:'115 | ATS Fishers', value:'1311D0000001NOaQAM'},
+            {label:'200 | ATS Louisville', value:'1311D0000001O7TQAU'},
+            {label:'400 | ATS Columbus', value:'1311D0000001O7OQAU'},
+            {label:'600 | ATS - Elkhart', value:'1311D0000001O7JQAU'},
         ];
     }
     //check other inventory
@@ -387,15 +376,19 @@ export default class ProdSelected extends LightningElement {
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
             //console.log('lp '+JSON.stringify(lastPaid));
             
+            let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
+            
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
             //merge last paid saved products
             let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
+            //MERGE the price levels and saved products
+            let mergedLevels = await mergeInv(mergedLastPaid, priceLevels);
+            
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
-            this.selection = await onLoadProducts(mergedLastPaid, this.recordId); 
-                console.log('selection '+JSON.stringify(mergedLastPaid));
-            
+            this.selection = await onLoadProducts(mergedLevels, this.recordId); 
+                console.log('selection '+JSON.stringify(this.selection));
             // mergedLastPaid.forEach(x=> 
             //     console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)
             // )
@@ -416,41 +409,48 @@ export default class ProdSelected extends LightningElement {
             this.prodFound = true; 
         }
 
-            // .then(result=>{
-            //     result.forEach(item => { 
-            //         console.log('map '+item.Product2Id)
-            //         getInNoDup.add(item.Product2Id) 
-            //         getPaid.add(item.Product2.ProductCode)
-            //     });
-            //     getIn = [...getInNoDup] 
-            //     console.log('first then '+JSON.stringify(getIn));
-                
-            //     if(result){
-            //         this.prodFound = true; 
-            //         //result.forEach(x=>console.log(JSON.stringify(x)))
-            //         this.selection  = result.map(x =>{
-    
-            //                                     return   {
-            //                                                 sObjectType: 'OpportunityLineItem',
-            //                                                 Id: x.Id,
-            //                                                 PricebookEntryId: x.PricebookEntryId,
-            //                                                 Product2Id: x.Product2Id,
-            //                                                 name: x.Product2.Name,
-            //                                                 ProductCode: x.Product2.ProductCode,
-            //                                                 Quantity: x.Quantity,
-            //                                                 UnitPrice:x.UnitPrice,
-            //                                                 CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
-            //                                                 Cost__c: x.Cost__c,
-            //                                                 agency: x.Product2.Agency__c,
-            //                                                 //lastPaid: this.newProd.Unit_Price__c,
-            //                                                 //lastMarg: (this.newProd.Margin__c / 100),
-            //                                                 TotalPrice: x.TotalPrice,
-            //                                                 OpportunityId: this.recordId
-            //                                             }
-            //                                             });
-            //     }
-                
-            // })
+    }
+    //handles alerting the user if the pricing is good or bad 
+    handleWarning = (targ, lev, cost, price)=>{
+        if(price > lev){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
+            this.goodPricing = true; 
+        }else if(price<lev && price>cost){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
+            this.goodPricing = true;
+        }else if(price<cost){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
+            this.goodPricing = false;
+        }
+    }
+    initPriceCheck(){
+        console.log('hasRendered '+this.hasRendered);
+        
+        if(this.selection){
+            for(let i=0; i<this.selection.length; i++){
+                let target = this.selection[i].ProductCode
+                let level = Number(this.selection[i].lOne);
+                let cost = Number(this.selection[i].Cost__c);
+                let price = Number(this.selection[i].UnitPrice);
+                if(price>level){
+                    console.log('good to go '+this.selection[i].name);
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
+                }else if(price<level && price>cost){
+                    console.log('warn '+this.selection[i].name);
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
+                }else if(price<cost){
+                    console.log('bad pricing '+this.selection[i].name);
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
+                    this.goodPricing = false;
+                }
+            }
+             
+        }
+        
+        
     }
     //open price book search
     openProdSearch(){

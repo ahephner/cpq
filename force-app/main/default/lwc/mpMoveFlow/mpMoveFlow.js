@@ -5,6 +5,7 @@ import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
+import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 import { mobileLoad, mobileLastPaid, mobileMergeInv} from 'c/mobileHelper';
 
@@ -18,6 +19,7 @@ export default class MobileProducts extends LightningElement {
     @api oppId; 
     @api totalPrice;
     @api accId; 
+    @api pbookId; 
     wh; 
     whId; 
     recId;
@@ -35,6 +37,8 @@ export default class MobileProducts extends LightningElement {
     floorPrice;
     invCount;  
     editAllText = 'Edit All';
+    hasRendered = true;
+    goodPricing = true; 
     //minimum amount of units per line item
     minUnits = 1
     //on screen load
@@ -45,6 +49,12 @@ export default class MobileProducts extends LightningElement {
             this.load(this.prodData)
         }
     }
+    renderedCallback(){
+        if(this.prod.length>0 && this.hasRendered){
+            this.initPriceCheck();
+        }
+    }
+  
     @api 
     get warehouseId(){
         return this.whId || [];
@@ -65,12 +75,11 @@ export default class MobileProducts extends LightningElement {
 
       async load(selItems){
         //inventory vars
-        console.log('load');
-        
         let inSet = new Set();
         let prodIdInv = [];   
         let inCode = new Set();
         let codes = [];
+        //loop over and create set of id's and codes used for apex calls below
         try{
             selItems.forEach(item=>{
                 inSet.add(item.Product2Id);
@@ -79,42 +88,32 @@ export default class MobileProducts extends LightningElement {
             prodIdInv = [...inSet];
             codes = [...inCode];
             if(prodIdInv){
-                console.log('apex calls');
-                
+                                //APEX CALLS///
+                //check for current inventory
                 let invenCheck =  await onLoadGetInventory({locId: this.whId, pIds: prodIdInv});
-                
+                //check for last paid price
                 let lastPaid = await onLoadGetLastPaid({accountId:this.accId,productCodes:codes })
-                console.log('lp '+JSON.stringify(lastPaid));
-                
+                //check for current product item price levels
+                let priceLevels = await onLoadGetLevels({priceBookId:this.pbookId , productIds:prodIdInv})
+                                //Helper Calls
+                //merge returned inventory with selected items
                 let mergedProducts =  await mobileMergeInv(selItems, invenCheck);
+                //merge last paid price with inventory merged
                 let mergedLastPaid = await mobileLastPaid(mergedProducts, lastPaid);
-                this.prod = await mobileLoad(mergedLastPaid);  
+                //merge in the current price levels
+                let mergedLevels = await mobileMergeInv(mergedLastPaid, priceLevels)
+                //set the array on screen with the merged vaues. 
+                this.prod = await mobileLoad(mergedLevels);  
                             
             }
             this.backUp = [...this.prod]
         }catch(error){
 
         }finally{
-         
          this.showSpinner = false; 
         }
        }
-    // load(p){
-    //         let readOnly
-    //         let editQTY; 
-    //         let icon
-    //         let showInfo 
-    //         this.prod =  p.map(x=>{
-    //             readOnly = true;
-    //             showInfo = false;  
-    //             editQTY = true; 
-    //             icon = 'utility:edit'
-    //             return {...x, readOnly, icon, showInfo, editQTY}
-    //         })
-    //         this.backUp = [...this.prod]
-    //         this.showSpinner = false; 
-    //        // console.log(JSON.stringify(this.prod))    
-    // }
+
 
     handleAction(e){
         let action = e.detail.value
@@ -199,26 +198,7 @@ export default class MobileProducts extends LightningElement {
             this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice; 
         }
     }
-    //handles showing the user prompts
-    handleWarning = (targ, lev, cost, price)=>{
-        console.log(1, targ, 2, lev, 3, cost, 4, price);
-        
-        if(price > lev){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
-            
-        }else if(price<lev && price>cost){
-            console.log('warn');
-            
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
-            
-        }else if(price<cost){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
-            
-        }
-    }
+
     handlePrice(p){
         this.allowSave();
         window.clearTimeout(this.delay);
@@ -356,7 +336,7 @@ export default class MobileProducts extends LightningElement {
             return; 
         }
     }
-
+//ADDING NEW PRODUCT TO LIST
     async getPrevSale(){
         let newProd = await getLastPaid({accountID: this.accId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.whId, pId: this.productId })
@@ -435,6 +415,57 @@ export default class MobileProducts extends LightningElement {
     handleCloseSearch(){    
         this.addProducts = false; 
     }
+                        //PRICE WARNING SECTION 
+        //handles showing the user prompts
+        handleWarning = (targ, lev, cost, price)=>{
+            console.log(1, targ, 2, lev, 3, cost, 4, price);
+            
+            if(price > lev){
+                this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+                this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
+                this.goodPricing = true;
+                this.wasEdited = true; 
+            }else if(price<lev && price>cost){
+                this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
+                this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
+                this.goodPricing = true;
+                this.wasEdited = true; 
+            }else if(price<cost){
+                this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
+                this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
+                this.goodPricing = false;
+                this.wasEdited = false; 
+            }
+        }
+    //init will check pricing and render the color 
+    //should only run on load. Then handleWarning function above runs because it only runs over the individual line
+    initPriceCheck(){
+        this.hasRendered = false; 
+        
+            for(let i=0; i<this.prod.length; i++){
+                let target = this.prod[i].Product2Id
+                let level = Number(this.prod[i].lOne);
+                let cost = Number(this.prod[i].Cost__c);
+                let price = Number(this.prod[i].UnitPrice);
+                console.log(i);
+                
+                console.log('target '+target+' level '+level+' cost '+cost+' price '+price)
+                if(price>level){
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
+                }else if(price<level && price>cost){
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
+                }else if(price<cost){
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
+                    this.goodPricing = false;
+                }else{
+                    console.log('something is wrong '+ this.prod[i].Product2Id);
+                    
+                }
+            }   
+    } 
     //wareHouse info
     get wareHouses(){
         return [

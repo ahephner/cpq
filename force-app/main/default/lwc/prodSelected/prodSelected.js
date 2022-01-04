@@ -41,6 +41,7 @@ export default class ProdSelected extends LightningElement {
     goodPricing = true;   
     hasRendered = true; 
     loaded = true; 
+    
     @track selection = []
 //for message service
     subscritption = null;
@@ -431,16 +432,18 @@ export default class ProdSelected extends LightningElement {
     }
     //init will check pricing and render the color 
     //should only run on load. Then handleWarning function above runs because it only runs over the individual line
+    //Important don't query UnitPrice on Opp Line Item. Otherwise it will think the cost is the same price. 
     initPriceCheck(){
-        console.log('hasRendered '+this.hasRendered);
+        
         this.hasRendered = false; 
-        console.log('hasRenderedNxt '+this.hasRendered);
+        
         
             for(let i=0; i<this.selection.length; i++){
                 let target = this.selection[i].ProductCode
                 let level = Number(this.selection[i].lOne);
                 let cost = Number(this.selection[i].Cost__c);
                 let price = Number(this.selection[i].UnitPrice);
+                
                 if(price>level){
                     //console.log('good to go '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";

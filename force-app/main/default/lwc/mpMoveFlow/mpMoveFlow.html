@@ -102,6 +102,11 @@
 </template> 
 </div>
 <!-- save buttons -->
+<template if:false={goodPricing}>
+    <footer class="slds-modal__footer slds-align_absolute-center">
+        <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+    </footer>
+</template>
 <template if:true={wasEdited}>
     <footer class="slds-modal__footer slds-align_absolute-center">
         <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>

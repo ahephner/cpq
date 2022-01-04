@@ -317,4 +317,31 @@ public class test_cpqApex {
         Test.stopTest();
     
     }
+        @isTest
+    static void Test_pricingLevels(){
+        Id pbId = Test.getStandardPricebookId();
+
+        product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
+                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+        insert prod; 
+        
+        product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
+                                    Subcategory__c='Chemicals-Fungicide', Product_Family__c='FoliarPak', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+        insert prod2;
+        
+        PricebookEntry pbe = new PricebookEntry(Pricebook2Id = pbId, Product2Id=prod.id,
+                                                 unitprice=100, Level_1_Price__c=110, IsActive = True, UseStandardPrice=False);
+        PricebookEntry pbe2 = new PricebookEntry(Pricebook2Id = pbId, Product2Id=prod2.id,
+                                                 unitprice=100, Level_1_Price__c=110, IsActive = True, UseStandardPrice=False);
+
+        insert pbe;
+        insert pbe2;
+        
+        list<id> productIds = new list<id>();
+        productIds.add(prod.Id);
+        productIds.add(prod2.Id);
+        Test.startTest();
+        	list<PricebookEntry> levels = cpqApex.getLevelPricing(pbId, productIds);
+        Test.stopTest();
+    }
 }

@@ -54,7 +54,10 @@ export default class ProdSelected extends LightningElement {
         
     }
     renderedCallback(){
-        this.initPriceCheck();
+        if(this.selection.length>0 && this.hasRendered){
+            this.initPriceCheck();
+        }
+        
     }
     disconnectedCallback() {
         this.unsubscribeToMessageChannel();
@@ -426,31 +429,31 @@ export default class ProdSelected extends LightningElement {
             this.goodPricing = false;
         }
     }
+    //init will check pricing and render the color 
+    //should only run on load. Then handleWarning function above runs because it only runs over the individual line
     initPriceCheck(){
         console.log('hasRendered '+this.hasRendered);
+        this.hasRendered = false; 
+        console.log('hasRenderedNxt '+this.hasRendered);
         
-        if(this.selection){
             for(let i=0; i<this.selection.length; i++){
                 let target = this.selection[i].ProductCode
                 let level = Number(this.selection[i].lOne);
                 let cost = Number(this.selection[i].Cost__c);
                 let price = Number(this.selection[i].UnitPrice);
                 if(price>level){
-                    console.log('good to go '+this.selection[i].name);
+                    //console.log('good to go '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
                 }else if(price<level && price>cost){
-                    console.log('warn '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
                 }else if(price<cost){
-                    console.log('bad pricing '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
                     this.goodPricing = false;
                 }
-            }
-             
-        }
-        
-        
+            }   
     }
     //open price book search
     openProdSearch(){

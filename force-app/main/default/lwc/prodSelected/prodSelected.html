@@ -142,7 +142,9 @@
                 </div>
             </template>
             <template if:false={goodPricing}>
-                <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+                <div class='slds-align_absolute-center'>
+                    <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>    
+                </div>
             </template>
         </template>
         <template if:false={prodFound}>

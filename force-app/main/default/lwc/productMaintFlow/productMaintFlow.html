@@ -1,0 +1,100 @@
+<template>
+    <div class={flexipageRegionWidth}>
+        <lightning-card>
+            <template if:false={loaded}>
+                <lightning-spinner alternative-text="Loading" size="small" variant='brand'></lightning-spinner>
+            </template>
+            <template if:true={loaded}>
+                <!-- desktop -->
+                <template if:true={formSize}>
+                    <!-- header values -->
+                    <div class='slds-grid'>
+                        <div class='slds-col slds-size_2-of-8'>
+                            <p>Product Name</p>
+                        </div>
+                        <div class='slds-col slds-size_1-of-8 slds-m-left_medium'>
+                            <p>Unit Price</p>
+                        </div>
+                        <div class='slds-col slds-size_1-of-8'>
+                            <p>Level 1 Price</p>
+                        </div>
+                        <div class='slds-col slds-size_1-of-8'>
+                            <p>Level 1 Margin</p>
+                        </div>
+                        <div class='slds-col slds-size_1-of-8'>
+                            <p>Level 2</p>
+                        </div>
+                        <div class='slds-col slds-size_1-of-8'>
+                            <p>Level 2 Margin</p>
+                        </div>
+                    </div>
+            <!-- Table Cells Here -->
+                <div class="slds-scrollable_y" style="height:40rem;width:100%">
+                    <div class='slds-grid'>
+                        <div class='slds-col slds-size_1-of-1'>
+                            <template for:each={items} for:item='item'>
+                                <div key={item.Id} class='slds-m-horizontal_xx-small 
+                                     slds-m-bottom_x-small slds-grid'>
+                                    <!-- Name -->
+                                     <div class="slds-col slds-size_2-of-8">
+                                        <p class='pName'>{item.Name}</p>
+                                    </div>
+                                    <!-- Unit Price -->
+                                    <div class="slds-col slds-size_1-of-8">
+                                        <lightning-input  type="number"  
+                                        label="" name={item.Id} 
+                                        value={item.UnitPrice} onchange={newUnitPrice} step="0.01" 
+                                        read-only={item.Agency_Product__c} ></lightning-input>
+                                    </div>
+                                    <!-- Level 1 -->
+                                        <!-- price -->
+                                    <div class="slds-col slds-size_1-of-8">
+                                        <lightning-input  type="number"  
+                                        label="" name={item.Id} 
+                                        value={item.Level_1_Price__c} onchange={changeOne} step="0.01" 
+                                        read-only={item.Agency_Product__c} ></lightning-input>
+                                    </div>
+                                        <!-- margin -->
+                                    <div class="slds-col slds-size_1-of-8">
+                                        <lightning-input  type="number"  
+                                        label="" name={item.Id} value={item.levOneMar} onchange={changeMarOne} 
+                                        step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
+                                    </div>
+                                    <!-- Level 2 -->
+                                        <!-- price -->
+                                    <div class="slds-col slds-size_1-of-8">
+                                        <lightning-input  type="number"  
+                                        label="" name={item.Id} 
+                                        value={item.Level_2_Price__c} onchange={changeTwo} step="0.01" 
+                                        read-only={item.Agency_Product__c} ></lightning-input>
+                                    </div>
+                                        <!-- margin -->
+                                    <div class="slds-col slds-size_1-of-8">
+                                        <lightning-input  type="number"  
+                                        label="" name={item.Id} value={item.levTwoMar} onchange={changeMarTwo} 
+                                        step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <lightning-button variant="success" label="Save" title="titleName" onclick={handleSave}></lightning-button>
+                </template>
+                <!-- phone -->
+                <template if:false={formSize}>
+                    <lightning-layout multiple-rows="true">
+                        <template for:each={itemData} for:item='item'>
+                            <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
+                            slds-m-top_x-small  slds-m-horizontal_none">
+                            <p>{item.Name}</p><p>{item.Level_1_Price__c}</p>
+                            </lightning-layout-item> 
+                        </template>
+                    </lightning-layout>
+                </template>
+            </template>
+            
+        </lightning-card>
+    </div>
+
+</template>

@@ -216,14 +216,9 @@ export default class ProdSelected extends LightningElement {
         // eslint-disable-next-line @lwc/lwc/no-async-operation
         this.delay = setTimeout(()=>{
                 this.selection[index].CPQ_Margin__c = Number(m.detail.value);
-                console.log('new margin value '+this.selection[index].CPQ_Margin__c)
-                console.log('type of '+ typeof this.selection[index].CPQ_Margin__c );
                 
                 if(1- this.selection[index].CPQ_Margin__c/100 > 0){
                     this.selection[index].UnitPrice = Number(this.selection[index].Cost__c /(1- this.selection[index].CPQ_Margin__c/100)).toFixed(2);
-                    console.log('cost '+this.selection[index].Cost__c);
-                    
-                    console.log('margin cal '+(1- this.selection[index].CPQ_Margin__c/100))
                     
                     this.selection[index].TotalPrice = Number(this.selection[index].Units_Required__c * this.selection[index].UnitPrice).toFixed(2)
                     this.selection[index].TotalPrice = lineTotal(this.selection[index].Quantity, this.selection[index].UnitPrice);                
@@ -301,6 +296,8 @@ export default class ProdSelected extends LightningElement {
             let inCheck = await inCounts({pc:prodCodes, locId:this.warehouse});
             console.log('inCheck ' +JSON.stringify(inCheck));
             this.selection = await newInventory(data, inCheck);
+            //this will cause rerender to run so we can update the warning colors. 
+            this.hasRendered = true; 
             //console.log(JSON.stringify(this.selection)); 
         }catch(error){
             this.error = error;

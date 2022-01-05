@@ -14,7 +14,7 @@ export default class MobileProducts extends LightningElement {
     addProducts = false;
     wasEdited = false;  
     @track prod = [] 
-    @api backUp = [];
+    @track backUp = [];
     @api results; 
     @api oppId; 
     @api totalPrice;

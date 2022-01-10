@@ -104,7 +104,7 @@ export default class ProductMaintFlowMath extends LightningElement {
              this.next(); 
         }).catch(err=>{
             this.error = err;
-            const attributeChange = new FlowAttributeChangeEvent('label', mess);
+            const attributeChange = new FlowAttributeChangeEvent('label', this.error);
             this.dispatchEvent(attributeChange)
         }).finally(()=>{
             this.loaded = true; 

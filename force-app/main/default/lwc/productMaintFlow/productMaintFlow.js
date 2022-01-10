@@ -1,12 +1,16 @@
 import { LightningElement, api, track } from 'lwc';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import { updateRecord } from 'lightning/uiRecordApi';
+import { FlowNavigationNextEvent, FlowNavigationBackEvent,FlowAttributeChangeEvent  } from 'lightning/flowSupport';
 export default class ProductMaintFlow extends LightningElement{
    @track items;  
+   @track twoItems;
     itemData
     loaded = false;
-    formSize; 
+    formSize;
+    error;  
     @api flexipageRegionWidth;
+    @api message; 
 
     @api
     get priceItems(){
@@ -19,6 +23,8 @@ export default class ProductMaintFlow extends LightningElement{
     }
 
     connectedCallback(){
+        console.log('call back');
+        
         this.formSize = this.screenSize(FORM_FACTOR);
         this.loaded = true; 
     }
@@ -28,14 +34,20 @@ export default class ProductMaintFlow extends LightningElement{
     }
 
     setMargins(){
-        console.log('setMargins');
+        
         let levOneMar;
         let levTwoMar;
         this.items = this.itemData.map(i=>{
+            //console.log(i.Level_1_Price__c, i.UnitPrice);
+            //console.log((i.Level_1_Price__c - i.UnitPrice)/i.Level_1_Price__c)
             levOneMar = (((i.Level_1_Price__c - i.UnitPrice)/i.Level_1_Price__c)*100).toFixed(2);
             levTwoMar = (((i.Level_2_Price__c - i.UnitPrice)/i.Level_2_Price__c)*100).toFixed(2);
             return {...i, levOneMar, levTwoMar};
         })
+        // console.log(JSON.stringify(this.items));
+        this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : ''; 
+        console.log(this.twoItems);
+                
     }
 
 
@@ -131,5 +143,47 @@ export default class ProductMaintFlow extends LightningElement{
             
         });  
     } 
-    
+
+    handleSaveMobile(){
+        this.loaded = false;
+        
+        const recordInputs = this.items.slice().map(draft=>{
+            let Id = draft.Id;
+            let UnitPrice = draft.UnitPrice;
+            let Level_1_Price__c = draft.Level_1_Price__c;
+            let Level_2_Price__c = draft.Level_2_Price__c;
+            
+            const fields = {Id,UnitPrice, Level_1_Price__c, Level_2_Price__c};
+
+            return {fields};
+        })
+        console.log(JSON.stringify(recordInputs));
+        
+        const promises = recordInputs.map(recordInput => updateRecord(recordInput));
+        Promise.all(promises).then(prod => {
+            let mess = 'success';
+            const attributeChange = new FlowAttributeChangeEvent('message', mess);
+            this.dispatchEvent(attributeChange);
+            this.next(); 
+        }).catch(err => {
+            this.error = err;
+            const attributeChange = new FlowAttributeChangeEvent('message', this.error);
+            this.dispatchEvent(attributeChange)
+ 
+        }).finally(() => {
+            console.log('finally');
+            
+            this.draftValues = []; 
+            this.loaded = true;
+            
+        });  
+    } 
+    next(){
+        const moveNext = new FlowNavigationNextEvent();
+        this.dispatchEvent(moveNext);
+    }
+    goBack(){
+        const moveBack = new FlowNavigationBackEvent();
+        this.dispatchEvent(moveBack); 
+    }
 }

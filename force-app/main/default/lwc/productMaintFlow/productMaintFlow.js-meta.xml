@@ -16,6 +16,7 @@
         <targetConfig targets='lightning__FlowScreen' category='sales'>
             <propertyType name="T" extends="SObject" label="Input Type" description="Generic sObject data type used for input sObject properties" />
             <property name="priceItems" type="{T[]}" label="Products" description='List of Products'  />
+            <property name='message' type="string" label='message' description='Message from LWC if save was good or not'/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

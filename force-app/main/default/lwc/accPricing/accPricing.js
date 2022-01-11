@@ -9,7 +9,7 @@ export default class AccPricing extends LightningElement {
     lTwoLabel;
     section = '';
     name; 
-    updatedRecords= [];
+    @track updatedRecords= [];
     beforePricing = [];
     badRecords = [];
     agencyCount = 0;
@@ -50,15 +50,17 @@ export default class AccPricing extends LightningElement {
         let bLevTwo;
         let difOne;
         let difTwo; 
-        let warn; 
+        let warnOne;
+        let warnTwo;  
         //need to make a shallow copy
         this.toUpdate = this.items.map(el =>{
             bLevOne = el.Level_1_Price__c;
             bLevTwo = el.Level_2_Price__c;
             difOne;
             difTwo;
-            warn;
-            return {...el, bLevOne, bLevTwo, difOne, difTwo, warn}
+            warnOne;
+            warnTwo; 
+            return {...el, bLevOne, bLevTwo, difOne, difTwo, warnOne, warnTwo}
         })
         console.log(JSON.stringify(this.toUpdate));
         
@@ -75,7 +77,8 @@ export default class AccPricing extends LightningElement {
                 this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].UnitPrice /(1- this.levTwoMarg/100),2);
                 this.toUpdate[i].difOne = this.roundNum(this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne, 2);
                 this.toUpdate[i].difTwo = this.roundNum(this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo,2);
-                this.toUpdate[i].warn = (this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
+                this.toUpdate[i].warnOne = (this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
+                this.toUpdate[i].warnTwo = (this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
                 this.updatedRecords.push(this.toUpdate[i]);
             }
             else if(this.toUpdate[i].UnitPrice <=0 ||this.toUpdate[i].UnitPrice === undefined){
@@ -97,5 +100,14 @@ export default class AccPricing extends LightningElement {
     roundNum = (value, dec)=>{
         //console.log('v '+value+' dec '+dec)
         return Number(Math.round(parseFloat(value+'e'+dec))+'e-'+dec)
+    }
+
+    //remove row
+    removeRow(e){
+        let index = this.updatedRecords.findIndex(x=> x.Id === e.target.name);
+        if(index>0){
+            this.updatedRecords.splice(index,1);     
+        }
+        
     }
 }

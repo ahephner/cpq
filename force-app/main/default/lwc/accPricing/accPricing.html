@@ -47,23 +47,29 @@
                                 <td data-label="Account Name">
                                     <div class="slds-truncate">{x.Name}</div>
                                   </td>
-                                  <td data-label="Account Name">
+                                  <td data-label="bLevOne">
                                     <div class="slds-truncate">${x.bLevOne}</div>
                                   </td>
-                                  <td data-label="Account Name">
+                                  <td data-label="Level_1_Price__c">
                                     <div class="slds-truncate">${x.Level_1_Price__c}</div>
                                   </td>
-                                  <td data-label="Account Name">
+                                  <td data-label="difOne">
                                     <div class="slds-truncate"><span class={x.warn}>${x.difOne}</span></div>
                                   </td>
-                                  <td data-label="Account Name">
+                                  <td data-label="bLevTwo">
                                     <div class="slds-truncate">${x.bLevTwo}</div>
                                   </td>
-                                  <td data-label="Account Name">
+                                  <td data-label="Level_2_Price__c">
                                     <div class="slds-truncate">${x.Level_2_Price__c}</div>
                                   </td>
-                                  <td data-label="Account Name">
+                                  <td data-label="difTwo">
                                     <div class="slds-truncate"><span class={x.warn}>${x.difTwo}</span></div>
+                                  </td>
+                                  <td data-label="delete">
+                                      <div class="slds-truncate">
+                                        <lightning-button-icon icon-name="utility:close" name={x.Id}
+                                                               onclick={removeRow}></lightning-button-icon>
+                                      </div>
                                   </td>
                             </tr>
                         </template>

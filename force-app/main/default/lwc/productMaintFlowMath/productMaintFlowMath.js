@@ -8,7 +8,7 @@ export default class ProductMaintFlowMath extends LightningElement {
     items; 
     levelOne;
     name; 
-    updatedRecords= [];
+    @track updatedRecords= [];
     beforePricing = [];
     badRecords = [];
     agencyCount = 0;
@@ -42,11 +42,23 @@ export default class ProductMaintFlowMath extends LightningElement {
     }
 
     setValues(){
+        let bLevOne;
+        let bLevTwo;
+        let difOne;
+        let difTwo; 
+        let warnOne;
+        let warnTwo;  
         //need to make a shallow copy
         this.toUpdate = this.items.map(el =>{
-            return {...el}
+            bLevOne = el.Level_1_Price__c;
+            bLevTwo = el.Level_2_Price__c;
+            difOne;
+            difTwo;
+            warnOne;
+            warnTwo; 
+            return {...el, bLevOne, bLevTwo, difOne, difTwo, warnOne, warnTwo}
         })
-        //console.log(this.toUpdate);
+        console.log(JSON.stringify(this.toUpdate));
         
         for(let i=0; i<this.toUpdate.length; i++){
             if(this.toUpdate[i].Agency_Product__c){
@@ -59,7 +71,10 @@ export default class ProductMaintFlowMath extends LightningElement {
                 this.beforePricing.push(before);
                 this.toUpdate[i].Level_1_Price__c = this.roundNum(this.toUpdate[i].UnitPrice /(1- this.levelOne/100),2)
                 this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].UnitPrice /(1- this.levTwoMarg/100),2);
-                //console.log(this.toUpdate[i].Name, this.toUpdate[i].Level_1_Price__c * this.levelOne)
+                this.toUpdate[i].difOne = this.roundNum(this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne, 2);
+                this.toUpdate[i].difTwo = this.roundNum(this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo,2);
+                this.toUpdate[i].warnOne = (this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
+                this.toUpdate[i].warnTwo = (this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
                 this.updatedRecords.push(this.toUpdate[i]);
             }
             else if(this.toUpdate[i].UnitPrice <=0 ||this.toUpdate[i].UnitPrice === undefined){
@@ -123,5 +138,12 @@ export default class ProductMaintFlowMath extends LightningElement {
     roundNum = (value, dec)=>{
         //console.log('v '+value+' dec '+dec)
         return Number(Math.round(parseFloat(value+'e'+dec))+'e-'+dec)
+    }
+        //remove row
+    removeRow(e){
+        let index = this.updatedRecords.findIndex(x=> x.Id === e.target.name);
+        if(index>0){
+            this.updatedRecords.splice(index,1);     
+        }        
     }
 }

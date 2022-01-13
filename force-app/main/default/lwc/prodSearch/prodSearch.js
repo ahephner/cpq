@@ -155,7 +155,7 @@ export default class ProdSearch extends LightningElement {
         const rowLevelTwo = e.detail.row.Level_2_Price__c; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
-        const rowAg = e.detail.row.Product2.Agency__c
+        const rowAg = e.detail.row.Agency_Product__c;
         //get that row button so we can update it  
         let index = this.prod.find((item) => item.Id === rowId);
         console.log('rowAction '+rowAction);

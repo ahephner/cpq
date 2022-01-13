@@ -30,7 +30,8 @@
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>
         <lightning-layout-item size="12" key={item.Product2Id} class="slds-box slds-p-around_none 
-        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
+        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
+            name={item.Product_Name__c} onmousedown={onTounch}  onmouseup={mouseOut}>
         <div class='slds-grid slds-wrap'>
         <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">

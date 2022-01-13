@@ -42,6 +42,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    
                     <template for:each={updatedRecords} for:item="x">
                         <tr class="slds-hint-parent" key={x.Id}>
                             <td data-label="Account Name">
@@ -63,7 +64,7 @@
                                 <div class="slds-truncate">${x.Level_2_Price__c}</div>
                               </td>
                               <td data-label="Account Name">
-                                <div class="slds-truncate"><span class={x.warnTow}>${x.difTwo}</span></div>
+                                <div class="slds-truncate"><span class={x.warnTwo}>${x.difTwo}</span></div>
                               </td>
                               <td data-label="delete">
                                 <div class="slds-truncate">
@@ -73,6 +74,7 @@
                             </td>
                         </tr>
                     </template>
+                
                 </tbody>
             </table>
         </lightning-accordion-section>

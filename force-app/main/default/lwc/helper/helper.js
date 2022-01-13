@@ -48,7 +48,7 @@
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
             Cost__c: x.UnitPrice,
-            agency: x.Product2.Agency__c,
+            agency: x.Agency_Product__c,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency__c ? '' : (x.Margin__c/100),

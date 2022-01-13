@@ -12,12 +12,13 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
-import {getRecord, getFieldValue} from 'lightning/uiRecordApi';
+import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
 import { deleteRecord } from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
-import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c'
+import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
+import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning} from 'c/helper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -39,7 +40,8 @@ export default class ProdSelected extends LightningElement {
     invCount;
     error;
     goodPricing = true;   
-    hasRendered = true; 
+    hasRendered = true;
+    wasSubmitted; 
     loaded = true; 
     
     @track selection = []
@@ -105,7 +107,9 @@ export default class ProdSelected extends LightningElement {
                 this.stage = getFieldValue(data, STAGE);
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
-                console.log('on load warehouse '+this.warehouse);
+                this.wasSubmitted = this.stage === 'Closed Won'? true : false;
+                
+                
                 
             }else if(error){
                 console.log('error '+JSON.stringify(error));
@@ -312,7 +316,7 @@ export default class ProdSelected extends LightningElement {
         }    
     }
 
-    //Save Products
+    //Save Products Only Not Submit
     saveProducts(){
         this.loaded = false; 
         console.log('sending '+JSON.stringify(this.selection))
@@ -345,7 +349,46 @@ export default class ProdSelected extends LightningElement {
         })
     }
 
-;
+    saveSubmit(){
+        this.loaded = false; 
+        console.log('sending '+JSON.stringify(this.selection))
+        createProducts({olList: this.selection})
+        .then(result=>{
+            const fields = {};
+            fields[STAGE.fieldApiName] = 'Closed Won';
+            fields[ID_FIELD.fieldApiName] = this.recordId;
+            const recordInput = { fields };
+
+            updateRecord(recordInput).then(() => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Opportunity Submitted',
+                        variant: 'success'
+                    })
+                );
+                // Display fresh data in the form
+               // return refreshApex(this.contact);
+            })
+        }).catch(error=>{
+            console.log(JSON.stringify(error))
+            let message = 'Unknown error';
+            if (Array.isArray(error.body)) {
+                message = error.body.map(e => e.message).join(', ');
+            } else if (typeof error.body.message === 'string') {
+                message = error.body.message;
+            }
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Error Saving Products',
+                    message,
+                    variant: 'error',
+                }),
+            );
+        }).finally(()=>{
+            this.loaded = true; 
+        })
+    }
     //on load get products
     //get last paid next
     async loadProducts(){

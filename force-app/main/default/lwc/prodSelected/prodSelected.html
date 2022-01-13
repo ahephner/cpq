@@ -131,12 +131,19 @@
             </div>
             </div>
             <!--Buttons to save-->
+            <template if:true={wasSubmitted}>
+                <div class='slds-align_absolute-center'>
+                    <p>Quote has been submitted you can clone this!</span></p>    
+                </div>
+            </template>
+        <template if:false={wasSubmitted}>
             <template if:true={goodPricing}>
                 <div class='slds-grid'>
                     <span class='slds-col slds-size_2-of-3'></span>
                     <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
                         <div class='slds-float_right slds-m-right_medium'>
-                            <lightning-button variant="success" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                            <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                            <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button>
                         </div>
                     </span>
                 </div>
@@ -147,6 +154,7 @@
                 </div>
             </template>
         </template>
+    </template>
         <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>
                 <h4>Selected products will appear hear</h4>

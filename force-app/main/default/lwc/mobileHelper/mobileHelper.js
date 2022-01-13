@@ -63,7 +63,7 @@ const mobileLoad = (products) =>{
             OpportunityId: x.OpportunityId
       }
     })
-    console.log(JSON.stringify(prod));
+    //console.log(JSON.stringify(prod));
     
     return prod; 
   }

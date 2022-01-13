@@ -324,7 +324,7 @@ export default class MobileProducts extends LightningElement {
         this.floorType = prodx.detail.Product2.Floor_Type__c;
         this.levelOne = prodx.detail.Level_1_Price__c; 
         this.levelTwo = prodx.detail.Level_2_Price__c;
-        //console.log('2 '+this.levelOne);
+        //console.log('2 '+this.agProduct);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
@@ -354,8 +354,8 @@ export default class MobileProducts extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 1,
                     UnitPrice:this.agProduct ? this.unitCost: 0,
-                    lOne: this.agency? this.unitCost : this.levelOne,
-                    lTwo: this.levelTwo,
+                    lOne: this.agProduct ? this.unitCost : this.levelOne,
+                    lTwo: this.agProduct ? this.unitCost : this.levelTwo,
                     CPQ_Margin__c: 0,
                     Cost__c: this.unitCost,
                     lastPaid: newProd.Unit_Price__c,
@@ -363,6 +363,7 @@ export default class MobileProducts extends LightningElement {
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
+                    Agency__c: this.agProduct,
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
@@ -382,8 +383,8 @@ export default class MobileProducts extends LightningElement {
                     ProductCode: this.productCode,
                     Quantity: 1,
                     UnitPrice: this.agProduct ? this.unitCost : 0,
-                    lOne: this.agency? this.unitCost : this.levelOne,
-                    lTwo: this.levelTwo,
+                    lOne: this.agProduct ? this.unitCost : this.levelOne,
+                    lTwo: this.agProduct ? this.unitCost : this.levelTwo,
                     lastPaid: 0,
                     lastMarg: this.agProduct ? 0: '', 
                     CPQ_Margin__c: 0,
@@ -391,13 +392,14 @@ export default class MobileProducts extends LightningElement {
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
+                    Agency__c: this.agProduct,
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     OpportunityId: this.oppId
                 }
             ]
-        }
+        } //console.log('new product '+JSON.stringify(this.prod))
     }
 //handle the order total and pass this back to the flow to display on success screen
     orderTotal(products){
@@ -478,5 +480,26 @@ export default class MobileProducts extends LightningElement {
 
     whChange(x){
         this.wh = x.detail.value;
+    }
+
+    onTounch(event){
+        let slider = this.template.querySelectorAll('.pcCard');
+        console.log('slider '+slider)
+        slider.forEach(x=>{console.log(x.name);
+        })
+        let x = event.type;
+        if(x.includes('mouse')){
+            console.log(event.pageX); 
+        }
+        
+    }
+
+    onMove(){
+        console.log('moving');
+        
+    }
+    mouseOut(){
+        console.log('out');
+        
     }
 }

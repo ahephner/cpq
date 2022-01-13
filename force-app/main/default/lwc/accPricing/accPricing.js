@@ -110,4 +110,14 @@ export default class AccPricing extends LightningElement {
         }
         
     }
+
+//WORKING ON TOUCH EVENTS
+    showInfo = false;
+
+    ontouch(){
+        let x = this.template.querySelectorAll('.pcCard').name;
+        this.showInfo = false;
+        console.log('x '+x);
+        
+    }
 }

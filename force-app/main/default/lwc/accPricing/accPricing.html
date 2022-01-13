@@ -1,5 +1,5 @@
 <template>
-        <lightning-accordion active-section-name={section}>
+        <!-- <lightning-accordion active-section-name={section}>
             <lightning-accordion-section name="A" label='Averages'>
                 <p>Number of Records Processed {updatedRecordCount}</p>
                 <p>Number of Bad Records Not Processed {badRecordCount}</p>
@@ -76,5 +76,28 @@
                     </tbody>
                 </table>
             </lightning-accordion-section>
-        </lightning-accordion>
+        </lightning-accordion> -->
+        <!-- For touch events -->
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item size="12" class="slds-box slds-p-around_none 
+             slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
+                name='card 1' onmousedown={onTounch}>
+                <template if:false={showInfo}>
+                    <p>I am the front of a card 1</p>
+                </template>
+                <template if:true={showInfo}>
+                    <p>I am the back of a card 1</p>
+                </template>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" class="slds-box slds-p-around_none 
+        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
+        name='card 2' onmousedown={onTounch}>
+                <template if:false={showInfo}>
+                    <p>I am the front of a card 2</p>
+                </template>
+                <template if:true={showInfo}>
+                    <p>I am the back of a card 2</p>
+                </template>
+        </lightning-layout-item>
+        </lightning-layout>
 </template>

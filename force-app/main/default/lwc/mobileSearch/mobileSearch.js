@@ -19,7 +19,7 @@ export default class MobileSearch extends LightningElement {
     //handle the search button click
     handleSearch(){
         var input = this.template.querySelector('lightning-input')
-        this.queryTerm = input.value; 
+        this.queryTerm = input.value.trim().toLowerCase(); 
         console.log(this.queryTerm)
         this.search();  
     }
@@ -91,7 +91,7 @@ export default class MobileSearch extends LightningElement {
                 
             }).catch((error)=>{
                 this.error = error;
-                console.log('error -->'+error);
+                console.log('error -->'+JSON.stringify(error));
             }).finally(()=>{
                     this.loaded = true; 
                     

@@ -1,14 +1,10 @@
 import { LightningElement, api, wire,track } from 'lwc';
 import { getObjectInfo, getPicklistValues} from 'lightning/uiObjectInfoApi';
-import PRODUCT_OBJ from '@salesforce/schema/Product2';
-import SUB_CAT from '@salesforce/schema/Product2.Subcategory__c';
-import PROD_FAM from '@salesforce/schema/Product2.Product_Family__c';
-
-
+// There is a bug I can only get one picklist value in this comp. Whatever is the last called gets filled. Probally because I am doing something wrong. 
 export default class MobileSearchFilters extends LightningElement {
     exposed = false; 
-    pf = 'All';
-    cat = 'All';
+    pf; 
+    cat;
     pfLabel = 'All';
     catLabel ='All';
     @api objectName = 'Product2';
@@ -16,7 +12,8 @@ export default class MobileSearchFilters extends LightningElement {
     @track fieldLabel;
     @api recordTypeId;
     @api value;
-    @track options;
+    @track subOptions;
+    @track famOptions;
     apiFieldName;
     subCat = 'Product2.Subcategory__c';
     productFamily = 'Product2.Product_Family__c';
@@ -38,25 +35,83 @@ export default class MobileSearchFilters extends LightningElement {
         if (data) {
             if (this.recordTypeId == null)
                 this.recordTypeId = data.defaultRecordTypeId;
-            this.apiFieldName = this.objectName + '.' + this.fieldName;
-            this.fieldLabel = data.fields[this.fieldName].label;
+                this.value = data.defaultRecordTypeId;
             
         } else if (error) {
             // Handle error
             console.log('==============Error  ');
-            console.log(error);
+            alert(error);
         }
     }
-        //  //need this to get picklist
+     //get product family options
+    //  @wire(getPicklistValues, { recordTypeId: '$recordTypeId', fieldApiName: '$productFamily' })
+    //  getPicklistValues({ error, data }) {
+    //      if (data) {
+    //          // Map picklist values
+    //          this.famOptions = data.values.map(plValue => {
+    //              return {
+    //                  label: plValue.label,
+    //                  value: plValue.value
+    //              };
+    //          });
+    //          console.log('get family ');
+    //          console.log(this.famOptions[0]);
+    //      } else if (error) {
+    //          // Handle error
+    //          console.log('==============Error  ' + error);
+    //          console.log(error);
+    //      }
+    //  }
+    //hardcoded families
+    get pfOptions(){
+        return [
+            {label: 'All', value:'All'},
+            {label: 'Alligare', value:'Alligare'},
+            {label: 'AMVAC', value:'AMVAC'},
+            {label: 'Andersons', value:'Andersons'},
+            {label: 'Aquatrols', value:'Aquatrols'},
+            {label: 'ArmorTech	', value:'ArmorTech	'},
+            {label: 'Barenbrug', value:'Barenbrug'},
+            {label: 'BASF', value:'BASF'}, 
+            {label: 'Brandt', value:'Brandt'},
+            {label: 'Corteva', value:'Corteva'},
+            {label: 'E.C. Grow', value:'E.C. Grow'},
+            {label: 'FMC', value:'FMC'},
+            {label: 'Foliar-Pak', value:'Foliar-Pak'},
+            {label: 'Healthy Grow', value:'Healthy Grow'},
+            {label: 'Holganix', value:'Holganix'},
+            {label: 'House', value:'House'},
+            {label: 'L.T. Rich', value:'L.T. Rich'},
+            {label: 'Lebanon', value:'Lebanon'},
+            {label: 'Linemark International', value:'Linemark International'},
+            {label: 'Nufarm', value:'Nufarm'},
+            {label: 'PBI-Gordon', value:'PBI-Gordon'},
+            {label: 'Precision Laboratories', value:'Precision Laboratories'},
+            {label: 'Quali-Pro', value:'Quali-Pro'},
+            {label: 'Quest Products', value:'Quest Products'},
+            {label: 'Rotam', value:'Rotam'},
+            {label: 'SePRO', value:'SePRO'},
+            {label: 'Sipcam', value:'Sipcam'},
+            {label: 'Turf Max', value:'Turf Max'},
+            {label: 'Steel Green', value:'Steel Green'},
+            {label: 'Spyker', value:'Spyker'},
+            {label: 'Curve-Rite', value:'Curve-Rite'},
+            {label: 'Techniseal', value:'Techniseal'},
+            {label: 'Techo', value:'Techo'},
+            {label: 'Unilock', value:'Unilock'}
+        ]
+    }
+      //need this to get picklist
         @wire(getPicklistValues, { recordTypeId: '$recordTypeId', fieldApiName: '$subCat' })
         getPicklistValues({ error, data }) {
             if (data) {
                 // Map picklist values
-                this.options = data.values.map(plValue => {
+                this.subOptions = data.values.map(plValue => {
                     return {
                         label: plValue.label,
                         value: plValue.value
                     };
+                    
                 });
     
             } else if (error) {
@@ -66,30 +121,11 @@ export default class MobileSearchFilters extends LightningElement {
             }
         }
 
-   
-        //product family options needs to be fixed so it grabs all on load
-        get pfOptions(){
-            return [
-                {label: 'All', value:'All'}, 
-                {label: 'Foliar-Pak', value:'Foliar-Pak'},
-                {label: 'BASF', value:'BASF'}, 
-                {label: 'FMC', value:'FMC'}
-            ]
-        }
-        //category options
-        get catOptions(){
-            return [
-                {label: 'All', value: 'All'}, 
-                {label: 'Herbicide', value:'Chemicals-Herbicide'},
-                {label: 'Fungicide', value:'Chemicals-Fungicide'},
-                {label: 'Insecticide', value:'Chemicals-Insecticide'},
-                {label: 'PGR', value:'Chemicals-Growth Regulator'}, 
-            ]
-        }    
-    
     catChange(x){
         this.cat = x.detail.value; 
-        this.catLabel = x.target.options.find(opt => opt.value === x.detail.value).label;         
+        this.catLabel = x.target.options.find(opt => opt.value === x.detail.value).label; 
+        console.log('this catLabel '+this.catLabel);
+                
     }
     pfChange(x){
         this.pf = x.detail.value;  

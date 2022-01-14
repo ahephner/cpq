@@ -1,4 +1,4 @@
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, wire,track } from 'lwc';
 import { getObjectInfo, getPicklistValues} from 'lightning/uiObjectInfoApi';
 import PRODUCT_OBJ from '@salesforce/schema/Product2';
 import SUB_CAT from '@salesforce/schema/Product2.Subcategory__c';
@@ -11,8 +11,15 @@ export default class MobileSearchFilters extends LightningElement {
     cat = 'All';
     pfLabel = 'All';
     catLabel ='All';
-    
-   
+    @api objectName = 'Product2';
+    @api fieldName = 'Subcategory__c';
+    @track fieldLabel;
+    @api recordTypeId;
+    @api value;
+    @track options;
+    apiFieldName;
+    subCat = 'Product2.Subcategory__c';
+    productFamily = 'Product2.Product_Family__c';
     @api
     openFilter(){
         this.exposed = true; 
@@ -26,6 +33,40 @@ export default class MobileSearchFilters extends LightningElement {
         this.updateFilter(this.cat, this.pf)
         this.closeModal(); 
     }
+    @wire(getObjectInfo, { objectApiName: '$objectName' })
+    getObjectData({ error, data }) {
+        if (data) {
+            if (this.recordTypeId == null)
+                this.recordTypeId = data.defaultRecordTypeId;
+            this.apiFieldName = this.objectName + '.' + this.fieldName;
+            this.fieldLabel = data.fields[this.fieldName].label;
+            
+        } else if (error) {
+            // Handle error
+            console.log('==============Error  ');
+            console.log(error);
+        }
+    }
+        //  //need this to get picklist
+        @wire(getPicklistValues, { recordTypeId: '$recordTypeId', fieldApiName: '$subCat' })
+        getPicklistValues({ error, data }) {
+            if (data) {
+                // Map picklist values
+                this.options = data.values.map(plValue => {
+                    return {
+                        label: plValue.label,
+                        value: plValue.value
+                    };
+                });
+    
+            } else if (error) {
+                // Handle error
+                console.log('==============Error  ' + error);
+                console.log(error);
+            }
+        }
+
+   
         //product family options needs to be fixed so it grabs all on load
         get pfOptions(){
             return [
@@ -68,20 +109,3 @@ export default class MobileSearchFilters extends LightningElement {
         this.dispatchEvent(closeFilter)
     }
 }
-    //  //need this to get picklist
-    //  @wire(getObjectInfo, { objectApiName: PRODUCT_OBJ })
-    //  objectInfo;
- 
-    //  //get sub category picklist
-    //  @wire(getPicklistValues, {
-    //      recordTypeId: "$objectInfo.data.defaultRecordTypeId",
-    //      fieldApiName: SUB_CAT
-    //    })
-    //      subCatValues;
-         
-    //  //get product family picklist
-    //  @wire(getPicklistValues, {
-    //      recordTypeId: "$objectInfo.data.defaultRecordTypeId",
-    //      fieldApiName: PROD_FAM
-    //    })
-    //    pfValues;

@@ -16,16 +16,6 @@ export default class MobileSearch extends LightningElement {
     connectedCallback(){
         this.loaded = true; 
     }
-
-    //searchTerm
-    //!!!!!!!!!!!!!!NEED TO FIX IF STRNG IS EMPTY OR BLANK
-    handleKeyUp(evt) {
-        const isEnterKey = evt.keyCode === 13;
-        if (isEnterKey) {
-            this.queryTerm = evt.target.value;
-            this.search();
-        }
-    }
     //handle the search button click
     handleSearch(){
         var input = this.template.querySelector('lightning-input')

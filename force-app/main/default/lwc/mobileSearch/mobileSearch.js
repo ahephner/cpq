@@ -66,6 +66,8 @@ export default class MobileSearch extends LightningElement {
         }        
     }
     search(){
+        console.log('pf '+this.pf+' cat '+this.cat +' searchTerm '+this.queryTerm);
+        
         this.loaded = false; 
         searchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})
             .then((results)=>{

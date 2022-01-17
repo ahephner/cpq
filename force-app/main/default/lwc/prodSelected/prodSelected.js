@@ -141,7 +141,7 @@ export default class ProdSelected extends LightningElement {
                     lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
-                    TotalPrice: this.agency? this.unitCost : this.levelOne,
+                    TotalPrice: this.agency? this.unitCost : this.levelTwo,
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     OpportunityId: this.recordId
                 }
@@ -164,7 +164,7 @@ export default class ProdSelected extends LightningElement {
                     lastMarg: 0,  
                     CPQ_Margin__c: this.agency?'':0,
                     Cost__c: this.unitCost,
-                    TotalPrice: this.agency? this.unitCost : this.levelOne,
+                    TotalPrice: this.agency? this.unitCost : this.levelTwo,
                     wInv: !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     OpportunityId: this.recordId
                 }

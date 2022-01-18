@@ -482,24 +482,54 @@ export default class MobileProducts extends LightningElement {
         this.wh = x.detail.value;
     }
 
-    onTounch(event){
-        let slider = this.template.querySelectorAll('.pcCard');
-        console.log('slider '+slider)
-        slider.forEach(x=>{console.log(x.name);
-        })
-        let x = event.type;
-        if(x.includes('mouse')){
-            console.log(event.pageX); 
+    //onTounch(event){
+    //     let slider = this.template.querySelectorAll('.pcCard');
+    //     console.log('slider '+slider)
+    //     slider.forEach(x=>{console.log(x.name);
+    //     })
+    //     let x = event.type;
+    //     if(x.includes('mouse')){
+    //         console.log(event.pageX); 
+    //     }
+        
+    // }
+    isDragging = false; 
+    flip(event){
+        if(this.isDragging ===false){
+            let index = this.prod.findIndex(x => x.Product2Id === event.target.dataset.row)
+            if(index>=0){
+                console.log('found you '+event.pageX);
+                
+                if(this.prod[index].showInfo === false){
+                    this.prod[index].showInfo = true;
+                    console.log(this.prod[index].showInfo);
+                    
+                }else{
+                    this.prod[index].showInfo = false; 
+                }
+            }
         }
+
+    }
+
+    dragStart(e){
+        e.preventDefault();
+        this.isDragging = true;
+        let index = this.prod.findIndex(x => x.Product2Id === e.target.dataset.row);
+        console.log('drag start '+ index);
         
     }
 
-    onMove(){
-        console.log('moving');
+    dragStop(y){
+        let index = this.prod.findIndex(x => x.Product2Id === y.target.dataset.row);
+        this.isDragging = false; 
+        console.log('drag stop '+this.isDragging);
         
     }
-    mouseOut(){
-        console.log('out');
+    quickEdit(event){
+        let index = this.prod.findIndex(x => x.Product2Id === event.target.dataset.row)
+        console.log('double click '+event.pageX);
         
     }
+
 }

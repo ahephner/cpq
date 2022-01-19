@@ -491,7 +491,7 @@ export default class MobileProducts extends LightningElement {
     //     if(x.includes('mouse')){
     //         console.log(event.pageX); 
     //     }
-        
+    
     // }
     isDragging = false; 
     flip(event){
@@ -513,7 +513,7 @@ export default class MobileProducts extends LightningElement {
     }
 
     dragStart(e){
-        e.preventDefault();
+        //e.preventDefault();
         this.isDragging = true;
         let index = this.prod.findIndex(x => x.Product2Id === e.target.dataset.row);
         console.log('drag start '+ index);
@@ -521,9 +521,9 @@ export default class MobileProducts extends LightningElement {
     }
 
     dragStop(y){
+        console.log('drag stop '+this.isDragging);
         let index = this.prod.findIndex(x => x.Product2Id === y.target.dataset.row);
         this.isDragging = false; 
-        console.log('drag stop '+this.isDragging);
         
     }
     quickEdit(event){

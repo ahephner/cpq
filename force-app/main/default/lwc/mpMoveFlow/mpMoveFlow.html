@@ -32,7 +32,7 @@
         <lightning-layout-item size="12" key={item.Product2Id} class="slds-box slds-p-around_none 
         slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
             name={item.Product_Name__c}>
-        <div class='slds-grid slds-wrap' ondragstart={dragStart} ondragend={dragStop} onclick={flip} data-row={item.Product2Id} draggable="true">
+        <div class='slds-grid slds-wrap' ondragstart={dragStart} ondrop={dragStop} onclick={flip} data-row={item.Product2Id} draggable="true">
         <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">
                 <lightning-input value={item.Product_Name__c} type='text' readonly></lightning-input>

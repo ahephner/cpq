@@ -1,20 +1,19 @@
 <template>
     <lightning-card  variant="Narrow"  title="Addresses" >
-        <lightning-combobox
-            name="shipAdd"
-            label="Shipping Address"
-            value={selectedObj}
-            
-            options={options}
-            onchange={handleChange} ></lightning-combobox>
+
     
 
     <label for="ship-select">Shipping Address:</label>
     
         <select name="address" class="slds-select"  onchange={selectChange}>
+            <template if:true={selectedObj}> 
+                <option value={selectedObj.value}>{selectedObj.label}</option>
+            </template>
             <template for:each={options} for:item='x'>
+
                     <option key={x.value} value={x.value}>{x.label}</option>
         </template>
         </select>
+        
 </lightning-card>
 </template>

@@ -6,22 +6,18 @@ import getAddress from '@salesforce/apex/cpqApex.getAddress'
 export default class ContactAddress extends LightningElement {
         @api recordId; 
         customer;
+        selected; 
        // @track selectObj;
         @track options;
         isRendered = false;   
         error;  
-        get selectObj(){
-            console.log('get');
-            if(this.options.length > 0){
-                
-                return (this.options[0])
-            }
-        }
+
         @wire(getRecord, {recordId: '$recordId', fields:[ACCID, SHIPID]})
             custFields({data, error}){
                 if(data){
                     this.customer = getFieldValue(data,ACCID);
                     this.findAddress(this.customer)
+                    this.selected = getFieldValue(data, SHIPID);
                 }else if(error){
                     this.error = error;
                 }
@@ -30,11 +26,15 @@ export default class ContactAddress extends LightningElement {
         findAddress(rec){
              getAddress({accID: rec})
                 .then((res)=>{
+                    console.log('1 options');
+                    
                     this.options = res.map(item=>({
                                         ...item,
                                         label: item.Street +' ('+item.AddressType+')',
                                         value: item.Id
                     }))
+                    console.log('type of options '+typeof this.options);
+                    
                 }).catch((error)=>{
                     this.error = error;
                     console.log('error  '+this.error);
@@ -43,11 +43,20 @@ export default class ContactAddress extends LightningElement {
                 
                 })
         }
-        handleChange(event){
-            this.selectedObj = event.detail.value
-            console.log('this.values type '+typeof this.selectedObj);
-            
-        }
+//if a ship to has already been selected set that value
+//note as of now it puts the same option twice in the drop downs. 
+            get selectedObj(){
+                let label;
+                    if(this.options && this.selected){
+                        label = this.options.find((x)=>x.value===this.selected)
+                    }
+                    
+                    return label;
+                
+                
+            }
+
+           
         selectChange(event){
             let newValue = this.template.querySelector('.slds-select').value; 
             console.log(newValue)

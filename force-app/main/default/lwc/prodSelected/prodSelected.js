@@ -28,6 +28,7 @@ export default class ProdSelected extends LightningElement {
     productCode;
     pbId;
     unitCost;
+    unitWeight;
     levelOne; 
     levelTwo; 
     agency
@@ -88,6 +89,7 @@ export default class ProdSelected extends LightningElement {
             this.productId = mess.productId 
             this.pbeId = mess.pbeId;
             this.unitCost = mess.unitPrice;
+            this.unitWeight = mess.prodWeight;
             this.agency = mess.agencyProduct;
             this.levelOne = mess.levelOnePrice;
             this.levelTwo = mess.levelTwoPrice;  
@@ -132,6 +134,7 @@ export default class ProdSelected extends LightningElement {
                     agency: this.agency,
                     name: this.productName,
                     ProductCode: this.productCode,
+                    Single_Product_Weight__c: this.unitWeight,
                     Quantity: 1,
                     UnitPrice: this.agency ? this.unitCost: this.levelTwo,
                     lOne: this.agency? this.unitCost : this.levelOne,
@@ -156,6 +159,7 @@ export default class ProdSelected extends LightningElement {
                     agency: this.agency,
                     name: this.productName,
                     ProductCode: this.productCode,
+                    Single_Product_Weight__c: this.unitWeight,
                     Quantity: 1,
                     UnitPrice: this.agency ? this.unitCost: this.levelTwo,
                     lOne: this.agency? this.unitCost : this.levelOne,

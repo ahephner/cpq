@@ -53,7 +53,8 @@
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency__c ? '' : (x.Margin__c/100),
             TotalPrice: x.TotalPrice,
-            Description: x.Description, 
+            Description: x.Description,
+            Ship_Weight__c: x.Product2.Ship_Weight__c, 
             OpportunityId: recordId
         }
       })

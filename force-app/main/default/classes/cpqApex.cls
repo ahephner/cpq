@@ -55,6 +55,18 @@ public with sharing class cpqApex {
         //system.debug(counts);
         return counts; 
     }
+    @AuraEnabled
+    public static list<ContactPointAddress> getAddress(string accID){
+        List<ContactPointAddress> address = new List<ContactPointAddress>();
+
+        List<ContactPointAddress> searchAdd = [select id, name, AddressType, street, city,
+                                               state, postalcode from ContactPointAddress where parentid =: accID];
+        
+        if(!searchAdd.isEmpty()){
+            address = searchAdd; 
+        }
+        return address; 
+    }
     //this is where we try and get the inventory. For now we are gonna show the inventory across all locations
     //then will get at that location on select similar to last paid. 
     @AuraEnabled(cacheable = true)

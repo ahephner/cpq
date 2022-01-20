@@ -60,6 +60,7 @@ const mobileLoad = (products) =>{
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             lastMarg: x.Agency__c ? '': (x.Margin__c/100),
             TotalPrice: x.TotalPrice,
+            Ship_Weight__c: x.Product2.Ship_Weight__c, 
             OpportunityId: x.OpportunityId
       }
     })

@@ -33,6 +33,7 @@ export default class MobileProducts extends LightningElement {
     levelOne;
     levelTwo; 
     agProduct;
+    shipWeight;
     floorType;
     floorPrice;
     invCount;  
@@ -93,9 +94,9 @@ export default class MobileProducts extends LightningElement {
                 let invenCheck =  await onLoadGetInventory({locId: this.whId, pIds: prodIdInv});
                 //check for last paid price
                 let lastPaid = await onLoadGetLastPaid({accountId:this.accId,productCodes:codes })
-                //check for current product item price levels
+                //check for current product item price levels and PRODUCT WEIGHT
                 let priceLevels = await onLoadGetLevels({priceBookId:this.pbookId , productIds:prodIdInv})
-                                //Helper Calls
+                        //Helper Calls
                 //merge returned inventory with selected items
                 let mergedProducts =  await mobileMergeInv(selItems, invenCheck);
                 //merge last paid price with inventory merged
@@ -258,7 +259,7 @@ export default class MobileProducts extends LightningElement {
     saveMobile(){
         this.showSpinner = true; 
         let data = [...this.prod];
-        console.log('in save '+ data)
+        //console.log('in save '+ JSON.stringify(this.prod))
         createProducts({olList: this.prod})
         .then(result => {
             this.showSpinner = false; 
@@ -324,6 +325,7 @@ export default class MobileProducts extends LightningElement {
         this.floorType = prodx.detail.Product2.Floor_Type__c;
         this.levelOne = prodx.detail.Level_1_Price__c; 
         this.levelTwo = prodx.detail.Level_2_Price__c;
+        this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
         //console.log('2 '+this.agProduct);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
@@ -367,6 +369,7 @@ export default class MobileProducts extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
+                    Ship_Weight__c: this.shipWeight,
                     OpportunityId: this.oppId
                 }
             ]
@@ -396,6 +399,7 @@ export default class MobileProducts extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
+                    Ship_Weight__c: this.shipWeight,
                     OpportunityId: this.oppId
                 }
             ]
@@ -449,9 +453,9 @@ export default class MobileProducts extends LightningElement {
                 let level = Number(this.prod[i].lOne);
                 let cost = Number(this.prod[i].Cost__c);
                 let price = Number(this.prod[i].UnitPrice);
-                console.log(i);
+               // console.log(i);
                 
-                console.log('target '+target+' level '+level+' cost '+cost+' price '+price)
+                //console.log('target '+target+' level '+level+' cost '+cost+' price '+price)
                 if(price>level){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
@@ -463,7 +467,7 @@ export default class MobileProducts extends LightningElement {
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
                     this.goodPricing = false;
                 }else{
-                    console.log('something is wrong '+ this.prod[i].Product2Id);
+                   //console.log('something is wrong '+ this.prod[i].Product2Id);
                     
                 }
             }   
@@ -482,17 +486,6 @@ export default class MobileProducts extends LightningElement {
         this.wh = x.detail.value;
     }
 
-    //onTounch(event){
-    //     let slider = this.template.querySelectorAll('.pcCard');
-    //     console.log('slider '+slider)
-    //     slider.forEach(x=>{console.log(x.name);
-    //     })
-    //     let x = event.type;
-    //     if(x.includes('mouse')){
-    //         console.log(event.pageX); 
-    //     }
-    
-    // }
     isDragging = false; 
     flip(event){
         if(this.isDragging ===false){

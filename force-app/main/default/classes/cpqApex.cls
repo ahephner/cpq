@@ -20,32 +20,100 @@ public with sharing class cpqApex {
       string pf = family; 
       string pbId = priceBookId;  
       string pClass = 'Simple';
-
+      system.debug(searchterm);
       String query = 'Select Id,'
-                + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, '
+                + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
                 + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
+          system.debug('1');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm)';
+          system.debug('2');
       }else if (!searchterm.contains('null') && category != 'All' && pf == 'All'){
+          system.debug('3');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.subcategory__c =:category';
       }else if(!searchterm.contains('null') && category == 'All' && pf != 'All'){
+          system.debug('4');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf';
+      }else if(!searchterm.contains('null') && category != 'All' && pf != 'All'){
+          system.debug('5');
+          query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf and Product2.subcategory__c =:category';
       }else if (searchterm.contains('null') && category != 'All' && pf == 'All'){
+          system.debug('6');
           query += ' Product2.subcategory__c =:category';
-      }else if(searchterm.contains('null') && category == 'All' && pf != 'All'){
+      }else if(searchterm.contains('null')  && category == 'All' && pf != 'All'){
+          system.debug('7');
           query += ' Product2.Product_Family__c =:pf';
       }else if(searchterm.contains('null') && category != 'All' && pf != 'All'){
+          system.debug('8');
           query += ' Product2.Product_Family__c =:pf and Product2.subcategory__c =:category'; 
       }else{
-         
-      }		 
+ 
+      }	
+      	 
        
        list<PricebookEntry> results = Database.query(query);
 	    	
       return results; 
   } 
+    @AuraEnabled 
+  public static PricebookEntry[] mobileSearchProduct(string searchKey, string cat, string family, string priceBookId){
+      string searchterm = '%' + searchKey + '%'; 
+      string category = cat; 
+      string pf = family; 
+      string pbId = priceBookId;  
+      string pClass = 'Simple';
+      system.debug('pf '+pf+ ' cat '+category+ ' searchterm ' +searchterm);
+      String query = 'Select Id,'
+                + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
+                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c'
+                + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass' ; 
+                 
+      if(searchterm != '%%' && category == 'All' && pf == 'All'){
+          system.debug('1');
+          query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm)';
+          system.debug('2');
+      }else if (searchterm != '%%' && category != 'All' && pf == 'All'){
+          system.debug('3');
+          query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.subcategory__c =:category';
+      }else if(searchterm != '%%' && category == 'All' && pf != 'All'){
+          system.debug('4');
+          query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf';
+      }else if(searchterm != '%%' && category != 'All' && pf != 'All'){
+          system.debug('5');
+          query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf and Product2.subcategory__c =:category';
+      }else if (searchterm == '%%' && category != 'All' && pf == 'All'){
+          system.debug('6');
+          query += ' AND Product2.subcategory__c =:category';
+      }else if(searchterm == '%%'  && category == 'All' && pf != 'All'){
+          system.debug('7');
+          query += ' AND Product2.Product_Family__c =:pf';
+      }else if(searchterm == '%%' && category != 'All' && pf != 'All'){
+          system.debug('8');
+          query += ' AND Product2.Product_Family__c =:pf and Product2.subcategory__c =:category'; 
+      }else{
+ 			
+      }	
+      	 
+       
+       list<PricebookEntry> results = Database.query(query);
+	    	
+      return results; 
+  } 
+    //get contact point address for shipping info
+    @AuraEnabled
+    public static list<ContactPointAddress> getAddress(string accID){
+        List<ContactPointAddress> address = new List<ContactPointAddress>();
+        system.debug('accID '+accID);
+        List<ContactPointAddress> searchAdd = [select id, name, AddressType, street, city,
+                                               state, postalcode from ContactPointAddress where parentid =: accID];
+        
+        if(!searchAdd.isEmpty()){
+            address = searchAdd; 
+        }
+        return address; 
+    }
     //this allows the user to switch the inventory check on the product screen 
     @AuraEnabled
     public static list<productitem> inCounts(list<string> pc, string locId){
@@ -54,18 +122,6 @@ public with sharing class cpqApex {
                                     and Product_Code__c In :(pc)];
         //system.debug(counts);
         return counts; 
-    }
-    @AuraEnabled
-    public static list<ContactPointAddress> getAddress(string accID){
-        List<ContactPointAddress> address = new List<ContactPointAddress>();
-
-        List<ContactPointAddress> searchAdd = [select id, name, AddressType, street, city,
-                                               state, postalcode from ContactPointAddress where parentid =: accID];
-        
-        if(!searchAdd.isEmpty()){
-            address = searchAdd; 
-        }
-        return address; 
     }
     //this is where we try and get the inventory. For now we are gonna show the inventory across all locations
     //then will get at that location on select similar to last paid. 
@@ -131,6 +187,7 @@ public with sharing class cpqApex {
             ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
             ol.Description = x.Description;
+            ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             //ol.TotalPrice = x.TotalPrice; 
             ol.OpportunityId = x.OpportunityId;
         }else if(!String.isBlank(x.Id)){
@@ -143,6 +200,7 @@ public with sharing class cpqApex {
             ol.UnitPrice = x.UnitPrice;
             ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
+            ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             ol.Description = x.Description;
             //ol.TotalPrice = x.TotalPrice; 
             //ol.OpportunityId = x.OpportunityId;
@@ -166,8 +224,8 @@ public with sharing class cpqApex {
         //get saved opportunity line items
     @AuraEnabled
     public static list<OpportunityLineItem> getProducts(string oppId){
-        list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode, TotalPrice,
-                                          product2.agency__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description 
+        list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode, TotalPrice,product2.Ship_Weight__c,
+                                          product2.Agency_Pricing__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description 
                                           from OpportunityLineItem where opportunityId =: oppId];
         
         return opLi; 
@@ -211,11 +269,12 @@ public with sharing class cpqApex {
             throw new AuraHandledException(e.getMessage());
         }
     }
-    
+    //get current level pricing
+    //on mobile get the product weight on load
     @AuraEnabled(cacheable=true)
     public static list<PricebookEntry> getLevelPricing(id priceBookId,list<id> productIds){
         list<PricebookEntry> levels; 
-        list<PricebookEntry> pricing = [select product2id, UnitPrice,
+        list<PricebookEntry> pricing = [select product2id, UnitPrice,Product2.Ship_Weight__c, 
                                         Level_1_Price__c, Level_2_Price__c 
                                         from pricebookentry where product2id in:(productIds) and Pricebook2Id =: priceBookId];
         if(pricing.size()>0){

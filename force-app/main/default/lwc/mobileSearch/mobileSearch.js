@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
+import mobileSearchProduct from '@salesforce/apex/cpqApex.mobileSearchProduct';
 
 
 export default class MobileSearch extends LightningElement {
@@ -42,13 +42,17 @@ export default class MobileSearch extends LightningElement {
         this.handlePills(catLab, this.pf);
     }
     handlePills(cat, pf){
-        const catPill = cat !='All' ? {label:cat, name:'catPill'} : undefined;
-        const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : undefined;
-        if(catPill && pfPill){
+        const catPill = cat !='All' ? {label:cat, name:'catPill'} : 'All';
+        const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : 'All';
+        console.log('handle pill');
+        
+    console.log('pfPill '+JSON.stringify(pfPill)+' catPill '+JSON.stringify(catPill));
+        
+        if(catPill != 'All' && pfPill !='All'){
             this.items.push(catPill, pfPill);
-        }else if(catPill  && !pfPill){
+        }else if(catPill !='All' && pfPill ==='All'){
             this.items.push(catPill);
-        }else if(!catPill && pfPill){
+        }else if(catPill ==='All' && pfPill !='All'){
             this.items.push(pfPill);
         }else{
             this.items = [];
@@ -69,7 +73,7 @@ export default class MobileSearch extends LightningElement {
         console.log('pf '+this.pf+' cat '+this.cat +' searchTerm '+this.queryTerm);
         
         this.loaded = false; 
-        searchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})
+        mobileSearchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})
             .then((results)=>{
                 let Name;
                 let ProductCode
@@ -89,9 +93,7 @@ export default class MobileSearch extends LightningElement {
                     return {...x, Name, ProductCode, icon, title, agency, onhand, weight}
                 })
                 //this.prod = results; 
-                console.log('search');
                 
-                console.log(JSON.stringify(this.prod))
                 
             }).catch((error)=>{
                 this.error = error;

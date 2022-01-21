@@ -124,16 +124,16 @@ export default class MobileSearchFilters extends LightningElement {
     catChange(x){
         this.cat = x.detail.value; 
         this.catLabel = x.target.options.find(opt => opt.value === x.detail.value).label; 
-        console.log('this catLabel '+this.catLabel);
+        console.log('this pf '+this.pf);
                 
     }
     pfChange(x){
-        this.pf = x.detail.value;  
+        this.pf = x.detail.value; 
+         
     }
 
     updateFilter(){
-        let filters = {cat: this.cat, catLab: this.catLabel, 
-                       pf: this.pf}
+        let filters = this.pf ?{cat: this.cat, catLab: this.catLabel, pf: this.pf}: {cat: this.cat, catLab: this.catLabel, pf:'All'}; 
         
         
         const updateFilter = new CustomEvent('filterchange',{detail: filters});

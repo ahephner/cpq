@@ -9,6 +9,9 @@
             <template if:true={selectedObj}> 
                 <option value={selectedObj.value}>{selectedObj.label}</option>
             </template>
+            <template if:false={selectedObj}>
+                <option value=""></option>
+            </template>
             <template for:each={options} for:item='x'>
 
                     <option key={x.value} value={x.value}>{x.label}</option>

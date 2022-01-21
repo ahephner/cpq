@@ -3,7 +3,7 @@ import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEve
 export default class MobileButtonGroup extends LightningElement {
     @api moveTo;
     mess;
-
+  
     handleReturn(){
         this.mess = 'return';
         const attChange = new FlowAttributeChangeEvent('moveTo', this.mess);

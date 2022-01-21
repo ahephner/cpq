@@ -12,7 +12,7 @@ import { mobileLoad, mobileLastPaid, mobileMergeInv} from 'c/mobileHelper';
 export default class MobileProducts extends LightningElement {
     showDelete = false;  
     addProducts = false;
-    wasEdited = false;  
+    wasEdited = true;  
     @track prod = [] 
     @track backUp = [];
     @api results; 
@@ -355,7 +355,7 @@ export default class MobileProducts extends LightningElement {
                     Product_Name__c: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 1,
-                    UnitPrice:this.agProduct ? this.unitCost: 0,
+                    UnitPrice:this.agProduct ? this.unitCost: this.levelTwo,
                     lOne: this.agProduct ? this.unitCost : this.levelOne,
                     lTwo: this.agProduct ? this.unitCost : this.levelTwo,
                     CPQ_Margin__c: 0,
@@ -385,7 +385,7 @@ export default class MobileProducts extends LightningElement {
                     Product_Name__c: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 1,
-                    UnitPrice: this.agProduct ? this.unitCost : 0,
+                    UnitPrice: this.agProduct ? this.unitCost : this.levelTwo,
                     lOne: this.agProduct ? this.unitCost : this.levelOne,
                     lTwo: this.agProduct ? this.unitCost : this.levelTwo,
                     lastPaid: 0,

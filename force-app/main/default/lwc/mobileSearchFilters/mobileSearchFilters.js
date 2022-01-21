@@ -70,7 +70,7 @@ export default class MobileSearchFilters extends LightningElement {
             {label: 'AMVAC', value:'AMVAC'},
             {label: 'Andersons', value:'Andersons'},
             {label: 'Aquatrols', value:'Aquatrols'},
-            {label: 'ArmorTech	', value:'ArmorTech	'},
+            {label: 'ArmorTech	', value:'ArmorTech'},
             {label: 'Barenbrug', value:'Barenbrug'},
             {label: 'BASF', value:'BASF'}, 
             {label: 'Brandt', value:'Brandt'},

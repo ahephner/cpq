@@ -415,7 +415,7 @@ export default class ProdSelected extends LightningElement {
             fields[STAGE.fieldApiName] = 'Closed Won';
             fields[ID_FIELD.fieldApiName] = this.recordId;
             fields[SHIPADD.fieldApiName] = this.shippingAddress;
-            console.log('sa ' +JSON.stringify(fields));
+            //console.log('sa ' +JSON.stringify(fields));
             
             const recordInput = { fields };
 

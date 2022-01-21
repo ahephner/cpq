@@ -160,7 +160,7 @@ export default class ProdSearch extends LightningElement {
         
         //get that row button so we can update it  
         let index = this.prod.find((item) => item.Id === rowId);
-        console.log('rowWeight '+rowWeight);
+        //console.log('rowWeight '+rowWeight);
         
         
         

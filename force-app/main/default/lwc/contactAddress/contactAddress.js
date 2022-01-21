@@ -2,7 +2,9 @@ import { LightningElement, api, wire, track } from 'lwc';
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import SHIPID from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
+import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
+import { MessageContext, publish} from 'lightning/messageService';
 export default class ContactAddress extends LightningElement {
         @api recordId; 
         customer;
@@ -11,6 +13,9 @@ export default class ContactAddress extends LightningElement {
         @track options;
         isRendered = false;   
         error;  
+    //Subscribe to Message Channel
+    @wire(MessageContext)
+    messageContext; 
 
         @wire(getRecord, {recordId: '$recordId', fields:[ACCID, SHIPID]})
             custFields({data, error}){
@@ -30,7 +35,7 @@ export default class ContactAddress extends LightningElement {
                     
                     this.options = res.map(item=>({
                                         ...item,
-                                        label: item.Street +' ('+item.AddressType+')',
+                                        label: item.Street +' ('+item.Name+')',
                                         value: item.Id
                     }))
                     console.log('type of options '+typeof this.options);
@@ -59,6 +64,9 @@ export default class ContactAddress extends LightningElement {
            
         selectChange(event){
             let newValue = this.template.querySelector('.slds-select').value; 
-            console.log(newValue)
+            const payLoad = {shipAddress: newValue};
+
+            //send to main comp
+            publish(this.messageContext,Opportunity_Builder, payLoad);
         }
 }

@@ -13,12 +13,13 @@ import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} fro
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
-import { deleteRecord } from 'lightning/uiRecordApi';
+import { deleteRecord} from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
+import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning} from 'c/helper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -38,6 +39,7 @@ export default class ProdSelected extends LightningElement {
     accountId;
     stage;
     warehouse;
+    shippingAddress;
     invCount;
     error;
     goodPricing = true;   
@@ -80,35 +82,45 @@ export default class ProdSelected extends LightningElement {
     }
     
     handleMessage(mess){
-        this.productCode = mess.productCode;
-        let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
-        
-        //check if the product is already on the bill. Can't have duplicates
-        if(alreadyThere<0){
-            this.productName = mess.productName;
-            this.productId = mess.productId 
-            this.pbeId = mess.pbeId;
-            this.unitCost = mess.unitPrice;
-            this.unitWeight = mess.prodWeight;
-            this.agency = mess.agencyProduct;
-            this.levelOne = mess.levelOnePrice;
-            this.levelTwo = mess.levelTwoPrice;  
-            this.handleNewProd(); 
-            this.prodFound = true;
-        }    
+        if(mess.shipAddress){
+            //console.log('shipping address');
+            
+            this.shippingAddress = mess.shipAddress;
+        }else{
+            //console.log('new product');
+            
+            this.productCode = mess.productCode;
+            let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
+            
+            //check if the product is already on the bill. Can't have duplicates
+            if(alreadyThere<0){
+                this.productName = mess.productName;
+                this.productId = mess.productId 
+                this.pbeId = mess.pbeId;
+                this.unitCost = mess.unitPrice;
+                this.unitWeight = mess.prodWeight;
+                this.agency = mess.agencyProduct;
+                this.levelOne = mess.levelOnePrice;
+                this.levelTwo = mess.levelTwoPrice;  
+                this.handleNewProd(); 
+                this.prodFound = true;
+            } 
+        }
+   
     }
     unsubscribeToMessageChannel() {
         unsubscribe(this.subscription);
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
                 this.stage = getFieldValue(data, STAGE);
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
+                this.shippingAddress  = getFieldValue(data, SHIPADD);
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
                 
                 
@@ -351,6 +363,16 @@ export default class ProdSelected extends LightningElement {
                     variant: 'success',
                 }),
             );
+        }).then(()=>{
+            if(this.shippingAddress != null || !this.shippingAddress){
+                console.log('saving address');
+                
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[SHIPADD.fieldApiName] = this.shippingAddress;
+                const shipRec = {fields}
+                updateRecord(shipRec)
+            } 
         }).catch(error=>{
             console.log(JSON.stringify(error))
             let message = 'Unknown error';
@@ -373,12 +395,28 @@ export default class ProdSelected extends LightningElement {
 
     saveSubmit(){
         this.loaded = false; 
+        let valid = this.isValid();
+        if(valid === false){
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Missing Shipping Address',
+                    message: 'If address is missing please contact credit!',
+                    variant: 'error',
+                }),
+            );
+            this.loaded = true; 
+            return; 
+        }
+        
         console.log('sending '+JSON.stringify(this.selection))
         createProducts({olList: this.selection})
         .then(result=>{
             const fields = {};
             fields[STAGE.fieldApiName] = 'Closed Won';
             fields[ID_FIELD.fieldApiName] = this.recordId;
+            fields[SHIPADD.fieldApiName] = this.shippingAddress;
+            console.log('sa ' +JSON.stringify(fields));
+            
             const recordInput = { fields };
 
             updateRecord(recordInput).then(() => {
@@ -410,6 +448,13 @@ export default class ProdSelected extends LightningElement {
         }).finally(()=>{
             this.loaded = true; 
         })
+    }
+    isValid(){
+        let res;
+        if(this.shippingAddress ===null || !this.shippingAddress){
+            res = false;
+        }
+        return res; 
     }
     //on load get products
     //get last paid next

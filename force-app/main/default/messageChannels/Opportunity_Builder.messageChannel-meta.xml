@@ -39,4 +39,8 @@
         <fieldName>levelTwoPrice</fieldName>
         <description>level Two Product Pricing</description>
     </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>shipToAddress</fieldName>
+        <description>shipping address</description>
+    </lightningMessageFields>
 </LightingMessageChannel>

@@ -90,17 +90,34 @@
                                         read-only={sp.agency} ></lightning-input>
                                     </div>
                         </div>
+                    <template if:true={sp.showLastPaid}>
                         <!-- last paid -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
-                            <lightning-input type="number" name="lastPaid"  label='' class='ro' 
-                                        value={sp.lastPaid} formatter="currency" readonly></lightning-input>
+                            <lightning-input type="number" name={sp.ProductCode}  label='' class='ro hover' 
+                                        value={sp.lastPaid} formatter="currency" readonly  onclick={showValues}></lightning-input>
                                         <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
                         </div>
                         <!-- last margin -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <lightning-input type="number" name="lastMarg" label="" class='ro'
-                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly></lightning-input>   
+                            <lightning-input type="number" name={sp.ProductCode} label="" class='ro hover'
+                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>   
                         </div>
+                    </template>
+                    <template if:false={sp.showLastPaid}>
+                        <!-- Floor -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
+                            <lightning-input type="text" name={sp.ProductCode}  label='' class='ro hover' 
+                                        value={sp.flrText}  readonly onclick={showValues}></lightning-input>
+                                        <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
+                        </div>
+                        <!-- level 1 -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_large">
+                            <div class='hover'>
+                                <lightning-input type="text" name={sp.ProductCode} label="" class='ro'
+                                value={sp.lOneText}  step="0.01" readonly onclick={showValues}></lightning-input>
+                            </div>
+                        </div>
+                    </template>
                         <!-- user margin can be changed or set -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
                             <div data-target-id={sp.ProductCode}>

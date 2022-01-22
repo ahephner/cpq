@@ -55,6 +55,9 @@
             TotalPrice: x.TotalPrice,
             Description: x.Description,
             Ship_Weight__c: x.Product2.Ship_Weight__c, 
+            showLastPaid: true,
+            flrText: 'flr price $'+ x.UnitPrice,
+            lOneText: 'lev 1 $'+x.Level_1_Price__c, 
             OpportunityId: recordId
         }
       })

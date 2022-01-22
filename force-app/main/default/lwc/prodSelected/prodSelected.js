@@ -158,6 +158,9 @@ export default class ProdSelected extends LightningElement {
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: this.agency? this.unitCost : this.levelTwo,
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    showLastPaid: true,
+                    flrText: 'flr price $'+ this.unitCost,
+                    lOneText: 'lev 1 $'+this.levelOne,  
                     OpportunityId: this.recordId
                 }
             ]
@@ -182,6 +185,9 @@ export default class ProdSelected extends LightningElement {
                     Cost__c: this.unitCost,
                     TotalPrice: this.agency? this.unitCost : this.levelTwo,
                     wInv: !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    showLastPaid: true,
+                    flrText: 'flr price $'+ this.unitCost,
+                    lOneText: 'lev 1 $'+this.levelOne, 
                     OpportunityId: this.recordId
                 }
             ]
@@ -564,6 +570,18 @@ export default class ProdSelected extends LightningElement {
                     this.goodPricing = false;
                 }
             }   
+    }
+    //Show floor vs last paid
+    showValues(e){
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
+
+        if(this.selection[index].showLastPaid){
+            console.log('turning false');
+            
+            this.selection[index].showLastPaid = false;
+        }else{
+            this.selection[index].showLastPaid = true; 
+        }
     }
     //open price book search
     openProdSearch(){

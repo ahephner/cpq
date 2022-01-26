@@ -35,6 +35,7 @@
   const onLoadProducts = (products, recordId) =>{
     //console.log(JSON.stringify(products))
       let prod = products.map(x =>{
+        
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
@@ -48,7 +49,7 @@
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
             Cost__c: x.UnitPrice,
-            agency: x.Agency_Pricing__c,
+            agency: x.Product2.Agency_Pricing__c ,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),

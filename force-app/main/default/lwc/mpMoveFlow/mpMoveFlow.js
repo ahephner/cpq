@@ -342,6 +342,8 @@ export default class MobileProducts extends LightningElement {
     async getPrevSale(){
         let newProd = await getLastPaid({accountID: this.accId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.whId, pId: this.productId })
+        
+        
         if(newProd !=null){
             
             
@@ -362,6 +364,7 @@ export default class MobileProducts extends LightningElement {
                     Cost__c: this.unitCost,
                     lastPaid: newProd.Unit_Price__c,
                     lastMarg: this.agProduct ? '' : (newProd.Margin__c / 100),
+                    lastPaidDate: newProd.Unit_Price__c ? '$'+newProd.Unit_Price__c +' '+newProd.Doc_Date__c : '',
                     TotalPrice: 0,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,

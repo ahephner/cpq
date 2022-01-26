@@ -23,7 +23,8 @@ public with sharing class cpqApex {
       system.debug(searchterm);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
-                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c'
+                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
+          		+ ' Level_1_Formula__c, Level_1_Protection_Formula__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){

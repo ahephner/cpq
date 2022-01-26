@@ -58,6 +58,11 @@
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
                                 name ={item.Product2Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
                 </div>
+                <!--Last Paid-->
+                <template if:true={item.prevPurchase}>
+                    <lightning-input value={item.lastPaidDate} type='text' formatter="currency" label='Last Paid/Date' 
+                                    name ={item.Product2Id} readonly></lightning-input>
+                </template>
     <!-- Qty -->
                 <lightning-input value={item.Quantity} type='number' label='Qty' min={minUnits}
                                 name ={item.Product2Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
@@ -69,7 +74,11 @@
                 <lightning-input value={item.CPQ_Margin__c} type='number' formater='percent' step="0.01"
                 name ={item.Product2Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
             </div>
-                
+    <!--Last Margin-->
+            <template if:true={item.prevPurchase}>
+                <lightning-input value={item.lastMarg} type='text' formatter="percent" label='Last Paid Margin' 
+                name ={item.Product2Id} readonly></lightning-input>
+            </template>            
     <!-- Total Price -->
                 <lightning-input value={item.TotalPrice} name ={item.Product2Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
             </div>
@@ -80,8 +89,8 @@
     <!--Inventory  -->
                 <lightning-input value={item.wInv} type='number' 
                                 name ={item.Product2Id} label='Inventory at my locaton' readonly></lightning-input>
-    <!-- Last Paid -->
-                <lightning-input value={item.lastPaidDate} type='text' formatter="currency" label='Last Paid/Date' 
+    <!-- levels  -->
+                <lightning-input value={item.levels} type='text' formatter="text" label='Level Pricing' 
                                 name ={item.Product2Id} readonly></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->

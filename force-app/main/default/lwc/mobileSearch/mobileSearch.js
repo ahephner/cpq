@@ -44,9 +44,9 @@ export default class MobileSearch extends LightningElement {
     handlePills(cat, pf){
         const catPill = cat !='All' ? {label:cat, name:'catPill'} : 'All';
         const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : 'All';
-        console.log('handle pill');
+       // console.log('handle pill');
         
-    console.log('pfPill '+JSON.stringify(pfPill)+' catPill '+JSON.stringify(catPill));
+    //console.log('pfPill '+JSON.stringify(pfPill)+' catPill '+JSON.stringify(catPill));
         
         if(catPill != 'All' && pfPill !='All'){
             this.items.push(catPill, pfPill);
@@ -71,9 +71,9 @@ export default class MobileSearch extends LightningElement {
     }
     search(){
         let test; 
-        console.log('pf '+this.pf+' cat '+this.cat +' searchTerm '+this.queryTerm);
+        //console.log('pf '+this.pf+' cat '+this.cat +' searchTerm '+this.queryTerm);
         this.cat = !this.cat ? 'All':this.cat; 
-        console.log(test);
+        //console.log(test);
         
         this.loaded = false; 
         mobileSearchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})

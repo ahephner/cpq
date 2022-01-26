@@ -30,8 +30,11 @@ export default class ProdSelected extends LightningElement {
     pbId;
     unitCost;
     unitWeight;
-    levelOne; 
-    levelTwo; 
+    fPrice; 
+    levelOne;
+    levelOneMargin; 
+    levelTwo;
+    levelTwoMargin;  
     agency
     sId; 
     productName; 
@@ -97,11 +100,14 @@ export default class ProdSelected extends LightningElement {
                 this.productName = mess.productName;
                 this.productId = mess.productId 
                 this.pbeId = mess.pbeId;
-                this.unitCost = mess.unitPrice;
+                this.unitCost = mess.unitCost;
                 this.unitWeight = mess.prodWeight;
                 this.agency = mess.agencyProduct;
+                this.fPrice = mess.floorPrice;
                 this.levelOne = mess.levelOnePrice;
+                this.levelOneMargin = mess.levelOneMargin;
                 this.levelTwo = mess.levelTwoPrice;  
+                this.levelTwoMargin = mess.levelTwoMargin; 
                 this.handleNewProd(); 
                 this.prodFound = true;
             } 
@@ -148,18 +154,19 @@ export default class ProdSelected extends LightningElement {
                     ProductCode: this.productCode,
                     Ship_Weight__c: this.unitWeight,
                     Quantity: 1,
-                    UnitPrice: this.agency ? this.unitCost: this.levelTwo,
-                    lOne: this.agency? this.unitCost : this.levelOne,
+                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                    floorPrice: this.fPrice,
+                    lOne: this.agency? this.fPrice : this.levelOne,
                     lTwo: this.levelTwo, 
-                    CPQ_Margin__c: this.agency?'':0,
+                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
                     lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
-                    TotalPrice: this.agency? this.unitCost : this.levelTwo,
+                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     showLastPaid: true,
-                    flrText: 'flr price $'+ this.unitCost,
+                    flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,  
                     OpportunityId: this.recordId
                 }
@@ -176,17 +183,18 @@ export default class ProdSelected extends LightningElement {
                     ProductCode: this.productCode,
                     Ship_Weight__c: this.unitWeight,
                     Quantity: 1,
-                    UnitPrice: this.agency ? this.unitCost: this.levelTwo,
-                    lOne: this.agency? this.unitCost : this.levelOne,
+                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                    floorPrice: this.fPrice,
+                    lOne: this.agency? this.fPrice : this.levelOne,
                     lTwo: this.levelTwo,
                     lastPaid: 0,
                     lastMarg: 0,  
-                    CPQ_Margin__c: this.agency?'':0,
+                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
-                    TotalPrice: this.agency? this.unitCost : this.levelTwo,
+                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
                     wInv: !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     showLastPaid: true,
-                    flrText: 'flr price $'+ this.unitCost,
+                    flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
                     OpportunityId: this.recordId
                 }
@@ -226,9 +234,9 @@ export default class ProdSelected extends LightningElement {
             }
             //Alert the user if the pricing is good. If an item is below floor don't allow a save. Could push that item to special order
             let lOne = Number(this.selection[index].lOne);
-            let cst = Number(this.selection[index].Cost__c);
+            let floor = Number(this.selection[index].floorPrice);
             let unitp = Number(this.selection[index].UnitPrice);
-            this.handleWarning(targetId,lOne, cst, unitp )
+            this.handleWarning(targetId,lOne, floor, unitp )
 
         }, 1000)
     }
@@ -256,10 +264,10 @@ export default class ProdSelected extends LightningElement {
                 }
                 //Alert the user if the pricing is good. If an item is below floor don't allow a save. Could push that item to special order
             let lOne = Number(this.selection[index].lOne);
-            let cst = Number(this.selection[index].Cost__c);
+            let floor = Number(this.selection[index].floorPrice);
             let unitp =  Number(this.selection[index].UnitPrice);
             
-            this.handleWarning(targetId,lOne, cst, unitp )
+            this.handleWarning(targetId,lOne, floor, unitp )
     },1000)
         
     }
@@ -528,16 +536,16 @@ export default class ProdSelected extends LightningElement {
 
     }
     //handles alerting the user if the pricing is good or bad 
-    handleWarning = (targ, lev, cost, price)=>{
+    handleWarning = (targ, lev, flr, price)=>{
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
             this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
             this.goodPricing = true; 
-        }else if(price<lev && price>cost){
+        }else if(price<lev && price>flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
             this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
             this.goodPricing = true;
-        }else if(price<cost){
+        }else if(price<flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
             this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
             this.goodPricing = false;
@@ -554,17 +562,17 @@ export default class ProdSelected extends LightningElement {
             for(let i=0; i<this.selection.length; i++){
                 let target = this.selection[i].ProductCode
                 let level = Number(this.selection[i].lOne);
-                let cost = Number(this.selection[i].Cost__c);
+                let floor = Number(this.selection[i].floorPrice);
                 let price = Number(this.selection[i].UnitPrice);
                 
                 if(price>level){
                     //console.log('good to go '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
-                }else if(price<level && price>cost){
+                }else if(price<level && price>floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
-                }else if(price<cost){
+                }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
                     this.goodPricing = false;

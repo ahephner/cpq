@@ -44,11 +44,12 @@
             name: x.Product2.Name,
             ProductCode: x.Product2.ProductCode,
             Quantity: x.Quantity,
-            lOne: x.Level_1_Price__c,
+            lOne: x.Level_1_UserView__c,
+            floorPrice: x.Floor_Price__c,
             UnitPrice:x.CPQ_Unit_Price__c,
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
-            Cost__c: x.UnitPrice,
+            Cost__c: x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
@@ -57,11 +58,12 @@
             Description: x.Description,
             Ship_Weight__c: x.Product2.Ship_Weight__c, 
             showLastPaid: true,
-            flrText: 'flr price $'+ x.UnitPrice,
-            lOneText: 'lev 1 $'+x.Level_1_Price__c, 
+            flrText: 'flr price $'+ x.Floor_Price__c,
+            lOneText: 'lev 1 $'+x.Level_1_UserView__c, 
             OpportunityId: recordId
         }
       })
+       
       return prod; 
   }
   

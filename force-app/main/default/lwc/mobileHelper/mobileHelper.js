@@ -31,9 +31,9 @@
 
 //used for the mobile loading
 const mobileLoad = (products) =>{
-  console.log('helper');
   
-    console.log(JSON.stringify(products));
+  
+    //console.log(JSON.stringify(products));
     
     let prod = products.map(x=>{
       return {
@@ -48,10 +48,11 @@ const mobileLoad = (products) =>{
             Product_Name__c: x.Product_Name__c,
             ProductCode: x.ProductCode,
             Quantity: x.Quantity,
-            lOne: x.Level_1_Price__c, 
+            lOne: x.Level_1_UserView__c,
+            prevPurchase: x.Unit_Price__c ? true : false,  
             UnitPrice: x.CPQ_Unit_Price__c,
             CPQ_Margin__c: x.Agency__c? '' : x.CPQ_Margin__c,
-            Cost__c: x.UnitPrice,
+            Cost__c: x.Product_Cost__c,
             Agency__c: x.Agency__c,
             Floor_Price__c: x.Floor_Price__c,
             Floor_Type__c: x.Floor_Type__c,
@@ -60,7 +61,8 @@ const mobileLoad = (products) =>{
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             lastMarg: x.Agency__c ? '': (x.Margin__c/100),
             TotalPrice: x.TotalPrice,
-            Ship_Weight__c: x.Product2.Ship_Weight__c, 
+            Ship_Weight__c: x.Product2.Ship_Weight__c,
+            levels: 'Lvl 1 $'+x.Level_1_UserView__c +' Lvl 2 $'+x.Level_2_UserView__c, 
             OpportunityId: x.OpportunityId
       }
     })

@@ -31,7 +31,9 @@ export default class MobileProducts extends LightningElement {
     pbeId;
     unitCost;
     levelOne;
+    levelOneMargin;
     levelTwo; 
+    levelTwoMargin; 
     agProduct;
     shipWeight;
     floorType;
@@ -215,11 +217,11 @@ export default class MobileProducts extends LightningElement {
                 this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice;
             }
             let lOne = Number(this.prod[index].lOne);
-            let cst = Number(this.prod[index].Cost__c);
+            let flr = Number(this.prod[index].Floor_Price__c);
             let unitp = Number(this.prod[index].UnitPrice);
-            console.log(1, targetId, 2, lOne, 3, cst, 4, unitp);
+            //console.log('handlePrice pass to warning');
             
-            this.handleWarning(targetId,lOne, cst, unitp );
+            this.handleWarning(targetId,lOne, flr, unitp );
         },500)
     }
 
@@ -238,9 +240,9 @@ export default class MobileProducts extends LightningElement {
                 this.prod[index].TotalPrice = this.prod[index].Quantity * this.prod[index].UnitPrice;
             }
             let lOne = Number(this.prod[index].lOne);
-            let cst = Number(this.prod[index].Cost__c);
+            let flr = Number(this.prod[index].Floor_Price__c);
             let unitp = Number(this.prod[index].UnitPrice);
-            this.handleWarning(targetId,lOne, cst, unitp )
+            this.handleWarning(targetId,lOne, flr, unitp )
         },500)
     }
 //delete individual line items. 
@@ -319,12 +321,13 @@ export default class MobileProducts extends LightningElement {
         this.productName = prodx.detail.Name;
         this.productId = prodx.detail.Product2Id;
         this.pbeId = prodx.detail.Id;
-        this.unitCost = prodx.detail.UnitPrice;
+        this.unitCost = prodx.detail.Product_Cost__c;
         this.agProduct = prodx.detail.agency;
-        this.floorPrice = prodx.detail.Product2.Floor_Price__c;
+        this.floorPrice = prodx.detail.Floor_Price__c;
         this.floorType = prodx.detail.Product2.Floor_Type__c;
-        this.levelOne = prodx.detail.Level_1_Price__c; 
-        this.levelTwo = prodx.detail.Level_2_Price__c;
+        this.levelOne = prodx.detail.Level_1_UserView__c; 
+        this.levelTwo = prodx.detail.Level_2_UserView__c;
+        this.levelTwoMargin = prodx.detail.Level_2_Margin__c; 
         this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
         //console.log('2 '+this.agProduct);
         
@@ -357,15 +360,16 @@ export default class MobileProducts extends LightningElement {
                     Product_Name__c: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 1,
-                    UnitPrice:this.agProduct ? this.unitCost: this.levelTwo,
-                    lOne: this.agProduct ? this.unitCost : this.levelOne,
-                    lTwo: this.agProduct ? this.unitCost : this.levelTwo,
-                    CPQ_Margin__c: 0,
+                    UnitPrice:this.agProduct ? this.floorPrice: this.levelTwo,
+                    lOne: this.agProduct ? this.floorPrice : this.levelOne,
+                    lTwo: this.agProduct ? this.floorPrice : this.levelTwo,
+                    CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
                     Cost__c: this.unitCost,
+                    prevPurchase: true,
                     lastPaid: newProd.Unit_Price__c,
-                    lastMarg: this.agProduct ? '' : (newProd.Margin__c / 100),
+                    lastMarg: this.agProduct ? '' : newProd.Margin__c,
                     lastPaidDate: newProd.Unit_Price__c ? '$'+newProd.Unit_Price__c +' '+newProd.Doc_Date__c : '',
-                    TotalPrice: 0,
+                    TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
@@ -373,6 +377,7 @@ export default class MobileProducts extends LightningElement {
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
+                    levels: 'Lvl 1 $'+this.levelOne +' Lvl 2 $'+this.levelTwo,
                     OpportunityId: this.oppId
                 }
             ]
@@ -388,14 +393,15 @@ export default class MobileProducts extends LightningElement {
                     Product_Name__c: this.productName,
                     ProductCode: this.productCode,
                     Quantity: 1,
-                    UnitPrice: this.agProduct ? this.unitCost : this.levelTwo,
+                    UnitPrice: this.agProduct ? this.floorPrice : this.levelTwo,
                     lOne: this.agProduct ? this.unitCost : this.levelOne,
                     lTwo: this.agProduct ? this.unitCost : this.levelTwo,
+                    prevPurchase: false,
                     lastPaid: 0,
                     lastMarg: this.agProduct ? 0: '', 
-                    CPQ_Margin__c: 0,
+                    CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
                     Cost__c: this.unitCost,
-                    TotalPrice: 0,
+                    TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
@@ -403,10 +409,11 @@ export default class MobileProducts extends LightningElement {
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
+                    levels: 'Lvl 1 $'+this.levelOne +' Lvl 2 $'+this.levelTwo,
                     OpportunityId: this.oppId
                 }
             ]
-        } //console.log('new product '+JSON.stringify(this.prod))
+        } console.log('new product '+JSON.stringify(this.prod))
     }
 //handle the order total and pass this back to the flow to display on success screen
     orderTotal(products){
@@ -426,20 +433,20 @@ export default class MobileProducts extends LightningElement {
     }
                         //PRICE WARNING SECTION 
         //handles showing the user prompts
-        handleWarning = (targ, lev, cost, price)=>{
-            console.log(1, targ, 2, lev, 3, cost, 4, price);
+        handleWarning = (targ, lev, floor, price)=>{
+           //console.log(1, targ, 2, lev, 3, floor, 4, price);
             
             if(price > lev){
                 this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
                 this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
                 this.goodPricing = true;
                 this.wasEdited = true; 
-            }else if(price<lev && price>cost){
+            }else if(price<lev && price>floor){
                 this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
                 this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
                 this.goodPricing = true;
                 this.wasEdited = true; 
-            }else if(price<cost){
+            }else if(price<floor){
                 this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
                 this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
                 this.goodPricing = false;

@@ -40,7 +40,7 @@ export default class ProdSearch extends LightningElement {
         {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
         {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
         {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
-        {label: 'List Price', fieldName:'UnitPrice', 
+        {label: 'Floor Price', fieldName:'Floor_Price__c', 
         type:'currency', cellAttributes:{alignment:'center'}},
         {label:'Comp OH', fieldName:'qtyOnHand', cellAttributes:{alignment:'center'}}
     ]
@@ -150,9 +150,12 @@ export default class ProdSearch extends LightningElement {
         const rowAction = e.detail.row.rowValue; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
-        const rowFloorPrice = e.detail.row.UnitPrice;
-        const rowLevelOne = e.detail.row.Level_1_Price__c;
-        const rowLevelTwo = e.detail.row.Level_2_Price__c; 
+        const rowFloorPrice = e.detail.row.Floor_Price__c;
+        const rowFloorCost = e.detail.row.Product_Cost__c;
+        const rowLevelOne = e.detail.row.Level_1_UserView__c;
+        const rowLevel1Margin = e.detail.row.Level_One_Margin__c;
+        const rowLevelTwo = e.detail.row.Level_2_UserView__c;
+        const rowLevel2Margin = e.detail.row.Level_2_Margin__c; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
         const rowAg = e.detail.row.Agency_Product__c;
@@ -169,17 +172,21 @@ export default class ProdSearch extends LightningElement {
         if(rowAction ==='Add'){
              const payload = {
                  productCode: rowCode,
-                 productId: rowProductId, 
-                 unitPrice: rowFloorPrice,
+                 productId: rowProductId,
+                 unitCost:rowFloorCost,  
+                 floorPrice: rowFloorPrice,
                  levelOnePrice: rowLevelOne,
+                 levelOneMargin: rowLevel1Margin,
                  levelTwoPrice: rowLevelTwo,
+                 levelTwoMargin: rowLevel2Margin, 
                  productName: rowName,
                  pbeId: rowId,
                  agencyProduct: rowAg,
                  prodWeight: rowWeight
-             }         
+             }
+                      
     //send it 
-            publish(this.messageContext, Opportunity_Builder, payload); 
+           publish(this.messageContext, Opportunity_Builder, payload); 
     //update the button
             index.rowVariant = 'success';
             index.rowValue = 'Remove'

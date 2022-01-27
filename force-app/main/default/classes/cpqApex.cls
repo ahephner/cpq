@@ -22,9 +22,9 @@ public with sharing class cpqApex {
       string pClass = 'Simple';
       system.debug(searchterm);
       String query = 'Select Id,'
-                + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
-                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
-          		+ ' Level_1_Formula__c, Level_1_Protection_Formula__c'
+                + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
+                + '  Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
+          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
@@ -68,8 +68,9 @@ public with sharing class cpqApex {
       system.debug('pf '+pf+ ' cat '+category+ ' searchterm ' +searchterm);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
-                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c'
-                + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass' ; 
+                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
+          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c'
+                + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass ' ;
                  
       if(searchterm != '%%' && category == 'All' && pf == 'All'){
           system.debug('1');
@@ -276,7 +277,7 @@ public with sharing class cpqApex {
     public static list<PricebookEntry> getLevelPricing(id priceBookId,list<id> productIds){
         list<PricebookEntry> levels; 
         list<PricebookEntry> pricing = [select product2id, UnitPrice,Product2.Ship_Weight__c, 
-                                        Level_1_Price__c, Level_2_Price__c 
+                                        Level_1_UserView__c, Level_2_UserView__c, Floor_Price__c,Product_Cost__c 
                                         from pricebookentry where product2id in:(productIds) and Pricebook2Id =: priceBookId];
         if(pricing.size()>0){
             levels = pricing;

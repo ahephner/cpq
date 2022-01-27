@@ -26,8 +26,8 @@ public class cpqOppClone {
        Date cd = System.today() + 14; 
          
         try{
-         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, 
-                RecordType.Id, Contact__c, pricebook2.id,Type, description FROM Opportunity where id = :opp.Id]; 
+         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, 
+                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, description FROM Opportunity where id = :opp.Id]; 
   
             newOp = opp.clone(false);
             
@@ -85,6 +85,7 @@ public class cpqOppClone {
             pbeMap.put(x.product2Id, x);
         }
         
+
         for(opportunitylineitem ol: lineItems){
             system.debug('ol '+ol);
            // decimal marg = (ol.UnitPrice/pbeMap.get(ol.Product2Id).UnitPrice)*100;

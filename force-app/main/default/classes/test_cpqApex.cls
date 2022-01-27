@@ -44,6 +44,47 @@ public class test_cpqApex {
         	List<PricebookEntry> nameandcat = cpqApex.searchProduct('product', 'Chemicals-Herbicide', 'All', priceBookId);
         	List<PricebookEntry> catOnly = cpqApex.searchProduct('null', 'Chemicals-Herbicide', 'All', priceBookId);
         	List<PricebookEntry> famOnly = cpqApex.searchProduct('null', 'All', 'FMC', priceBookId);
+        	List<PricebookEntry> allThree = cpqApex.searchProduct('widget', 'Chemicals-Herbicide', 'All', priceBookId);
+        	list<priceBookWrapper> pbw = cpqApex.getPriceBooks();
+        Test.stopTest();
+    }
+     @isTest
+    static void Test_mobileSearchProduct(){
+        //date for opp
+        Date myDate = Date.newInstance(2040, 1, 4);
+        //create test customer
+        Account cust = new Account();
+        cust.Name = 'Test123456';
+        cust.Type = 'Customer';
+        cust.Customer_Name__c = 'Test Customer 123456';
+        insert cust;
+        //product creation
+        Id pricebookId = Test.getStandardPricebookId();
+
+        product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
+                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+        insert prod; 
+        
+        product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
+                                    Subcategory__c='Chemicals-Fungicide', Product_Family__c='FoliarPak', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+        insert prod2;
+        
+        PricebookEntry pbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=prod.id,
+                                                 unitprice=100, IsActive = True, UseStandardPrice=False);
+        PricebookEntry pbe2 = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=prod2.id,
+                                                 unitprice=100, IsActive = True, UseStandardPrice=False);
+
+        insert pbe;
+        insert pbe2;
+        
+        Test.startTest();
+        	List<PricebookEntry> nameOnly = cpqApex.mobileSearchProduct('widget', 'All', 'All', pricebookId);
+        	List<PricebookEntry> nullName = cpqApex.mobileSearchProduct('%%', 'Chemicals-Herbicide', 'FMC', priceBookId);
+        	List<PricebookEntry> nameandfamily = cpqApex.mobileSearchProduct('widget', 'All', 'FoliarPak', priceBookId);
+        	List<PricebookEntry> nameandcat = cpqApex.mobileSearchProduct('product', 'Chemicals-Herbicide', 'All', priceBookId);
+        	List<PricebookEntry> catOnly = cpqApex.mobileSearchProduct('%%', 'Chemicals-Herbicide', 'All', priceBookId);
+        	List<PricebookEntry> famOnly = cpqApex.mobileSearchProduct('%%', 'All', 'FMC', priceBookId);
+        	List<PricebookEntry> allThree = cpqApex.mobileSearchProduct('widget', 'Chemicals-Herbicide', 'All', priceBookId);
         	list<priceBookWrapper> pbw = cpqApex.getPriceBooks();
         Test.stopTest();
     }
@@ -343,5 +384,27 @@ public class test_cpqApex {
         Test.startTest();
         	list<PricebookEntry> levels = cpqApex.getLevelPricing(pbId, productIds);
         Test.stopTest();
+    }
+    @isTest
+    static void Test_getAddress(){
+        Account cust = new Account();
+        cust.Name = 'Test123456';
+        cust.Type = 'Customer';
+        cust.Customer_Name__c = 'Test Customer 123456';
+        insert cust;
+        
+        ContactPointAddress cpa = new ContactPointAddress();
+        cpa.Name = 'Test Address';
+        cpa.ParentId = cust.Id;
+        	insert cpa;
+        ContactPointAddress cpa2 = new ContactPointAddress();
+        cpa2.Name = 'Test Address2';
+        cpa2.ParentId = cust.Id;
+        	insert cpa2;
+        
+        Test.startTest();
+        	list<ContactPointAddress> addresses = cpqApex.getAddress(cust.Id); 
+        Test.stopTest();
+        system.assertEquals(2, addresses.size());
     }
 }

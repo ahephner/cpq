@@ -273,6 +273,10 @@ export default class ProdSelected extends LightningElement {
     }
     
     newQTY(e){
+        // if(e.detail.value % 1 != 0){
+            
+        //     return
+        // }
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
         console.log('index '+index);
         

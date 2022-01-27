@@ -59,7 +59,7 @@ const mobileLoad = (products) =>{
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
-            lastMarg: x.Agency__c ? '': (x.Margin__c/100),
+            lastMarg: x.Agency__c ? '': x.Margin__c,
             TotalPrice: x.TotalPrice,
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             levels: 'Lvl 1 $'+x.Level_1_UserView__c +' Lvl 2 $'+x.Level_2_UserView__c, 

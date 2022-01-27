@@ -257,10 +257,15 @@ export default class MobileProducts extends LightningElement {
             }
         }
     }
+//Notes could maybe do something with onblur instead
+    handleNote(evt){
+        let index = this.prod.findIndex(prod => prod.Product2Id === evt.target.name);
+        this.prod[index].Description = evt.detail.value; 
+    }
 //save products
     saveMobile(){
         this.showSpinner = true; 
-        let data = [...this.prod];
+        //let data = [...this.prod];
         //console.log('in save '+ JSON.stringify(this.prod))
         createProducts({olList: this.prod})
         .then(result => {
@@ -373,6 +378,7 @@ export default class MobileProducts extends LightningElement {
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
+                    Description: '', 
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
@@ -405,6 +411,7 @@ export default class MobileProducts extends LightningElement {
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
+                    Description: '',
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,

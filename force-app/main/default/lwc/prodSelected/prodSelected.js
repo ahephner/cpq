@@ -48,7 +48,8 @@ export default class ProdSelected extends LightningElement {
     goodPricing = true;   
     hasRendered = true;
     wasSubmitted; 
-    loaded = true; 
+    loaded = true;
+    goodQty; 
     
     @track selection = []
 //for message service
@@ -273,17 +274,16 @@ export default class ProdSelected extends LightningElement {
     }
     
     newQTY(e){
-        // if(e.detail.value % 1 != 0){
-            
-        //     return
-        // }
+        if(e.detail.value % 1 != 0){
+            this.goodQty = false; 
+            return
+        }
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
-        console.log('index '+index);
         
         this.selection[index].Quantity = Number(e.detail.value);
         if(this.selection[index].UnitPrice >0){
             this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
-            console.log('qty change '+this.selection[index].TotalPrice);
+            this.goodQty = true;
             
         }
     }

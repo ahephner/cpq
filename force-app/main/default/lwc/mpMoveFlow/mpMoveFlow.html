@@ -102,6 +102,9 @@
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Product2Id} readonly></lightning-input>
             </div>
+            <div class='slds-col slds-size_1-of-1'>
+                <lightning-textarea name={item.Product2Id} value={item.Description} label="Product Note" placeholder="type here..." onchange={handleNote}></lightning-textarea>
+            </div>
         </template>
         </div>
         </lightning-layout-item>

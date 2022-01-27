@@ -23,7 +23,7 @@ public class test_cpqOppClone {
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert pbe; 
 //create product2 that will be deactivated
-        product2 widget = new product2(name ='widget', IsActive= True); 
+        product2 widget = new product2(name ='widget', IsActive= True, Agency_Pricing__c=true); 
         insert widget; 
         
         PricebookEntry widgetpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=widget.id,
@@ -40,10 +40,10 @@ public class test_cpqOppClone {
        
 //opportunitylineitem
         opportunitylineitem li = new opportunitylineitem(opportunityid = opp.id, product2id = prod.Id, PricebookEntryId=pbe.id,
-                                                         unitprice= 4, quantity= 3); 
+                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c= 4, CPQ_Margin__c=10); 
         insert li; 
         opportunitylineitem widgetli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=widgetpbe.id,
-                                                         unitprice= 4, quantity= 3); 
+                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0); 
         insert widgetli;
         
 
@@ -58,9 +58,9 @@ public class test_cpqOppClone {
             PageReference method = clone.cloneOpp();
             widget.IsActive = false; 
             update widget;
-        system.debug('clone in test'+clone);
+        
             opportunity clonedOp = [select id from opportunity where id =: clone.newOppID];
-        system.debug('cloned opp -> '+clonedOp);
+
             system.assertNotEquals(clonedOp, null); 
 
          test.stopTest();        

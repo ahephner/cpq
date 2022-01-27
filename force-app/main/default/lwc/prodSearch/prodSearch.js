@@ -24,13 +24,13 @@ export default class ProdSearch extends LightningElement {
     @track selection = [];
     newProd; 
     @track columnsList = [
-        {type: 'button', 
+        {type: 'button-icon', 
          initialWidth: 75,typeAttributes:{
-            label: 'Add',
-            name: 'Add',
+            iconName:{fieldName: 'rowName'}, 
+            name: 'add prod' ,
             title: 'Add',
             disabled: false,
-            value: 'add',
+            value: {fieldName: 'rowValue'},
             variant: { fieldName: 'rowVariant' },
         }, 
         cellAttributes: {
@@ -40,7 +40,7 @@ export default class ProdSearch extends LightningElement {
         {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
         {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
         {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
-        {label: 'List Price', fieldName:'UnitPrice', 
+        {label: 'Floor Price', fieldName:'Floor_Price__c', 
         type:'currency', cellAttributes:{alignment:'center'}},
         {label:'Comp OH', fieldName:'qtyOnHand', cellAttributes:{alignment:'center'}}
     ]
@@ -111,12 +111,16 @@ export default class ProdSearch extends LightningElement {
             this.prod = result.map(item =>({
                                  ...item, 
                                  rowVariant: 'brand',
+                                 rowName: 'action:new',
+                                 rowValue: 'Add',
                                  Name: item.Product2.Name, 
                                  ProductCode: item.Product2.ProductCode,
                                  Status: item.Product2.Product_Status__c,
                                  Floor: item.Product2.Floor_Type__c,
                                  qtyOnHand: item.Product2.Total_Product_Items__c
                                 }));
+            console.log('returned products');
+            
             console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
@@ -143,34 +147,68 @@ export default class ProdSearch extends LightningElement {
      //Handles adding the products to this.Selection array when the green add button is hit on the product table
      handleRowAction(e){
         this.productsSelected ++; 
-        const rowAction = e.detail.action.name; 
+        const rowAction = e.detail.row.rowValue; 
         const rowCode = e.detail.row.ProductCode;
         const rowName = e.detail.row.Name;
-        const rowUPrice = e.detail.row.UnitPrice; 
+        const rowFloorPrice = e.detail.row.Floor_Price__c;
+        const rowFloorCost = e.detail.row.Product_Cost__c;
+        const rowLevelOne = e.detail.row.Level_1_UserView__c;
+        const rowLevel1Margin = e.detail.row.Level_One_Margin__c;
+        const rowLevelTwo = e.detail.row.Level_2_UserView__c;
+        const rowLevel2Margin = e.detail.row.Level_2_Margin__c; 
         const rowProductId = e.detail.row.Product2Id;
         const rowId = e.detail.row.Id; 
-        const rowAg = e.detail.row.Product2.Agency__c
-        let rowVar = e.detail.row.rowVariant
+        const rowAg = e.detail.row.Agency_Product__c;
+        const rowWeight = e.detail.row.Product2.Ship_Weight__c;
+        //const rowFormulaProdtect = e.detail.row.Level_1_Protection_Formula__c;
+       // const rowFormula = e.detail.row.Level_1_Formula__c; 
+       
+        //get that row button so we can update it  
         let index = this.prod.find((item) => item.Id === rowId);
+        //console.log('rowWeight '+rowWeight);
         
-        console.log('rv ' +rowVar);
         
         
         if(rowAction ==='Add'){
              const payload = {
                  productCode: rowCode,
-                 productId: rowProductId, 
-                 unitPrice: rowUPrice,
+                 productId: rowProductId,
+                 unitCost:rowFloorCost,  
+                 floorPrice: rowFloorPrice,
+                 levelOnePrice: rowLevelOne,
+                 levelOneMargin: rowLevel1Margin,
+                 levelTwoPrice: rowLevelTwo,
+                 levelTwoMargin: rowLevel2Margin, 
                  productName: rowName,
                  pbeId: rowId,
-                 agencyProduct: rowAg
-             }         
+                 agencyProduct: rowAg,
+                 prodWeight: rowWeight
+             }
+                      
     //send it 
-            publish(this.messageContext, Opportunity_Builder, payload); 
+           publish(this.messageContext, Opportunity_Builder, payload); 
     //update the button
             index.rowVariant = 'success';
+            index.rowValue = 'Remove'
+            index.rowName = 'action:check';
             this.prod= [...this.prod]
              
+        }else if(rowAction === 'Remove'){
+            this.productsSelected --;
+            console.log('productsSelect '+this.productsSelected)
+            const rowId = e.detail.row.Id;
+            console.log('id '+ rowId);
+            
+            let index = this.prod.find((item) => item.Id === rowId);
+            //update the button
+            index.rowVariant = 'brand';
+            index.rowValue = 'Add'
+            index.rowName = 'action:new';
+            this.prod= [...this.prod]
+
+            this.dispatchEvent(new CustomEvent('removeprod',{
+                detail: rowId
+            }))
         }
     }
 //This gets updated by the child appSelected with the id of a product that was selected

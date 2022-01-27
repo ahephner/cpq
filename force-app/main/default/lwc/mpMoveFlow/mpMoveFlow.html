@@ -26,12 +26,14 @@
                 </div>
             </div>
     <!--Product Cards!-->
-    <div class='slds-scrollable_y' style='height:40rem; width:100%'>
+    <div class='slds-scrollable_y cardClass' style='height:40rem; width:100%'>
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>
-        <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
-        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
-        <div class='slds-grid slds-wrap'>
+        <lightning-layout-item size="12" key={item.Product2Id} class="slds-box slds-p-around_none 
+        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
+            name={item.Product_Name__c}>
+        <!-- <div class='slds-grid slds-wrap' onclick={flip} data-row={item.Product2Id} draggable="true"> -->
+        <div class='slds-grid slds-wrap'>    
         <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">
                 <lightning-input value={item.Product_Name__c} type='text' readonly></lightning-input>
@@ -40,7 +42,7 @@
     <!-- button group -->
         <div class='slds-col slds-size_1-of-3 slds-m-left_x-small slds-m-top_medium slds-align_absolute-center'>
             <div class="slds-p-around_medium lgc-bg">
-                <lightning-button-menu alternative-text="Show menu" variant="border-filled" name={item.Id} 
+                <lightning-button-menu alternative-text="Show menu" variant="border-filled" name={item.Product2Id} 
                                        icon-size="small"  onselect={handleAction} icon-name="utility:threedots">
                     <lightning-menu-item value="Edit" label="Edit"></lightning-menu-item>
                     <lightning-menu-item value="Info" label="Info"></lightning-menu-item>
@@ -52,19 +54,33 @@
         <template if:false={item.showInfo}>
     <!-- Unit Price -->
             <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
+                <div data-id={item.Product2Id}>
                 <lightning-input value={item.UnitPrice} type='number' formater='currency' step="0.01"
-                                name ={item.Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
+                                name ={item.Product2Id} label='Unit Price' read-only={item.readOnly} onchange={handlePrice}></lightning-input>
+                </div>
+                <!--Last Paid-->
+                <template if:true={item.prevPurchase}>
+                    <lightning-input value={item.lastPaidDate} type='text' formatter="currency" label='Last Paid/Date' 
+                                    name ={item.Product2Id} readonly></lightning-input>
+                </template>
     <!-- Qty -->
                 <lightning-input value={item.Quantity} type='number' label='Qty' min={minUnits}
-                                name ={item.Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
+                                name ={item.Product2Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
     <!-- Margin -->
+            <div data-target-id={item.Product2Id}>
                 <lightning-input value={item.CPQ_Margin__c} type='number' formater='percent' step="0.01"
-                                name ={item.Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+                name ={item.Product2Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+            </div>
+    <!--Last Margin-->
+            <template if:true={item.prevPurchase}>
+                <lightning-input value={item.lastMarg} type='text' formatter="percent" label='Last Paid Margin' 
+                name ={item.Product2Id} readonly></lightning-input>
+            </template>            
     <!-- Total Price -->
-                <lightning-input value={item.TotalPrice} name ={item.Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
+                <lightning-input value={item.TotalPrice} name ={item.Product2Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
             </div>
         </template>
     <!--Shows more info like inventory if we can link it some how and costs-->    
@@ -72,19 +88,19 @@
             <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
     <!--Inventory  -->
                 <lightning-input value={item.wInv} type='number' 
-                                name ={item.Id} label='Inventory at my locaton' readonly></lightning-input>
-    <!-- Last Paid -->
-                <lightning-input value={item.lastPaidDate} type='text' formatter="currency" label='Last Paid/Date' 
-                                name ={item.Id} readonly></lightning-input>
+                                name ={item.Product2Id} label='Inventory at my locaton' readonly></lightning-input>
+    <!-- levels  -->
+                <lightning-input value={item.levels} type='text' formatter="text" label='Level Pricing' 
+                                name ={item.Product2Id} readonly></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
     <!-- Floor Price -->
                 <lightning-input value={item.Floor_Price__c} type='number' formatter="currency" label='Floor Price' 
-                                name ={item.Id} readonly></lightning-input>
+                                name ={item.Product2Id} readonly></lightning-input>
     <!-- Floor Type -->
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
-                                name ={item.Id} readonly></lightning-input>
+                                name ={item.Product2Id} readonly></lightning-input>
             </div>
         </template>
         </div>
@@ -97,6 +113,11 @@
 </template> 
 </div>
 <!-- save buttons -->
+<template if:false={goodPricing}>
+    <footer class="slds-modal__footer slds-align_absolute-center">
+        <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+    </footer>
+</template>
 <template if:true={wasEdited}>
     <footer class="slds-modal__footer slds-align_absolute-center">
         <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>

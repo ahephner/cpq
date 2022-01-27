@@ -1,0 +1,103 @@
+<template>
+        <!-- <lightning-accordion active-section-name={section}>
+            <lightning-accordion-section name="A" label='Averages'>
+                <p>Number of Records Processed {updatedRecordCount}</p>
+                <p>Number of Bad Records Not Processed {badRecordCount}</p>
+                <p>Number of Agency Products Not Processed {agencyCount}</p>
+                
+                <div class='slds-m-top_medium'>
+                    <h2 class='header'>Changed Pricing Overview</h2>
+                    <h5 class="subHeader">Level One Average Prices with a {levelOne}% margin</h5>
+                    <p>Current Average Level One Price is: ${beforeLevel1}</p>
+                    <p>The New Average Level One Price is: ${afterPriceLevel1}</p>
+                    <p>The average price change will be ${defLevel1}</p>
+                <br/>
+                    <h5 class="subHeader">Level Two Average Prices with a {levTwoMarg}% margin</h5>
+                    
+                    <p>Current Average Level Two Price is: ${beforeLevel2}</p>
+                    <p>The new Average Level Two Price is: ${afterPriceLevel2}</p>
+                    <p>The average price change will be ${defLevel2}</p>
+                <template if:true={badRec}>
+                    <h2 class="subHeader">If there are bad records they will show here</h2>
+                    <p>Products here because Unit Price is 0 or null</p>
+                    <template for:each={badRecords} for:item="br">
+                        <div key={br.Id}>
+                            <p>{br.Name}</p>
+                        </div>
+                    </template>
+                </template>
+                </div>
+            </lightning-accordion-section>
+            <lightning-accordion-section name="B" label='Review Products'>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+                    <thead>
+                        <tr class="slds-line-height_reset headerTable">
+                            <th><div class="slds-truncate" title="Product Name">Product Name</div></th>
+                            <th><div class="slds-truncate" title="Product Name">Prev Level 1</div></th>
+                            <th><div class="slds-truncate" title="Product Name">New Level 1</div></th>
+                            <th><div class="slds-truncate" title="Product Name">Level 1 Delta</div></th>
+                            <th><div class="slds-truncate" title="Product Name">Prev Level 2</div></th>
+                            <th><div class="slds-truncate" title="Product Name">New Level 2</div></th>
+                            <th><div class="slds-truncate" title="Product Name">Level 2 Delta</div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={updatedRecords} for:item="x">
+                            <tr class="slds-hint-parent" key={x.Id}>
+                                <td data-label="Account Name">
+                                    <div class="slds-truncate">{x.Name}</div>
+                                  </td>
+                                  <td data-label="bLevOne">
+                                    <div class="slds-truncate">${x.bLevOne}</div>
+                                  </td>
+                                  <td data-label="Level_1_Price__c">
+                                    <div class="slds-truncate">${x.Level_1_Price__c}</div>
+                                  </td>
+                                  <td data-label="difOne">
+                                    <div class="slds-truncate"><span class={x.warn}>${x.difOne}</span></div>
+                                  </td>
+                                  <td data-label="bLevTwo">
+                                    <div class="slds-truncate">${x.bLevTwo}</div>
+                                  </td>
+                                  <td data-label="Level_2_Price__c">
+                                    <div class="slds-truncate">${x.Level_2_Price__c}</div>
+                                  </td>
+                                  <td data-label="difTwo">
+                                    <div class="slds-truncate"><span class={x.warn}>${x.difTwo}</span></div>
+                                  </td>
+                                  <td data-label="delete">
+                                      <div class="slds-truncate">
+                                        <lightning-button-icon icon-name="utility:close" name={x.Id}
+                                                               onclick={removeRow}></lightning-button-icon>
+                                      </div>
+                                  </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </lightning-accordion-section>
+        </lightning-accordion> -->
+        <!-- For touch events -->
+        <lightning-layout multiple-rows="true">
+            <lightning-layout-item size="12" class="slds-box slds-p-around_none 
+             slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
+                name='card 1' onmousedown={onTounch}>
+                <template if:false={showInfo}>
+                    <p>I am the front of a card 1</p>
+                </template>
+                <template if:true={showInfo}>
+                    <p>I am the back of a card 1</p>
+                </template>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" class="slds-box slds-p-around_none 
+        slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none pcCard" 
+        name='card 2' onmousedown={onTounch}>
+                <template if:false={showInfo}>
+                    <p>I am the front of a card 2</p>
+                </template>
+                <template if:true={showInfo}>
+                    <p>I am the back of a card 2</p>
+                </template>
+        </lightning-layout-item>
+        </lightning-layout>
+</template>

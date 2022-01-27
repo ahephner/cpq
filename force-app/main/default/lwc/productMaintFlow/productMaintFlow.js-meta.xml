@@ -15,13 +15,8 @@
     <targetConfigs>
         <targetConfig targets='lightning__FlowScreen' category='sales'>
             <propertyType name="T" extends="SObject" label="Input Type" description="Generic sObject data type used for input sObject properties" />
-            <property name="products" type="{T[]}" label="Products" description='List of Products'  />
-            <property name='results' type='string' label='results' description='to indicate to the flow if the save was successful'/>
-            <property name="oppId" type="String" />
-            <property name="accId" type="String" label='account Id' description='Enter AccountId'/>
-            <property name="pbookId" type="String" label='Price Book Id' description='Enter Price Book Id'/>
-            <property name='warehouseId' type='string' label='warehouseId' description='pass warehouse Id here' />
-            <property name="totalPrice" type="Integer" label='totalPrice' description='total price of order'/>
+            <property name="priceItems" type="{T[]}" label="Products" description='List of Products'  />
+            <property name='message' type="string" label='message' description='Message from LWC if save was good or not'/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

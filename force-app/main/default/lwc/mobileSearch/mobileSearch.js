@@ -1,5 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
-import searchProduct from '@salesforce/apex/cpqApex.searchProduct';
+import mobileSearchProduct from '@salesforce/apex/cpqApex.mobileSearchProduct';
 
 
 export default class MobileSearch extends LightningElement {
@@ -16,20 +16,10 @@ export default class MobileSearch extends LightningElement {
     connectedCallback(){
         this.loaded = true; 
     }
-
-    //searchTerm
-    //!!!!!!!!!!!!!!NEED TO FIX IF STRNG IS EMPTY OR BLANK
-    handleKeyUp(evt) {
-        const isEnterKey = evt.keyCode === 13;
-        if (isEnterKey) {
-            this.queryTerm = evt.target.value;
-            this.search();
-        }
-    }
     //handle the search button click
     handleSearch(){
         var input = this.template.querySelector('lightning-input')
-        this.queryTerm = input.value; 
+        this.queryTerm = input.value.trim().toLowerCase(); 
         console.log(this.queryTerm)
         this.search();  
     }
@@ -52,13 +42,17 @@ export default class MobileSearch extends LightningElement {
         this.handlePills(catLab, this.pf);
     }
     handlePills(cat, pf){
-        const catPill = cat !='All' ? {label:cat, name:'catPill'} : undefined;
-        const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : undefined;
-        if(catPill && pfPill){
+        const catPill = cat !='All' ? {label:cat, name:'catPill'} : 'All';
+        const pfPill = pf!= 'All' ? {label:pf, name:'familyPill'} : 'All';
+       // console.log('handle pill');
+        
+    //console.log('pfPill '+JSON.stringify(pfPill)+' catPill '+JSON.stringify(catPill));
+        
+        if(catPill != 'All' && pfPill !='All'){
             this.items.push(catPill, pfPill);
-        }else if(catPill  && !pfPill){
+        }else if(catPill !='All' && pfPill ==='All'){
             this.items.push(catPill);
-        }else if(!catPill && pfPill){
+        }else if(catPill ==='All' && pfPill !='All'){
             this.items.push(pfPill);
         }else{
             this.items = [];
@@ -76,8 +70,13 @@ export default class MobileSearch extends LightningElement {
         }        
     }
     search(){
+        let test; 
+        //console.log('pf '+this.pf+' cat '+this.cat +' searchTerm '+this.queryTerm);
+        this.cat = !this.cat ? 'All':this.cat; 
+        //console.log(test);
+        
         this.loaded = false; 
-        searchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})
+        mobileSearchProduct({searchKey: this.queryTerm, cat: this.cat, family: this.pf, priceBookId:this.priceBookId})
             .then((results)=>{
                 let Name;
                 let ProductCode
@@ -85,23 +84,23 @@ export default class MobileSearch extends LightningElement {
                 let title;
                 let agency;
                 let onhand; 
+                let weight;
                 this.prod = results.map(x =>{
                     Name = x.Product2.Name,
                     ProductCode = x.Product2.ProductCode,
-                    agency = x.Product2.Agency__c,
+                    agency = x.Agency_Product__c,
                     onhand = x.Product2.Total_Product_Items__c,
                     icon = 'action:new',
-                    title = ''
-                    return {...x, Name, ProductCode, icon, title, agency, onhand}
+                    title = '',
+                    weight = x.Product2.Ship_Weight__c
+                    return {...x, Name, ProductCode, icon, title, agency, onhand, weight}
                 })
                 //this.prod = results; 
-                console.log('search');
                 
-                console.log(JSON.stringify(this.prod))
                 
             }).catch((error)=>{
                 this.error = error;
-                console.log('error -->'+error);
+                console.log('error -->'+JSON.stringify(error));
             }).finally(()=>{
                     this.loaded = true; 
                     

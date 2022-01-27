@@ -33,7 +33,9 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
+    //console.log(JSON.stringify(products))
       let prod = products.map(x =>{
+        
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
@@ -42,19 +44,26 @@
             name: x.Product2.Name,
             ProductCode: x.Product2.ProductCode,
             Quantity: x.Quantity,
-            UnitPrice:x.UnitPrice,
+            lOne: x.Level_1_UserView__c,
+            floorPrice: x.Floor_Price__c,
+            UnitPrice:x.CPQ_Unit_Price__c,
             //MinPrice: x.UnitPrice, 
-            CPQ_Margin__c: x.Product2.Agency__c? '' : x.CPQ_Margin__c,
-            Cost__c: x.Cost__c,
-            agency: x.Product2.Agency__c,
+            CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
+            Cost__c: x.Product_Cost__c,
+            agency: x.Product2.Agency_Pricing__c ,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
             lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
-            lastMarg: x.Product2.Agency__c ? '' : (x.Margin__c/100),
+            lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
             TotalPrice: x.TotalPrice,
-            Description: x.Description, 
+            Description: x.Description,
+            Ship_Weight__c: x.Product2.Ship_Weight__c, 
+            showLastPaid: true,
+            flrText: 'flr price $'+ x.Floor_Price__c,
+            lOneText: 'lev 1 $'+x.Level_1_UserView__c, 
             OpportunityId: recordId
         }
       })
+       
       return prod; 
   }
   

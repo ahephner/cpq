@@ -26,8 +26,8 @@ public class cpqOppClone {
        Date cd = System.today() + 14; 
          
         try{
-         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, 
-                RecordType.Id, Contact__c, pricebook2.id,Type, description FROM Opportunity where id = :opp.Id]; 
+         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, 
+                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, description FROM Opportunity where id = :opp.Id]; 
   
             newOp = opp.clone(false);
             
@@ -72,7 +72,7 @@ public class cpqOppClone {
         Map<Id, pricebookentry> pbeMap = new Map<Id, pricebookentry>();
         List<opportunitylineitem> newLines = new List<opportunitylineitem>();
          //get opportunity line items that are still have active pricebook entries
-            List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,
+            List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, 
                                                    rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c
                                                    from opportunitylineitem where opportunityid = :OppId and PriceBookEntry.IsActive = true];
                
@@ -85,7 +85,9 @@ public class cpqOppClone {
             pbeMap.put(x.product2Id, x);
         }
         
+
         for(opportunitylineitem ol: lineItems){
+            system.debug('ol '+ol);
            // decimal marg = (ol.UnitPrice/pbeMap.get(ol.Product2Id).UnitPrice)*100;
             //decimal roundMarg = marg.setScale(2, RoundingMode.HALF_UP);
             if(ol.Agency__c == true){
@@ -93,7 +95,8 @@ public class cpqOppClone {
                     PricebookEntryId = pbeMap.get(ol.Product2Id).id,
                     product2id = ol.product2id,
                     quantity = ol.quantity,
-                    unitprice = pbeMap.get(ol.Product2Id).UnitPrice, 
+                    unitprice = pbeMap.get(ol.Product2Id).UnitPrice,
+                    CPQ_Unit_Price__c = pbeMap.get(ol.Product2Id).UnitPrice,
                     description = ol.description,
                     OpportunityId  = newOpId));                
             }else{
@@ -105,6 +108,7 @@ public class cpqOppClone {
                     product2id = ol.product2id,
                     quantity = ol.quantity,
                     unitprice = salesPrice, 
+                    CPQ_Unit_Price__c = salesPrice,
                     CPQ_Margin__c =ol.CPQ_Margin__c,
                     description = ol.description,
                     Per_1_000__c = ol.Per_1_000__c,
@@ -114,7 +118,6 @@ public class cpqOppClone {
 
             //count ++; 
         }
-       system.debug(newLines);
         return newLines; 
     }
 }

@@ -13,7 +13,7 @@
                             <p>Product Name</p>
                         </div>
                         <div class='slds-col slds-size_1-of-8 slds-m-left_medium'>
-                            <p>Unit Price</p>
+                            <p>Floor Price</p>
                         </div>
                         <div class='slds-col slds-size_1-of-8'>
                             <p>Level 1 Price</p>
@@ -43,27 +43,27 @@
                                     <div class="slds-col slds-size_1-of-8">
                                         <lightning-input  type="number"  
                                         label="" name={item.Id} 
-                                        value={item.UnitPrice} onchange={newUnitPrice} step="0.01" 
+                                        value={item.Floor_Price__c} onchange={newUnitPrice} step="0.01" 
                                         read-only={item.Agency_Product__c} ></lightning-input>
                                     </div>
                                     <!-- Level 1 -->
                                         <!-- price -->
-                                    <div class="slds-col slds-size_1-of-8">
-                                        <lightning-input  type="number"  
-                                        label="" name={item.Id} 
-                                        value={item.Level_1_Price__c} onchange={changeOne} step="0.01" 
-                                        read-only={item.Agency_Product__c} ></lightning-input>
-                                    </div>
-                                        <!-- margin -->
-                                    <div class="slds-col slds-size_1-of-8">
-                                        <lightning-input  type="number"  
-                                        label="" name={item.Id} value={item.levOneMar} onchange={changeMarOne} 
-                                        step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
-                                    </div>
+                                        <div class="slds-col slds-size_1-of-8">
+                                            <lightning-input  type="number"
+                                            label="" name={item.Id} 
+                                            value={item.Level_1_Price__c} onchange={changeOne} step="0.01" 
+                                            read-only={item.Agency_Product__c} ></lightning-input>
+                                        </div>
+                                            <!-- margin -->
+                                        <div class="slds-col slds-size_1-of-8">
+                                            <lightning-input  type="number"  
+                                            label="" name={item.Id} value={item.levOneMar} onchange={changeMarOne} 
+                                            step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
+                                        </div>
                                     <!-- Level 2 -->
                                         <!-- price -->
                                     <div class="slds-col slds-size_1-of-8">
-                                        <lightning-input  type="number"  
+                                        <lightning-input  type="number"   
                                         label="" name={item.Id} 
                                         value={item.Level_2_Price__c} onchange={changeTwo} step="0.01" 
                                         read-only={item.Agency_Product__c} ></lightning-input>

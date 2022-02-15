@@ -64,20 +64,20 @@ export default class ProductMaintFlowMath extends LightningElement {
             if(this.toUpdate[i].Agency_Product__c){
                 console.log('agency '+this.toUpdate[i].Name);
                 this.agencyCount ++; 
-            }else if(this.toUpdate[i].UnitPrice >0 && this.toUpdate[i].Agency_Product__c===false){
+            }else if(this.toUpdate[i].Floor_Price__c >0 && this.toUpdate[i].Agency_Product__c===false){
                 this.updatedRecordCount ++; 
                 let before ={...this.toUpdate[i]}
                //console.log(typeof this.toUpdate[i])
                 this.beforePricing.push(before);
-                this.toUpdate[i].Level_1_Price__c = this.roundNum(this.toUpdate[i].UnitPrice /(1- this.levelOne/100),2)
-                this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].UnitPrice /(1- this.levTwoMarg/100),2);
+                this.toUpdate[i].Level_1_Price__c = this.roundNum(this.toUpdate[i].Floor_Price__c /(1- this.levelOne/100),2)
+                this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].Floor_Price__c /(1- this.levTwoMarg/100),2);
                 this.toUpdate[i].difOne = this.roundNum(this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne, 2);
                 this.toUpdate[i].difTwo = this.roundNum(this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo,2);
                 this.toUpdate[i].warnOne = (this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
                 this.toUpdate[i].warnTwo = (this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
                 this.updatedRecords.push(this.toUpdate[i]);
             }
-            else if(this.toUpdate[i].UnitPrice <=0 ||this.toUpdate[i].UnitPrice === undefined){
+            else if(this.toUpdate[i].Floor_Price__c <=0 ||this.toUpdate[i].Floor_Price__c === undefined){
                 //console.log('bad ' +this.toUpdate[i].Name);
                 let name = this.toUpdate[i].Name;
                 this.badRecords.push(name);

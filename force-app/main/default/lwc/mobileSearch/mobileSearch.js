@@ -124,7 +124,7 @@ export default class MobileSearch extends LightningElement {
     addProduct(product){
         
         const pd = product;
-        console.log(JSON.stringify(pd))
+        //console.log(JSON.stringify(pd))
         this.dispatchEvent(new CustomEvent('newprod',{
             detail: pd
         }))

@@ -2,3 +2,10 @@
     --slds-c-input-color-background: #ccffcc;  
     
 }
+
+.row{
+    border-bottom: 1px solid #696969;
+}
+.header{
+    border-bottom: 1px solid black;
+}

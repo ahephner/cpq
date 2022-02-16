@@ -39,8 +39,8 @@ export default class ProductMaintFlow extends LightningElement{
         
         this.items = this.itemData.map(i=>{
             //console.log((i.Level_1_Price__c - i.Floor_Price__c)/i.Level_1_Price__c)
-            levOneMar = (((i.Level_1_Price__c - i.Floor_Price__c)/i.Level_1_Price__c)*100).toFixed(2);
-            levTwoMar = (((i.Level_2_Price__c - i.Floor_Price__c)/i.Level_2_Price__c)*100).toFixed(2);
+            levOneMar = (((i.Level_1_Price__c - i.Product_Cost__c)/i.Level_1_Price__c)*100).toFixed(2);
+            levTwoMar = (((i.Level_2_Price__c - i.Product_Cost__c)/i.Level_2_Price__c)*100).toFixed(2);
             
             return {...i, levOneMar, levTwoMar};
         }) 
@@ -52,26 +52,26 @@ export default class ProductMaintFlow extends LightningElement{
 
 
     //handle pricing changes
-    newUnitPrice(p){
-        window.clearTimeout(this.delay);
-        let index = this.items.findIndex(prod => prod.Id === p.target.name); 
-        this.delay = setTimeout(()=>{
-            this.items[index].Floor_Price__c = Number(p.detail.value);
-            // if(this.itemData[index].Floor_Price__c > 0){
-            //     this.itemData[index].CPQ_Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].Floor_Price__c))*100).toFixed(2);
-            // }
-        }, 500)       
-    }
+    // newUnitPrice(p){
+    //     window.clearTimeout(this.delay);
+    //     let index = this.items.findIndex(prod => prod.Id === p.target.name); 
+    //     this.delay = setTimeout(()=>{
+    //         this.items[index].Floor_Price__c = Number(p.detail.value);
+    //         // if(this.itemData[index].Floor_Price__c > 0){
+    //         //     this.itemData[index].CPQ_Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].Floor_Price__c))*100).toFixed(2);
+    //         // }
+    //     }, 500)       
+    // }
     changeOne(p){
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === p.target.name);
-        console.log('index '+index);
+        //console.log('index '+index);
         
         this.delay = setTimeout(()=>{
             this.items[index].Level_1_Price__c = Number(p.detail.value);
             
             if(this.items[index].Level_1_Price__c > 0){
-                this.items[index].levOneMar = Number((1 - (this.items[index].Floor_Price__c /this.items[index].Level_1_Price__c))*100).toFixed(2);
+                this.items[index].levOneMar = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_1_Price__c))*100).toFixed(2);
             }
 
         }, 500)         
@@ -82,7 +82,7 @@ export default class ProductMaintFlow extends LightningElement{
         this.delay = setTimeout(()=>{
             this.items[index].Level_2_Price__c = Number(p.detail.value);
             if(this.items[index].Level_2_Price__c > 0){
-                this.items[index].levTwoMar = Number((1 - (this.items[index].Floor_Price__c /this.items[index].Level_2_Price__c))*100).toFixed(2);
+                this.items[index].levTwoMar = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_2_Price__c))*100).toFixed(2);
             }
 
         }, 500)  
@@ -92,10 +92,10 @@ export default class ProductMaintFlow extends LightningElement{
         let index = this.items.findIndex(prod => prod.Id === m.target.name);
         this.delay = setTimeout(()=>{
             this.items[index].levOneMar = Number(m.detail.value);
-            console.log(this.items[index].levOneMar);
+            //console.log(this.items[index].levOneMar);
             
             if(this.items[index].levOneMar > 0){
-                this.items[index].Level_1_Price__c = Number(this.items[index].Floor_Price__c /(1- this.items[index].levOneMar/100)).toFixed(2);
+                this.items[index].Level_1_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].levOneMar/100)).toFixed(2);
             }
 
         }, 500)
@@ -106,7 +106,7 @@ export default class ProductMaintFlow extends LightningElement{
         this.delay = setTimeout(()=>{
             this.items[index].levTwoMar = Number(m.detail.value);
             if(this.items[index].levTwoMar > 0){
-                this.items[index].Level_2_Price__c = Number(this.items[index].Floor_Price__c /(1- this.items[index].levTwoMar/100)).toFixed(2);
+                this.items[index].Level_2_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].levTwoMar/100)).toFixed(2);
             }
 
         }, 500)
@@ -125,20 +125,20 @@ export default class ProductMaintFlow extends LightningElement{
             return {fields};
         })
         //here update product2
-        const productInputs = this.items.slice().map(draft=>{
-            let Id = draft.Product2_Real_Id__c;
-            let Floor_Price__c = draft.Floor_Price__c;
+        // const productInputs = this.items.slice().map(draft=>{
+        //     let Id = draft.Product2_Real_Id__c;
+        //     let Floor_Price__c = draft.Floor_Price__c;
 
-            const fields = {Id, Floor_Price__c}
-            return {fields}; 
-        })
+        //     const fields = {Id, Floor_Price__c}
+        //     return {fields}; 
+        // })
         //console.log(JSON.stringify(productInputs));
-        console.log('promise 1');
+        //console.log('promise 1');
         const promises = recordInputs.map(recordInput => updateRecord(recordInput));
-        console.log('promise 2');
-        const promise2 = productInputs.map(ri => updateRecord(ri));
-        //productInputs.map(x => console.log(x))
-        Promise.all([promises, promise2]).then(prod => {
+        //here if you want to update the product card
+       // const promise2 = productInputs.map(ri => updateRecord(ri));
+       //If you want to add another promise use this ==> [promises, promise2]
+        Promise.all(promises).then(prod => {
             console.log(prod);
         }).catch(error => {
             console.log(error);

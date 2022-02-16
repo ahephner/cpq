@@ -8,11 +8,11 @@
                 <!-- desktop -->
                 <template if:true={formSize}>
                     <!-- header values -->
-                    <div class='slds-grid'>
+                    <div class='slds-grid header'>
                         <div class='slds-col slds-size_2-of-8'>
                             <p>Product Name</p>
                         </div>
-                        <div class='slds-col slds-size_1-of-8 slds-m-left_medium'>
+                        <div class='slds-col slds-size_1-of-8'>
                             <p>Floor Price</p>
                         </div>
                         <div class='slds-col slds-size_1-of-8'>
@@ -34,17 +34,18 @@
                         <div class='slds-col slds-size_1-of-1'>
                             <template for:each={items} for:item='item'>
                                 <div key={item.Id} class='slds-m-horizontal_xx-small 
-                                     slds-m-bottom_x-small slds-grid'>
+                                     slds-m-bottom_x-small slds-grid row'>
                                     <!-- Name -->
-                                     <div class="slds-col slds-size_2-of-8 slds-m-top_medium">
+                                     <div class="slds-col slds-size_2-of-8 slds-m-top_large">
                                         <p class='pName'>{item.Name}</p>
                                     </div>
                                     <!-- Unit Price -->
+                                    <!--If you want to give ability to edit in the future change readonly to read-only={item.Agency_Product__c} & onchange={newUnitPrice}-->
                                     <div class="slds-col slds-size_1-of-8">
                                         <lightning-input  type="number"  
                                         label="" name={item.Id} 
-                                        value={item.Floor_Price__c} onchange={newUnitPrice} step="0.01" 
-                                        read-only={item.Agency_Product__c} ></lightning-input>
+                                        value={item.Floor_Price__c}  step="0.01" 
+                                        readonly ></lightning-input>
                                     </div>
                                     <!-- Level 1 -->
                                         <!-- price -->
@@ -98,7 +99,7 @@
                                 </div>
                                 <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
                                     <lightning-input name={item.Id} value={item.UnitPrice} label='Unit Price' 
-                                    type='number' formater='currency' onchange={newUnitPrice} step="0.01" read-only={item.Agency_Product__c}></lightning-input>
+                                    type='number' formater='currency'  step="0.01" readonly></lightning-input>
                                     <lightning-input type="number"  label="Level 1 Margin" 
                                     name={item.Id} value={item.levOneMar} onchange={changeMarOne} 
                                     step="0.01" read-only={item.Agency_Product__c}></lightning-input>

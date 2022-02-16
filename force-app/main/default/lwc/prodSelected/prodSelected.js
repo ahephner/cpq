@@ -524,7 +524,7 @@ export default class ProdSelected extends LightningElement {
             
          }catch(error){
             let mess = error; 
-            console.log('error ==> '+error);
+            console.error('error ==> '+error);
             
             this.dispatchEvent(
                 new ShowToastEvent({

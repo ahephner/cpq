@@ -20,7 +20,7 @@ import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id';
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,getTotals, qtyChange} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,getTotals, roundNum,totalChange} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -52,7 +52,7 @@ export default class ProdSelected extends LightningElement {
     loaded = true;
     goodQty; 
     tPrice;
-    shpWeight;
+    //shpWeight;
     tQty;
     
     @track selection = []
@@ -179,7 +179,7 @@ export default class ProdSelected extends LightningElement {
             this.tQty ++;
             this.tPrice += this.agency? this.fPrice : this.levelTwo;
             this.tPrice = this.tPrice.toFixed(2);
-            this.shpWeight += this.unitWeight
+            //this.shpWeight += this.unitWeight
         }else{
             this.selection = [
                 ...this.selection, {
@@ -211,7 +211,7 @@ export default class ProdSelected extends LightningElement {
             this.tQty ++;
             this.tPrice += this.agency? this.fPrice : this.levelTwo;
             this.tPrice = this.tPrice.toFixed(2);
-            this.shpWeight += this.unitWeight
+            //this.shpWeight += this.unitWeight
         }    
     //  console.log(JSON.stringify(this.selection));
          
@@ -251,6 +251,7 @@ export default class ProdSelected extends LightningElement {
             let floor = Number(this.selection[index].floorPrice);
             let unitp = Number(this.selection[index].UnitPrice);
             this.handleWarning(targetId,lOne, floor, unitp )
+            this.tPrice = totalChange(this.selection)
 
         }, 1000)
     }
@@ -280,8 +281,9 @@ export default class ProdSelected extends LightningElement {
             let lOne = Number(this.selection[index].lOne);
             let floor = Number(this.selection[index].floorPrice);
             let unitp =  Number(this.selection[index].UnitPrice);
-            
             this.handleWarning(targetId,lOne, floor, unitp )
+            //update order totals
+            this.tPrice = totalChange(this.selection)
     },1000)
         
     }
@@ -294,11 +296,17 @@ export default class ProdSelected extends LightningElement {
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
         
         this.selection[index].Quantity = Number(e.detail.value);
-        this.tQty = qtyChange(this.selection);
-        if(this.selection[index].UnitPrice >0){
-            this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
+ //need to figure out how not run on zeroed out qty. 
+        if(this.selection[index].UnitPrice >0 && this.selection[index].Quantity > 0){
+            this.selection[index].TotalPrice = roundNum(this.selection[index].Quantity * this.selection[index].UnitPrice, 2) 
+            this.selection[index].Ship_Weight__c = Number(this.selection[index].Ship_Weight__c * this.selection[index].Quantity)
             this.goodQty = true;   
         }
+        let totals =  getTotals(this.selection);
+            
+        this.tPrice = totals.TotalPrice.toFixed(2);
+        //this.shpWeight = totals.Ship_Weight__c;
+        this.tQty = totals.Quantity;
     }
     newComment(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
@@ -318,6 +326,12 @@ export default class ProdSelected extends LightningElement {
                     
                     deleteRecord(id); 
                 }
+                //update order totals
+                let totals =  getTotals(this.selection);
+            
+                this.tPrice = totals.TotalPrice;
+                //this.shpWeight = totals.Ship_Weight__c;
+                this.tQty = totals.Quantity;
             }
         }      
     }
@@ -534,7 +548,7 @@ export default class ProdSelected extends LightningElement {
             let totals = await getTotals(this.selection);
             
             this.tPrice = totals.TotalPrice;
-            this.shpWeight = totals.Ship_Weight__c;
+            //this.shpWeight = totals.Ship_Weight__c;
             this.tQty = totals.Quantity; 
             
          }catch(error){

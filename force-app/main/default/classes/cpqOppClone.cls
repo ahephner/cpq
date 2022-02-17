@@ -27,7 +27,7 @@ public class cpqOppClone {
          
         try{
          opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, 
-                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, description FROM Opportunity where id = :opp.Id]; 
+                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c FROM Opportunity where id = :opp.Id]; 
   
             newOp = opp.clone(false);
             

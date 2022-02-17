@@ -26,3 +26,8 @@
 .goodPrice{
     -webkit-text-fill-color: black;
 }
+.totals{
+    display: inline-block;
+    margin-left: 15px;
+    font-weight: bold;
+}

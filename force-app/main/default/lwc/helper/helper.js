@@ -66,6 +66,26 @@
        
       return prod; 
   }
+  //on load get product totals for ship weight, total price and quantity. 
+  const getTotals = (products)=>{
+    const totals = products.reduce((basket, items) => {
+                            //console.log(basket) //is the const first loop blank
+                            //console.log(items) is the object of data you want to reduce
+          for (const [keyName, valueCount] of Object.entries(items)) {
+            //only get the fields we want
+          if(keyName==='Ship_Weight__c'||keyName  ==='TotalPrice' || keyName==='Quantity'){
+            //if the basket does not contain the key add the key and set the value to 0
+            if (!basket[keyName]) {
+                basket[keyName] = 0;
+            }
+    
+            basket[keyName] += valueCount;
+        }
+        }
+        return basket;
+    }, {});
+    return totals; 
+  }
   
   //allows the user to check inventory at other locations
   const newInventory = (selectedProd, counts) =>{
@@ -86,6 +106,13 @@
     return merge;
   }
 
+  //Update totals 
+  const qtyChange = (q)=>{
+    let count = q.reduce((acc, items)=>{
+      return acc + items.Quantity;
+    },0)
+    return count; 
+  }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, getTotals, qtyChange}
 

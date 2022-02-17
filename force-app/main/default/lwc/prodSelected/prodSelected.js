@@ -20,7 +20,8 @@ import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id';
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,getTotals, qtyChange} from 'c/helper'
+
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
@@ -50,6 +51,9 @@ export default class ProdSelected extends LightningElement {
     wasSubmitted; 
     loaded = true;
     goodQty; 
+    tPrice;
+    shpWeight;
+    tQty;
     
     @track selection = []
 //for message service
@@ -101,7 +105,7 @@ export default class ProdSelected extends LightningElement {
                 this.productName = mess.productName;
                 this.productId = mess.productId 
                 this.pbeId = mess.pbeId;
-                this.unitCost = mess.unitCost;
+                this.unitCost = mess.unitCost
                 this.unitWeight = mess.prodWeight;
                 this.agency = mess.agencyProduct;
                 this.fPrice = mess.floorPrice;
@@ -172,6 +176,10 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
+            this.tQty ++;
+            this.tPrice += this.agency? this.fPrice : this.levelTwo;
+            this.tPrice = this.tPrice.toFixed(2);
+            this.shpWeight += this.unitWeight
         }else{
             this.selection = [
                 ...this.selection, {
@@ -200,7 +208,12 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
+            this.tQty ++;
+            this.tPrice += this.agency? this.fPrice : this.levelTwo;
+            this.tPrice = this.tPrice.toFixed(2);
+            this.shpWeight += this.unitWeight
         }    
+    //  console.log(JSON.stringify(this.selection));
          
     }
 
@@ -281,10 +294,10 @@ export default class ProdSelected extends LightningElement {
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
         
         this.selection[index].Quantity = Number(e.detail.value);
+        this.tQty = qtyChange(this.selection);
         if(this.selection[index].UnitPrice >0){
             this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
-            this.goodQty = true;
-            
+            this.goodQty = true;   
         }
     }
     newComment(x){
@@ -517,10 +530,12 @@ export default class ProdSelected extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLevels, this.recordId); 
-                console.log('selection '+JSON.stringify(this.selection));
-            // mergedLastPaid.forEach(x=> 
-            //     console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)
-            // )
+            //get the order totals; 
+            let totals = await getTotals(this.selection);
+            
+            this.tPrice = totals.TotalPrice;
+            this.shpWeight = totals.Ship_Weight__c;
+            this.tQty = totals.Quantity; 
             
          }catch(error){
             let mess = error; 

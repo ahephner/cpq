@@ -12,7 +12,8 @@ export default class ContactAddress extends LightningElement {
        // @track selectObj;
         @track options;
         isRendered = false;   
-        error;  
+        error;
+        showAddresses = true; 
     //Subscribe to Message Channel
     @wire(MessageContext)
     messageContext; 
@@ -56,17 +57,20 @@ export default class ContactAddress extends LightningElement {
                         label = this.options.find((x)=>x.value===this.selected)
                     }
                     
-                    return label;
-                
-                
+                    return label;   
             }
 
            
         selectChange(event){
-            let newValue = this.template.querySelector('.slds-select').value; 
-            const payLoad = {shipAddress: newValue};
+            let newValue = this.template.querySelector('.slds-select').value;
+            if(newValue === "new"){
+                this.template.querySelector('c-new-ship-address').openAddress(); 
+            }else{
+                const payLoad = {shipAddress: newValue};
+                //send to main comp
+                publish(this.messageContext,Opportunity_Builder, payLoad);
 
-            //send to main comp
-            publish(this.messageContext,Opportunity_Builder, payLoad);
+            }
         }
+
 }

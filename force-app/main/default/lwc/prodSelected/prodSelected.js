@@ -438,6 +438,18 @@ export default class ProdSelected extends LightningElement {
         })
     }
 
+    moveStage(){
+        alert('i am not connected to anything yet')
+        //Needed Winter 23
+        // LightningAlert.open({
+        //     message: 'not connected to anything. This is a new lwc alert!',
+        //     //label defaults to "Alert"
+        //     variant: 'headerless',
+        // }).then((result) => {
+        //     console.log('alert result', result);
+        // });
+    }
+
     saveSubmit(){
         this.loaded = false; 
         let valid = this.isValid();

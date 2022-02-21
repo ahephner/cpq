@@ -1,9 +1,7 @@
 <template>
-    <lightning-card  variant="Narrow"  title="Addresses" >
-
     
-
-    <label for="ship-select">Shipping Address:</label>
+    <lightning-card  variant="Narrow"  title="Addresses" >
+        <label for="ship-select">Shipping Address:</label>
     
         <select name="address" class="slds-select"  onchange={selectChange}>
             <template if:true={selectedObj}> 
@@ -16,7 +14,13 @@
 
                     <option key={x.value} value={x.value}>{x.label}</option>
         </template>
+            <option value='new'>Add New Shipping Address</option>
         </select>
-        
-</lightning-card>
+    </lightning-card>
+
+    
+        <!--New address modal -->
+        <c-new-ship-address
+                           acc-id={customer}></c-new-ship-address>
+    
 </template>

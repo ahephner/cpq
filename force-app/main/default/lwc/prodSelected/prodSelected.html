@@ -147,7 +147,6 @@
                 </template>
             </div>
             </div>
-            <!--Buttons to save-->
             <template if:true={wasSubmitted}>
                 <div class='slds-align_absolute-center'>
                     <p>Quote has been submitted you can clone this!</span></p>    
@@ -159,10 +158,14 @@
                     <span class='slds-col slds-size_2-of-3'>
                         <!-- <p class="totals">Ship Weight: {shpWeight}--></p><p class="totals">Total Qty: {tQty}</p><p class="totals">Total Price: ${tPrice}</p> 
                     </span>
+                    <!-- Button Group to save -->
                     <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
                         <div class='slds-float_right slds-m-right_medium'>
-                            <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
-                            <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button>
+                            <lightning-button-group>
+                                <lightning-button variant="Neutral" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                                <lightning-button variant="brand" label="Get Quote" title="Get Quote" onclick={moveStage}></lightning-button>
+                                <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button>
+                            </lightning-button-group>
                         </div>
                     </span>
                 </div>

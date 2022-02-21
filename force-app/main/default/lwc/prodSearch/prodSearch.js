@@ -216,9 +216,9 @@ export default class ProdSearch extends LightningElement {
 handleRemove(x){
     //console.log('connected');
     const prodId = x.detail;
-    console.log('prodId '+ prodId);  
+    //console.log('prodId '+ prodId);  
     const index = this.selection.findIndex(item => item.id === prodId);
-    console.log('index '+ index);
+    //console.log('index '+ index);
     this.selection.splice(index, 1);
     //console.log(this.selection);
     

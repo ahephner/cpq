@@ -32,7 +32,7 @@ export default class ContactAddress extends LightningElement {
         findAddress(rec){
              getAddress({accID: rec})
                 .then((res)=>{
-                    console.log('1 options');
+                   
                     
                     this.options = res.map(item=>({
                                         ...item,
@@ -40,7 +40,7 @@ export default class ContactAddress extends LightningElement {
                                         value: item.Id
                     }))
                     console.log('type of options '+typeof this.options);
-                    
+                    console.log(JSON.stringify(this.options))
                 }).catch((error)=>{
                     this.error = error;
                     console.log('error  '+this.error);
@@ -73,4 +73,22 @@ export default class ContactAddress extends LightningElement {
             }
         }
 
+        updateAddress(event){
+            console.log(event);
+            
+            let value = event.detail.value;
+            
+            let label = event.detail.label;
+            let x = {value, label, selected}
+            // this.options.push(x); 
+            console.log(x)
+            
+        }
+        order(valueSelected){
+            
+            //let z = this.template.querySelector('.slds-select').value;
+            console.log( valueSelected);
+            
+            
+        }
 }

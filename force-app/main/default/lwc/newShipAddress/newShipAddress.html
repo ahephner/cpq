@@ -12,71 +12,40 @@
                                 <h2 id="modal-heading-01" 
                                 class="slds-text-heading_medium slds-hyphenate">Add Shipping Address</h2>
                             </header>
-                        <div class="slds-modal__content slds-p-around_medium slds-grid prodBody" id="modal-content-id-1">
-                        <!-- Body -->
-                            <!-- <div class="slds-form slds-form_stacked">
-                                <div class="slds-grid slds-gutters_small">
-                                    <div class="slds-col slds-size_1-of-2 slds-m-left_small">
-                                        <lightning-input label='name'></lightning-input>
-                                    </div>
-                                     <div class="slds-col slds-size_1-of-2">
-                                        <lightning-input label='type'></lightning-input>
-                                    </div> 
+                        <div class="slds-modal__content slds-p-around_medium slds-grid prodBody" id="modal-content-id-1"> 
+                            <!-- Body -->
+                            <div class="slds-grid slds-wrap slds-m-left_xx-large">
+                                <div class="slds-col slds-size_11-of-12">
+                                    <lightning-input label="Name" type="text" 
+                                                    onchange={newName} required>
+                                    </lightning-input>
                                 </div>
-                                <div class="slds-grid slds-gutters_small">
-                                    <div class="slds-col slds-size_1-of-2">
-                                        <div class="slds-grid">
-                                            <div class="slds-col slds-size_6-of-6">
-                                                <lightning-input label='street' type="text"></lightning-input>
-                                                <lightning-input label='zip'></lightning-input>
-                                            </div>
-                                            <div class="slds-col slds-size_4-of-6">
-                                                <lightning-input label='city'></lightning-input>
-                                            </div>
-                                            <div class="slds-col slds-size_2-of-6">
-                                                <lightning-input label='state'></lightning-input>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div> -->
-                        <div class="slds-grid slds-wrap slds-m-left_xx-large">
-                            <div class="slds-col slds-size_11-of-12">
-                                <lightning-input label="Name" type="text" 
-                                                 onchange={newName} required>
-                                </lightning-input>
-                            </div>
-                        
-                        
-                            <div class="slds-col slds-size_11-of-12">
-                                <lightning-input-address
-                                address-label="Address"
-                                street-label="Street"
-                                city-label="City"
-                                province-label="State"
-                                postal-code-label="Zip Code"
-                                country-label="Country"
-                                street={street}
-                                city={city}
-                                province={state}
-                                postal-code={zip}
-                                country-disabled
-                                country="U.S.A"
-                                required
-                                onchange={handleChange}
-                                ></lightning-input-address>
-                            </div>
-                        </div>
-
-
-                            <!-- <lightning-button type="submit" variant="brand" label="Save"></lightning-button> -->
-                        </div>
-                        <footer class="slds-modal__footer">
                             
-                            <lightning-button label="Cancel" variant="neutral" onclick={closeModal}></lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <lightning-button variant="brand" label="Save" onclick={handleNewAddress}></lightning-button>
-                        </footer>
+                            
+                                <div class="slds-col slds-size_11-of-12">
+                                    <lightning-input-address
+                                    address-label="Address"
+                                    street-label="Street"
+                                    city-label="City"
+                                    province-label="State"
+                                    postal-code-label="Zip Code"
+                                    country-label="Country"
+                                    street={street}
+                                    city={city}
+                                    province={state}
+                                    postal-code={zip}
+                                    country-disabled
+                                    country="U.S.A"
+                                    required
+                                    onchange={handleChange}
+                                    ></lightning-input-address>
+                                </div>
+                            </div>
+                        </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" variant="neutral" onclick={closeModal}></lightning-button>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <lightning-button variant="brand" label="Save" onclick={handleNewAddress}></lightning-button>
+                    </footer>
 </div>
 </section>
     <div class='slds-backdrop slds-backdrop_open'></div>

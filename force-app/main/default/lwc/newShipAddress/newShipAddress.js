@@ -8,12 +8,13 @@ import CITY from '@salesforce/schema/ContactPointAddress.City';
 import STATE from '@salesforce/schema/ContactPointAddress.State';
 import ZIP from '@salesforce/schema/ContactPointAddress.PostalCode';
 import { createRecord  } from 'lightning/uiRecordApi';
-import Name from '@salesforce/schema/Account.Name';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class NewShipAddress extends LightningElement{
         @api accId
+        msg = 'Adding an address can slow quote acceptance by up to 10 mins in the system'
         showAddress=false;
-        contactPointAddress = OBJ; 
+        returnedId; 
         name 
         parent  
         street 
@@ -48,11 +49,35 @@ export default class NewShipAddress extends LightningElement{
 
                 createRecord(recordInput)
                 .then((res)=>{
-                    console.log(res.id);
+                    this.returnedId = res.id; 
+                    //console.log(JSON.stringify(res))
+                    let addValues = {value: this.returnedId, label: this.street + ' ('+ this.name+')'};
+                    console.log(1, addValues);
                     
+                    const updateList = new CustomEvent("newaddress", {detail:addValues});
+                    this.dispatchEvent(updateList);
+                    console.log(2);
+                    
+                    
+                }).then(a =>{
+                    console.log(3);
+                    const evt = new ShowToastEvent({
+                        title: 'Address Added',
+                        message: this.msg,
+                        variant: 'success'
+                    });
+                    this.dispatchEvent(evt);
+                    this.showAddress = false;
+                    
+                    this.name = '';
+                    this.street = '';
+                    this.state = '';
+                    this.city = '';
+                    this.zip = ''; 
                 }).catch((err)=>{
                     alert('err '+JSON.stringify(err))
                 })
+
             }else{
                 console.log('bad address');
             }

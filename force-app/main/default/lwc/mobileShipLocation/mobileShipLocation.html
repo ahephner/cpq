@@ -12,10 +12,14 @@
 
                 <option key={x.Id} value={x.Id}>{x.Name}</option>
     </template>
-    
+        <option value='new'>Add New Shipping Address</option>
     </select>
     <hr/>
       
+            <!--New address modal -->
+            <c-new-ship-address
+            onnewaddress={updateAddress}
+            acc-id={customer}></c-new-ship-address>
 
     <div class='slds-m-top_small slds-m-bottom_small'>
         <lightning-button variant="brand" label="Return" title="Primary action" 

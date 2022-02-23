@@ -74,13 +74,15 @@ export default class ContactAddress extends LightningElement {
         }
 //listens for the new ship to address then pushs it to the avaliable array
         updateAddress(event){
+            console.log(this.options);
             
             let value = event.detail.value;
             
             let label = event.detail.label;
             let x = {value, label}
             this.options.push(x); 
-            this.order(value)
+            console.log(typeof this.options);
+            
         }
         // order(valueSelected){
             

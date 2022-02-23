@@ -82,10 +82,12 @@ export default class NewShipAddress extends LightningElement{
                     this.returnedId = res.id; 
                     //console.log(JSON.stringify(res))
                     let addValues = {value: this.returnedId, label: this.street + ' ('+ this.name+')'};
+                    //console.log(2, addValues);
                     
                     
                     const updateList = new CustomEvent("newaddress", {detail:addValues});
                     this.dispatchEvent(updateList);
+                    //console.log(3);
                     
                     
                 }).then(a =>{
@@ -96,6 +98,7 @@ export default class NewShipAddress extends LightningElement{
                     });
                     this.dispatchEvent(evt);
                     this.showAddress = false;
+                    //console.log(4);
                     
                     this.name = '';
                     this.street = '';

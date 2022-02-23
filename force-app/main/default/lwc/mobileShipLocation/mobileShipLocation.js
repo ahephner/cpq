@@ -1,4 +1,4 @@
-import { LightningElement, api } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 export default class MobileButtonGroup extends LightningElement {
     @api moveTo;
@@ -8,6 +8,7 @@ export default class MobileButtonGroup extends LightningElement {
     selectedObj
     @api selectedOption;
     @api prevSelected; 
+    @api customer
     @api 
     get addresses(){
         return this.shipOptions || [];
@@ -27,15 +28,31 @@ export default class MobileButtonGroup extends LightningElement {
 
     selectChange(){
         let newValue = this.template.querySelector('.slds-select').value;
-        this.selectedOption = newValue;
-        const attChange = new FlowAttributeChangeEvent('selectedOpton', this.option);
-        this.dispatchEvent(attChange);
+        if(newValue === 'new'){
+            this.template.querySelector('c-new-ship-address').openAddress(); 
+        }else{
+            this.selectedOption = newValue;
+            
+            const attChange = new FlowAttributeChangeEvent('selectedOpton', this.selectedOption);
+            this.dispatchEvent(attChange);
+        }
     }
     handleReturn(){
         this.mess = 'return';
         const attChange = new FlowAttributeChangeEvent('moveTo', this.mess);
         this.dispatchEvent(attChange);
         this.handleNext();
+    }
+
+    updateAddress(event){
+        //console.log('ship options '+JSON.stringify(this.shipOptions))
+        let Id = event.detail.value;
+        let Name = event.detail.label;
+        let newVal = {Id, Name}
+        //console.log(newVal);
+        
+       this.shipOptions = [...this.shipOptions, newVal]
+    //    console.log('ship options '+JSON.stringify(this.shipOptions))
     }
 
     saveSubmit(){

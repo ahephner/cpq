@@ -27,6 +27,7 @@
             <property name='moveTo' type='string' label='moveTo' description='tell flow where to go'/>
             <property name='prevSelected' type='string' label='prevAddress' description='if there is already a saved address'/>
             <property name='selectedOption' type='string' label='selectedAddress' description='user selected shipping address'/>
+            <property name='customer' type='string' label='customer' description='account id for opportunity'/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

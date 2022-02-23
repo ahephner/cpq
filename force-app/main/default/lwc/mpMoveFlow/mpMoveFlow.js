@@ -266,13 +266,14 @@ export default class MobileProducts extends LightningElement {
     saveMobile(){
         this.showSpinner = true; 
         //let data = [...this.prod];
-        //console.log('in save '+ JSON.stringify(this.prod))
+        console.log('in save '+ JSON.stringify(this.prod))
         createProducts({olList: this.prod})
         .then(result => {
             this.showSpinner = false; 
             let total = this.orderTotal(this.prod);
             //un comment this if you want to move the flow screen to a next action
             let mess = result;
+            console.log('result '+result)
             const attChange = new FlowAttributeChangeEvent('totalPrice', total);
             this.dispatchEvent(attChange); 
             const attributeChange = new FlowAttributeChangeEvent('results', mess);

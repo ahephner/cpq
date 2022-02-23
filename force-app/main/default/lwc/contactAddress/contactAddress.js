@@ -17,7 +17,8 @@ export default class ContactAddress extends LightningElement {
     //Subscribe to Message Channel
     @wire(MessageContext)
     messageContext; 
-
+//get context of the current order. Get the customerid to pass the function that gets avaliable address
+//check and see if there is already a saved ship to 
         @wire(getRecord, {recordId: '$recordId', fields:[ACCID, SHIPID]})
             custFields({data, error}){
                 if(data){
@@ -28,12 +29,10 @@ export default class ContactAddress extends LightningElement {
                     this.error = error;
                 }
             }
-
+//get the avaliable ship to options
         findAddress(rec){
              getAddress({accID: rec})
                 .then((res)=>{
-                   
-                    
                     this.options = res.map(item=>({
                                         ...item,
                                         label: item.Street +' ('+item.Name+')',
@@ -60,7 +59,8 @@ export default class ContactAddress extends LightningElement {
                     return label;   
             }
 
-           
+//this event runs on change of the address. If it's new it opens the new address. 
+//otherwise send to the order this is the ship to
         selectChange(event){
             let newValue = this.template.querySelector('.slds-select').value;
             if(newValue === "new"){
@@ -72,23 +72,20 @@ export default class ContactAddress extends LightningElement {
 
             }
         }
-
+//listens for the new ship to address then pushs it to the avaliable array
         updateAddress(event){
-            console.log(event);
             
             let value = event.detail.value;
             
             let label = event.detail.label;
-            let x = {value, label, selected}
-            // this.options.push(x); 
-            console.log(x)
-            
+            let x = {value, label}
+            this.options.push(x); 
+            this.order(value)
         }
-        order(valueSelected){
+        // order(valueSelected){
             
-            //let z = this.template.querySelector('.slds-select').value;
-            console.log( valueSelected);
+        //     this.template.querySelector('.slds-select').value = valueSelected
             
             
-        }
+        // }
 }

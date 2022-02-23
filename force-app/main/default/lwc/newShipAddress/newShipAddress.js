@@ -22,6 +22,7 @@ export default class NewShipAddress extends LightningElement{
         city 
         zip 
         valid
+//open the modal. Is called from contact address
         @api
         openAddress(){
             this.showAddress = true;
@@ -31,7 +32,36 @@ export default class NewShipAddress extends LightningElement{
         closeModal(){
             this.showAddress = false; 
         }
+        //runs on change of the address. bit overkill but it's how the component comes
+        handleChange(event){
+            this.street = event.target.street;
+            this.city = event.target.city;
+            this.zip = event.target.postalCode;
+            this.state =event.target.province;
+            this.valid = event.target.valid; 
+        }
 
+        //get new name for address
+        newName(e){
+            this.name = e.detail.value; 
+        }
+        //checks to make sure all the needed fields are filled in. Need to add some more prompts in the future
+        validInfo(){
+            const addName = this.template.querySelector('lightning-input');
+            const addFields = this.template.querySelector('lightning-input-address');
+            const addNameValid = addName.checkValidity();
+            const addFieldsValid = addFields.checkValidity();
+                if(addNameValid && addFieldsValid){
+                    return true; 
+                }else{
+                    return false; 
+                    
+                }
+        }
+//adds new address to system. First checks that the info is valid by calling above function
+//then if true sets the fields valuees and puts the fields with the object api name into an object => Api name and fields need to be imported above
+//then uses native createRecord and sets the returned id to a variable that it is passed along with the address name to a dispatch back to contactAddress
+//finally show toast its good. 
         handleNewAddress(){
             let valid = this.validInfo();
             if(valid){
@@ -52,15 +82,13 @@ export default class NewShipAddress extends LightningElement{
                     this.returnedId = res.id; 
                     //console.log(JSON.stringify(res))
                     let addValues = {value: this.returnedId, label: this.street + ' ('+ this.name+')'};
-                    console.log(1, addValues);
+                    
                     
                     const updateList = new CustomEvent("newaddress", {detail:addValues});
                     this.dispatchEvent(updateList);
-                    console.log(2);
                     
                     
                 }).then(a =>{
-                    console.log(3);
                     const evt = new ShowToastEvent({
                         title: 'Address Added',
                         message: this.msg,
@@ -75,7 +103,13 @@ export default class NewShipAddress extends LightningElement{
                     this.city = '';
                     this.zip = ''; 
                 }).catch((err)=>{
-                    alert('err '+JSON.stringify(err))
+                    let error = JSON.stringify(err)
+                    const evt = new ShowToastEvent({
+                        title: 'Error',
+                        message: error,
+                        variant: 'error'
+                    });
+                    this.dispatchEvent(evt);
                 })
 
             }else{
@@ -84,26 +118,4 @@ export default class NewShipAddress extends LightningElement{
             
         }
 
-        handleChange(event){
-            this.street = event.target.street;
-            this.city = event.target.city;
-            this.zip = event.target.postalCode;
-            this.state =event.target.province;
-            this.valid = event.target.valid; 
-        }
-        newName(e){
-            this.name = e.detail.value; 
-        }
-        validInfo(){
-            const addName = this.template.querySelector('lightning-input');
-            const addFields = this.template.querySelector('lightning-input-address');
-            const addNameValid = addName.checkValidity();
-            const addFieldsValid = addFields.checkValidity();
-                if(addNameValid && addFieldsValid){
-                    return true; 
-                }else{
-                    return false; 
-                    
-                }
-        }
 }

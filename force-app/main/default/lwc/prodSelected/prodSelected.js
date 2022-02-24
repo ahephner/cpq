@@ -447,12 +447,27 @@ export default class ProdSelected extends LightningElement {
     }
 
     moveStage(){
-        this.loaded = false; 
-        const fields = {}
-        fields[ID_FIELD.fieldApiName] = this.recordId;
-        fields[STAGE.fieldApiName] = 'Quote(45%)';
-        const opp = {fields};
-        updateRecord(opp).then(()=>{
+        this.loaded = false;
+        createProducts({olList: this.selection})
+        .then(result=>{
+            if(this.shippingAddress != null || !this.shippingAddress){
+                
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[SHIPADD.fieldApiName] = this.shippingAddress;
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[STAGE.fieldApiName] = 'Quote(45%)';
+                const shipRec = {fields}
+                updateRecord(shipRec)
+            }else{
+                const fields = {}
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[STAGE.fieldApiName] = 'Quote(45%)';
+                const opp = {fields};
+                updateRecord(opp)  
+            } 
+        }) 
+        .then(()=>{
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Success',
@@ -462,7 +477,8 @@ export default class ProdSelected extends LightningElement {
             );
             // Display fresh data in the form
             getRecordNotifyChange({recordId: this.recordId})
-        this.loaded = true; 
+            this.unsavedProducts = false; 
+            this.loaded = true; 
         }).catch(error=>{
             
             this.dispatchEvent(

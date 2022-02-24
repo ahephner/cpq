@@ -31,3 +31,37 @@
     margin-left: 15px;
     font-weight: bold;
 }
+.changedProduct{
+    color: #f54049;
+    margin-top: 1%;
+    margin-left: 5%;
+    font-weight: bold;
+}
+
+/* .changedProduct{
+    color: #313131; 
+    text-align: center;
+    margin-top: 1%;
+    margin-left: 5%;
+    -webkit-animation: colorchange 20s infinite alternate; 
+}
+@keyframes colorchange{
+    0%{
+      color: red;  
+    }
+    20%{
+        color: orangered;
+    }
+    40%{
+        color: orange;
+    }
+    60%{
+        color: #fdb42d;
+    }
+    80%{
+        color: orange
+    }
+    100%{
+        color:orangered; 
+    }
+} */

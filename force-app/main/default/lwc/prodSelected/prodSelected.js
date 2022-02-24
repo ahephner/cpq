@@ -8,11 +8,12 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
+import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
-import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
+import {getRecord, getFieldValue, updateRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { deleteRecord} from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
@@ -48,6 +49,7 @@ export default class ProdSelected extends LightningElement {
     error;
     goodPricing = true;   
     hasRendered = true;
+    unsavedProducts = false; 
     wasSubmitted; 
     loaded = true;
     goodQty; 
@@ -210,11 +212,13 @@ export default class ProdSelected extends LightningElement {
             ]
             this.tQty ++;
             this.tPrice += this.agency? this.fPrice : this.levelTwo;
+            //causing error this returns a string not a number
             this.tPrice = this.tPrice.toFixed(2);
+            
             //this.shpWeight += this.unitWeight
         }    
     //  console.log(JSON.stringify(this.selection));
-         
+            this.unsavedProducts = true; 
     }
 
     //If a user decides to uncheck a product on the search screen
@@ -254,6 +258,7 @@ export default class ProdSelected extends LightningElement {
             this.tPrice = totalChange(this.selection)
 
         }, 1000)
+        this.unsavedProducts = true;
     }
     
 
@@ -285,7 +290,7 @@ export default class ProdSelected extends LightningElement {
             //update order totals
             this.tPrice = totalChange(this.selection)
     },1000)
-        
+    this.unsavedProducts = true; 
     }
     
     newQTY(e){
@@ -307,10 +312,12 @@ export default class ProdSelected extends LightningElement {
         this.tPrice = totals.TotalPrice.toFixed(2);
         //this.shpWeight = totals.Ship_Weight__c;
         this.tQty = totals.Quantity;
+        this.unsavedProducts = true; 
     }
     newComment(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
-        this.selection[index].Description = x.detail.value;    
+        this.selection[index].Description = x.detail.value; 
+        this.unsavedProducts = true;    
     }
     
     removeProd(x){
@@ -434,12 +441,38 @@ export default class ProdSelected extends LightningElement {
                 }),
             );
         }).finally(()=>{
+            this.unsavedProducts = false; 
             this.loaded = true; 
         })
     }
 
     moveStage(){
-        alert('i am not connected to anything yet')
+        this.loaded = false; 
+        const fields = {}
+        fields[ID_FIELD.fieldApiName] = this.recordId;
+        fields[STAGE.fieldApiName] = 'Quote(45%)';
+        const opp = {fields};
+        updateRecord(opp).then(()=>{
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Quote Updated',
+                    variant: 'success'
+                })
+            );
+            // Display fresh data in the form
+            getRecordNotifyChange({recordId: this.recordId})
+        this.loaded = true; 
+        }).catch(error=>{
+            
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title:'Error Updating Record',
+                    message: error.body.message,
+                    variant: 'error'
+                })
+            )
+        })
         //Needed Winter 23
         // LightningAlert.open({
         //     message: 'not connected to anything. This is a new lwc alert!',

@@ -96,30 +96,37 @@
                         </div>
                     <template if:true={sp.showLastPaid}>
                         <!-- last paid -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.ProductCode}  label='' class='ro hover' 
-                                        value={sp.lastPaid} formatter="currency" readonly  onclick={showValues}></lightning-input>
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_medium">
+                            <!-- <lightning-input type="number" name={sp.ProductCode}  label='' class='ro hover' 
+                                        value={sp.lastPaid} formatter="currency" readonly  onclick={showValues}></lightning-input> -->
                                         <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
+            
+                                        <p onclick={showValues} class="lastPaid"  data-target-id={sp.ProductCode}>{sp.lastPaid}</p>            
+                                        <p onclick={showValues} class="docDate"  data-target-id={sp.ProductCode}>{sp.docDate}</p>
+                                        
                         </div>
                         <!-- last margin -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <lightning-input type="number" name={sp.ProductCode} label="" class='ro hover'
-                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>   
+                            <lightning-input type="number" data-target-id={sp.ProductCode} label="" class='ro hover'
+                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>
+                                        <!-- <p onclick={showValues} class="textInfo"  data-target-id={sp.ProductCode}>{sp.lastMarg}</p>  -->
                         </div>
                     </template>
                     <template if:false={sp.showLastPaid}>
                         <!-- Floor -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
-                            <lightning-input type="text" name={sp.ProductCode}  label='' class='ro hover' 
-                                        value={sp.flrText}  readonly onclick={showValues}></lightning-input>
+                            <!-- <lightning-input type="text" name={sp.ProductCode}  label='' class='ro hover slds-text-body_small' 
+                                        value={sp.flrText}  readonly onclick={showValues}></lightning-input> -->
+                                        <p onclick={showValues} class="backSide"  data-target-id={sp.ProductCode}>{sp.flrText}</p>  
                                         <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
                         </div>
                         <!-- level 1 -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <div class='hover'>
+                            <!-- <div class='hover'>
                                 <lightning-input type="text" name={sp.ProductCode} label="" class='ro'
                                 value={sp.lOneText}  step="0.01" readonly onclick={showValues}></lightning-input>
-                            </div>
+                            </div> -->
+                            <p onclick={showValues} class="backSide2"  data-target-id={sp.ProductCode}>{sp.lOneText}</p>
                         </div>
                     </template>
                         <!-- user margin can be changed or set -->

@@ -38,8 +38,8 @@ export default class ContactAddress extends LightningElement {
                                         label: item.Street +' ('+item.Name+')',
                                         value: item.Id
                     }))
-                    console.log('type of options '+typeof this.options);
-                    console.log(JSON.stringify(this.options))
+                    // console.log('type of options '+typeof this.options);
+                    // console.log(JSON.stringify(this.options))
                 }).catch((error)=>{
                     this.error = error;
                     console.log('error  '+this.error);
@@ -74,14 +74,14 @@ export default class ContactAddress extends LightningElement {
         }
 //listens for the new ship to address then pushs it to the avaliable array
         updateAddress(event){
-            console.log(this.options);
+            //console.log(this.options);
             
             let value = event.detail.value;
             
             let label = event.detail.label;
             let x = {value, label}
             this.options.push(x); 
-            console.log(typeof this.options);
+            //console.log(typeof this.options);
             
         }
         // order(valueSelected){

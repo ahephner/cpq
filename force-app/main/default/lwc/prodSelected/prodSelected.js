@@ -55,7 +55,7 @@ export default class ProdSelected extends LightningElement {
     goodQty; 
     tPrice;
     //shpWeight;
-    tQty;
+    tQty=0;
     
     @track selection = []
 //for message service
@@ -135,9 +135,7 @@ export default class ProdSelected extends LightningElement {
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                
-                
-                
+
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -178,10 +176,12 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
-            this.tQty ++;
+            this.tQty +=1; 
             this.tPrice += this.agency? this.fPrice : this.levelTwo;
             this.tPrice = this.tPrice.toFixed(2);
             //this.shpWeight += this.unitWeight
+            console.log(this.tQty);
+            
         }else{
             this.selection = [
                 ...this.selection, {
@@ -199,7 +199,8 @@ export default class ProdSelected extends LightningElement {
                     lOne: this.agency? this.fPrice : this.levelOne,
                     lTwo: this.levelTwo,
                     lastPaid: 0,
-                    lastMarg: 0,  
+                    lastMarg: 0, 
+                    docDate: 'First Purchase', 
                     CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
@@ -506,7 +507,7 @@ export default class ProdSelected extends LightningElement {
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Missing Shipping Address',
-                    message: 'If address is missing please contact credit!',
+                    message: 'Please select a shipping address!',
                     variant: 'error',
                 }),
             );
@@ -675,8 +676,8 @@ export default class ProdSelected extends LightningElement {
     }
     //Show floor vs last paid
     showValues(e){
-        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
-
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.dataset.targetId);
+        
         if(this.selection[index].showLastPaid){
             console.log('turning false');
             

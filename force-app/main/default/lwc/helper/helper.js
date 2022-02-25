@@ -33,7 +33,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    //console.log(JSON.stringify(products))
+    console.log(JSON.stringify(products))
       let prod = products.map(x =>{
         
         return   {
@@ -52,8 +52,9 @@
             Cost__c: x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
-            lastPaid: x.Unit_Price__c ? x.Unit_Price__c : 0,
+            lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
+            docDate: x.Doc_Date__c, 
             TotalPrice: x.TotalPrice,
             Description: x.Description,
             Ship_Weight__c: x.Product2.Ship_Weight__c, 
@@ -63,7 +64,6 @@
             OpportunityId: recordId
         }
       })
-       
       return prod; 
   }
   //on load get product totals for ship weight, total price and quantity. 

@@ -4,11 +4,36 @@
 }
 
 .hover{
-    cursor: pointer!important;
+    cursor: pointer;
 }
 
 .ro{
     margin-left: 25%;
+    font-size: small;
+}
+
+.lastPaid{
+    cursor: pointer;
+    margin-top:10%;
+    margin-left: 54%;
+}
+.docDate{
+    cursor: pointer;
+    font-size: smaller;
+    margin-left: 44%; 
+}
+
+.backSide{
+    cursor: pointer;
+    margin-top: 15%;
+    margin-left:20%;
+    font-size:12px;
+}
+.backSide2{
+    cursor: pointer;
+    margin-top: 20%;
+    margin-left:35%;
+    font-size:12px;
 }
 
 .price{

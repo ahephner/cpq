@@ -66,6 +66,13 @@ export default class MobileButtonGroup extends LightningElement {
         this.handleNext();
     }
 
+    getQuote(){
+        this.mess = 'quote';
+        const attChange = new FlowAttributeChangeEvent('moveTo', this.mess);
+        this.dispatchEvent(attChange);
+        this.handleNext(); 
+    }
+
     handleNext(){
         const nextNav = new FlowNavigationNextEvent();
         this.dispatchEvent(nextNav);

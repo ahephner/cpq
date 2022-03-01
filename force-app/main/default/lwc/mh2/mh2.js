@@ -1,5 +1,5 @@
   //used to merge inventory and selected products on load
-   const mergeInv = (a1, a2) =>{
+  const mergeInv = (a1, a2) =>{
     let merge
     if(a2){
         merge = a1.map(itm => ({
@@ -33,7 +33,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    console.log(JSON.stringify(products))
+    //console.log(JSON.stringify(products))
       let prod = products.map(x =>{
         
         return   {
@@ -45,7 +45,7 @@
             ProductCode: x.Product2.ProductCode,
             Quantity: x.Quantity,
             lOne: x.Level_1_UserView__c,
-            floorPrice: x.Floor_Price__c,
+            Floor_Price__c: x.Floor_Price__c,
             UnitPrice:x.CPQ_Unit_Price__c,
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,

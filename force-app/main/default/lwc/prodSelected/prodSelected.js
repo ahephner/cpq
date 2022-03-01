@@ -347,6 +347,7 @@ export default class ProdSelected extends LightningElement {
 //these are hardcoded to full NEED TO GET DYNAMIC
     get warehouseOptions(){
         return [
+            {label: 'All', value:'All'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},

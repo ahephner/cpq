@@ -34,11 +34,18 @@
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
     //console.log(JSON.stringify(products))
+    console.log('running load');
+    
       let prod = products.map(x =>{
         
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
+            readOnly: true,
+            showInfo: false,  
+            editQTY: true,  
+            icon: 'utility:edit',
+            Agency__c: x.Product2.Agency_Pricing__c, 
             PricebookEntryId: x.PricebookEntryId,
             Product2Id: x.Product2Id,
             name: x.Product2.Name,

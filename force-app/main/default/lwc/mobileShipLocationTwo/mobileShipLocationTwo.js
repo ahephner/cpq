@@ -5,28 +5,31 @@ export default class MobileShipLocationTwo extends LightningElement{
     shipOptions;
     option
     selectedObj;
+    selectedAddress;
     @api prevSelAddress;
     @api productTotal; 
-    @api customer;  
+    @api customer;
+    @api shOptions  
     connectedCallback(){
-        console.log(this.customer);
+        if(this.shOptions && this.prevSelAddress){
+            this.selectedObj = this.shOptions.find(x => x.Id === this.prevSelAddress);
+        }
+        this.shipOptions = this.shOptions; 
+        console.log(1, JSON.stringify(this.shipOptions));
         
     }
     selectChange(){
         let newValue = this.template.querySelector('.slds-select').value;
+        console.log(newValue);
+        
         if(newValue === 'new'){
             this.template.querySelector('c-new-ship-address').openAddress(); 
         }else{
-            this.selectedOption = newValue;
+            this.selectedAddress = newValue;
             
-            const attChange = new FlowAttributeChangeEvent('selectedOpton', this.selectedOption);
-            this.dispatchEvent(attChange);
         }
     }
-    handleReturn(){
-        this.mess = 'return';
-        this.handleNext();
-    }
+    
 
     updateAddress(event){
         //console.log('ship options '+JSON.stringify(this.shipOptions))
@@ -40,7 +43,7 @@ export default class MobileShipLocationTwo extends LightningElement{
     }
 
     saveSubmit(){
-        if(!this.selectedOption || this.selectedOption ===''){
+        if(!this.selectedAddress || this.selectedAddress ===''){
             alert('add shipping address')
             return; 
         }
@@ -48,16 +51,15 @@ export default class MobileShipLocationTwo extends LightningElement{
         this.handleNext();
     }
 
-    getQuote(){
-        
-        this.mess = 'quote'
-        this.handleNext(); 
+    handleReturn(){
+        this.mess = 'return';
+        this.handleNext();
     }
 
     handleNext(){
-        console.log('trying to send ')
-        this.dispatchEvent('handleshipback',{
-            detail: this.mess
-        })
+        let info = {message: this.mess, shipId: this.selectedAddress};
+        this.dispatchEvent(new CustomEvent('handleshipback',{
+            detail: info
+        }))
     }
 }

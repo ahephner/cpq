@@ -14,14 +14,15 @@ export default class MpMoveFlow2 extends LightningElement {
     @api accountId; 
     @api pbId; 
     @api prevSelected;
+    shipOptions;
     @api 
     get addresses(){
         return this.shipOptions || [];
     }
     set addresses(data){
         this.shipOptions = data; 
+        console.log('add '+JSON.stringify(this.shipOptions))
     }
-    shipOptions;
     showDelete = false;  
     addProducts = false;
     shipAddress = false; 
@@ -59,7 +60,7 @@ export default class MpMoveFlow2 extends LightningElement {
         let codes = [];
         try{
             let results = await getProducts({oppId: this.oppId})
-            console.log(results);
+            //console.log(results);
             
             if(!results){
                 console.log('should stop')
@@ -96,7 +97,7 @@ export default class MpMoveFlow2 extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.prod = await onLoadProducts(mergedLevels, this.recordId); 
-            console.log(JSON.stringify(this.prod))
+            //console.log(JSON.stringify(this.prod))
             this.showSpinner =false; 
          }catch(error){
             let mess = error; 
@@ -257,7 +258,7 @@ export default class MpMoveFlow2 extends LightningElement {
         this.showSpinner = true; 
         //let data = [...this.prod];
         console.log('in save '+ JSON.stringify(this.prod))
-        createProducts({olList: this.prod})
+        createProducts({olList: this.prod, oppId: this.oppId})
         .then(result => {
             this.showSpinner = false; 
             
@@ -468,9 +469,16 @@ allowSave(){
     }
 
     handleShipping(x){
-        console.log('i am listening');
-        
-        console.log(x.detail)
+        if(x.detail.message === 'return'){
+            this.showProducts = true;
+            this.shipAddress = false;
+        }else if(x.detail.message == 'submit'){
+            this.showProducts = true;
+            this.shipAddress = false;
+            this.prevSelected = x.detail.shipId;
+            console.log(this.prevSelected);
+            
+        }
     }
     handleNext(){
         const nextNav = new FlowNavigationNextEvent();

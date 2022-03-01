@@ -408,7 +408,7 @@ export default class ProdSelected extends LightningElement {
     saveProducts(){
         this.loaded = false; 
         console.log('sending '+JSON.stringify(this.selection))
-        createProducts({olList: this.selection})
+        createProducts({olList: this.selection, oppId: this.recordId})
         .then(result=>{
             this.dispatchEvent(
                 new ShowToastEvent({

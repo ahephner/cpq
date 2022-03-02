@@ -21,7 +21,7 @@ import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id';
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,getTotals, roundNum,totalChange} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -187,7 +187,7 @@ export default class ProdSelected extends LightningElement {
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
                     PricebookEntryId: this.pbeId,
-                    Id: undefined,
+                    Id: '',
                     Product2Id: this.productId,
                     agency: this.agency,
                     name: this.productName,
@@ -347,7 +347,7 @@ export default class ProdSelected extends LightningElement {
 //these are hardcoded to full NEED TO GET DYNAMIC
     get warehouseOptions(){
         return [
-            {label: 'All', value:'All'}, 
+            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
@@ -404,12 +404,25 @@ export default class ProdSelected extends LightningElement {
         }    
     }
 
-    //Save Products Only Not Submit
+    // Save Products Only Not Submit
     saveProducts(){
         this.loaded = false; 
+        const newProduct = this.selection.filter(x=>x.Id === '') 
+        const alreadyThere = this.selection.filter(y=>y.Id != '')
+        
         console.log('sending '+JSON.stringify(this.selection))
+        //createProducts({newProds: newProduct, upProduct: alreadyThere, oppId: this.recordId})
         createProducts({olList: this.selection, oppId: this.recordId})
         .then(result=>{
+            //need to map over return values and save add in non opp line item info 
+            let back = updateNewProducts(newProduct, result);
+            console.log('back');
+            console.log(JSON.stringify(back));
+            
+            this.selection =[...alreadyThere, ...back];
+            
+            //console.log(JSON.stringify(this.selection));
+            
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: result,
@@ -428,17 +441,13 @@ export default class ProdSelected extends LightningElement {
                 updateRecord(shipRec)
             } 
         }).catch(error=>{
-            console.log(JSON.stringify(error))
-            let message = 'Unknown error';
-            if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
-            } else if (typeof error.body.message === 'string') {
-                message = error.body.message;
-            }
+            
+            let mess = JSON.stringify(error);;
+            
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error Saving Products',
-                    message,
+                    message:mess,
                     variant: 'error',
                 }),
             );

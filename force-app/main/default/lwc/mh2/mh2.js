@@ -1,5 +1,6 @@
   //used to merge inventory and selected products on load
   const mergeInv = (a1, a2) =>{
+    //a1 = results a2 = inventory check
     let merge
     if(a2){
         merge = a1.map(itm => ({
@@ -74,6 +75,25 @@
       })
       return prod; 
   }
+
+  const updateNewProducts = (noIdProduct, returnedProducts)=>{
+    const newProducts=[];
+    //console.log(JSON.stringify(noIdProduct))
+    //console.log(JSON.stringify(returnedProducts))
+    if(noIdProduct){
+      for(let i=0; i<noIdProduct.length;i++){
+        let find = returnedProducts.find(item=>item.PricebookEntryId === noIdProduct[i].PricebookEntryId);
+        console.log(find);
+        
+        noIdProduct[i].Id = find.Id;
+        newProducts.push(noIdProduct[i]);
+      }
+      return newProducts;
+    
+  }else{
+    return noIdProduct; 
+  }
+  }
   //on load get product totals for ship weight, total price and quantity. 
   const getTotals = (products)=>{
     const totals = products.reduce((basket, items) => {
@@ -130,5 +150,5 @@
         return x;
     }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, getTotals, totalChange, roundNum}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum}
 

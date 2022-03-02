@@ -119,9 +119,9 @@ export default class ProdSearch extends LightningElement {
                                  Floor: item.Product2.Floor_Type__c,
                                  qtyOnHand: item.Product2.Total_Product_Items__c
                                 }));
-            console.log('returned products');
+            // console.log('returned products');
             
-            console.log(JSON.stringify(this.prod));
+            // console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
         })

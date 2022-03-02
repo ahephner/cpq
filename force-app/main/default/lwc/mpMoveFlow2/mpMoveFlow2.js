@@ -6,7 +6,7 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,getTotals, roundNum,totalChange} from 'c/mh2'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 export default class MpMoveFlow2 extends LightningElement {
     @api oppId;
@@ -256,27 +256,23 @@ export default class MpMoveFlow2 extends LightningElement {
     }
     saveMobile(){
         this.showSpinner = true; 
-        //let data = [...this.prod];
-        console.log('in save '+ JSON.stringify(this.prod))
+        console.log('in save '+ JSON.stringify(this.prod));
+
+        const newProduct = this.prod.filter(x=>x.Id === '') 
+        const alreadyThere = this.prod.filter(y=>y.Id != '')
         createProducts({olList: this.prod, oppId: this.oppId})
         .then(result => {
             this.showSpinner = false; 
+            let back = updateNewProducts(newProduct, result);
+            this.selection =[...alreadyThere, ...back]; 
             
-            //un comment this if you want to move the flow screen to a next action
-            let mess = result;
-           // console.log(mess);
-           this.total = this.orderTotal(this.prod)
+            this.total = this.orderTotal(this.prod)
             this.showProducts = false;
             this.shipAddress = true; 
             
         }).catch(error=>{
-            console.log(JSON.stringify(error))
-            let message = 'Unknown error';
-            if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
-            } else if (typeof error.body.message === 'string') {
-                message = error.body.message;
-            }
+            alert(JSON.stringify(error))
+           
         })
     } 
     //open close search for products

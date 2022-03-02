@@ -169,58 +169,63 @@ public with sharing class cpqApex {
         return count;
     }
     
-    //save products
-    @AuraEnabled
-    public static string createProducts(List<OpportunityLineItem> olList){
-        system.debug('Opp Line ' + olList);
-        string mess; 
-        list<OpportunityLineItem> toUpsert = new list<OpportunityLineItem>();
-        
-        for(OpportunityLineItem x : olList){
-            OpportunityLineItem ol = new OpportunityLineItem();
-            if(String.isBlank(x.Id)){
-                //ol.Id = x.Id;
-                system.debug(x.ProductCode); 
-            ol.PricebookEntryId = x.PricebookEntryId;
-            ol.Product2Id = x.Product2Id;
-            ol.Quantity = x.Quantity;
-            ol.CPQ_Unit_Price__c = x.UnitPrice;
-            ol.UnitPrice = x.UnitPrice;
-            ol.CPQ_Margin__c = x.CPQ_Margin__c;
-            ol.Cost__c = x.Cost__c;
-            ol.Description = x.Description;
-            ol.Single_Product_Weight__c  = x.Ship_Weight__c;
-            //ol.TotalPrice = x.TotalPrice; 
-            ol.OpportunityId = x.OpportunityId;
-        }else if(!String.isBlank(x.Id)){
-            system.debug(x.Name);
-            ol.Id = x.Id; 
-            //ol.PricebookEntryId = x.PricebookEntryId;
-            //ol.Product2Id = x.Product2Id;
-            ol.Quantity = x.Quantity;
-            ol.CPQ_Unit_Price__c = x.UnitPrice;
-            ol.UnitPrice = x.UnitPrice;
-            ol.CPQ_Margin__c = x.CPQ_Margin__c;
-            ol.Cost__c = x.Cost__c;
-            ol.Single_Product_Weight__c  = x.Ship_Weight__c;
-            ol.Description = x.Description;
-            //ol.TotalPrice = x.TotalPrice; 
-            //ol.OpportunityId = x.OpportunityId;
-        }
-            
-      
-            toUpsert.add(ol);
-        }
-        
-        try{
-            Database.upsert(toUpsert);
-            mess = 'success';
-        }catch(exception e){
-            mess = string.valueOf(e);
-        }
-        return mess; 
-    }
-    
+      //save products
+         //save products
+         @AuraEnabled
+         public static list<OpportunityLineItem> createProducts(List<OpportunityLineItem> olList, string oppId){
+             
+             string mess;
+              
+             list<OpportunityLineItem> toUpsert = new list<OpportunityLineItem>();
+             list<opportunityLineItem> toReturn = new List<OpportunityLineItem>();
+             list<id> newPricebookEntry = new list<id>();
+           
+                 for(OpportunityLineItem x : olList){
+                 OpportunityLineItem ol = new OpportunityLineItem();
+                 if(String.isBlank(x.Id)){
+                     //ol.Id = x.Id;
+                     system.debug(x.ProductCode); 
+                 ol.PricebookEntryId = x.PricebookEntryId;
+                 ol.Product2Id = x.Product2Id;
+                 ol.Quantity = x.Quantity;
+                 ol.CPQ_Unit_Price__c = x.UnitPrice;
+                 ol.UnitPrice = x.UnitPrice;
+                 ol.CPQ_Margin__c = x.CPQ_Margin__c;
+                 ol.Cost__c = x.Cost__c;
+                 ol.Description = x.Description;
+                 ol.Single_Product_Weight__c  = x.Ship_Weight__c;
+                 //ol.TotalPrice = x.TotalPrice; 
+                 ol.OpportunityId = x.OpportunityId;
+                     newPricebookEntry.add(x.PricebookEntryId);
+             }else if(!String.isBlank(x.Id)){
+                 system.debug(x.Name);
+                 ol.Id = x.Id; 
+                 //ol.PricebookEntryId = x.PricebookEntryId;
+                 //ol.Product2Id = x.Product2Id;
+                 ol.Quantity = x.Quantity;
+                 ol.CPQ_Unit_Price__c = x.UnitPrice;
+                 ol.UnitPrice = x.UnitPrice;
+                 ol.CPQ_Margin__c = x.CPQ_Margin__c;
+                 ol.Cost__c = x.Cost__c;
+                 ol.Single_Product_Weight__c  = x.Ship_Weight__c;
+                 ol.Description = x.Description;
+                 //ol.TotalPrice = x.TotalPrice; 
+                 //ol.OpportunityId = x.OpportunityId;
+             }
+                 
+           
+                 toUpsert.add(ol);
+             }
+
+             try{
+                Database.UpsertResult[] res = Database.upsert(toUpsert);
+                 toReturn = [select id, pricebookentryid from opportunitylineitem where pricebookentryid in:newPricebookEntry and OpportunityId =: oppId];
+                 mess = 'success';
+             }catch(exception e){
+                 mess = string.valueOf(e);
+             }
+             return toReturn; 
+         }
     //ON LOAD SECTION
     //Get products and last paid when a opportunities are loaded!
         //get saved opportunity line items

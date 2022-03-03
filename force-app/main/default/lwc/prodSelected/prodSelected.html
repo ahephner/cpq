@@ -51,9 +51,17 @@
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                     <p class='header'>Last Margin</p>
                 </div>
-                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                    <p class='header'>Margin %</p>
-                </div>
+                <!-- Hide from prying -->
+                    <template if:false={pryingEyes}>
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
+                            <p class='header'>Margin %</p>
+                        </div>
+                    </template>
+                    <template if:true={pryingEyes}>
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
+                            <p class='header'>X</p>
+                        </div>
+                    </template>
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                     <p class='header'>WH</p>
                 </div>
@@ -77,7 +85,9 @@
                         <div class="slds-col slds-size_2-of-12 slds-align_absolute-center slds-m-top_large">
                             <lightning-icon icon-name="utility:close" name={sp.ProductCode} size='x-small' class='hover'
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
-                            <p class='pName'>{sp.name}</p>
+                            <p class='pName tooltip'>{sp.name}
+                                <lightning-helptext content={sp.tips}></lightning-helptext>
+                            </p>
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
@@ -130,14 +140,27 @@
                         </div>
                     </template>
                         <!-- user margin can be changed or set -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
-                            <div data-target-id={sp.ProductCode}>
-                            <lightning-input class='liquid' type="number"  
-                                            label="" name={sp.ProductCode} 
-                                            value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
-                                            read-only={sp.agency} ></lightning-input>
+                        <template if:false={pryingEyes}>
+                            <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
+                                <div data-target-id={sp.ProductCode}>
+                                <lightning-input class='liquid' type="number"  
+                                                label="" name={sp.ProductCode} 
+                                                value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
+                                                read-only={sp.agency} ></lightning-input>
+                                </div>
                             </div>
-                        </div>
+                        </template>
+                        <template if:true={pryingEyes}>
+                            <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
+                                <div data-target-id={sp.ProductCode}>
+                                <lightning-input class='liquid' type="number"  
+                                                label="" name={sp.ProductCode} 
+                                                value=''  
+                                                readonly></lightning-input>
+                                </div>
+                            </div>
+                        </template>
+
                         <!-- qty at this location -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
                             <lightning-input class='liquid ro' type="number"  

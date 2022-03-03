@@ -325,10 +325,11 @@ export default class MpMoveFlow2 extends LightningElement {
     }
 //ADDING NEW PRODUCT TO LIST
     async getPrevSale(){
-        let newProd = await getLastPaid({accountID: this.accId, Code: this.productCode})
+    
+        let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.whId, pId: this.productId })
         
-        
+        console.log(JSON.stringify(newProd))
         if(newProd !=null){
             
             
@@ -383,7 +384,7 @@ export default class MpMoveFlow2 extends LightningElement {
                     lastPaid: 0,
                     lastMarg: this.agProduct ? 0: '', 
                     CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
-                    Cost__c: this.unitCost,
+                    Cost__c: this.agProduct ? '': this.unitCost,
                     TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
@@ -397,7 +398,7 @@ export default class MpMoveFlow2 extends LightningElement {
                     OpportunityId: this.oppId
                 }
             ]
-        } console.log('new product '+JSON.stringify(this.prod))
+        } //console.log('new product '+JSON.stringify(this.prod))
     }
 //handle show the save button options
 allowSave(){

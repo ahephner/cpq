@@ -56,7 +56,8 @@ export default class ProdSelected extends LightningElement {
     tPrice;
     //shpWeight;
     tQty=0;
-    
+    //hide margin col if non rep is close!
+    pryingEyes = false
     @track selection = []
 //for message service
     subscritption = null;
@@ -172,7 +173,8 @@ export default class ProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
-                    lOneText: 'lev 1 $'+this.levelOne,  
+                    lOneText: 'lev 1 $'+this.levelOne,
+                    tips: x.Agency_Pricing__c ? '' : 'Cost: $'+x.Product_Code__c,  
                     OpportunityId: this.recordId
                 }
             ]
@@ -208,6 +210,7 @@ export default class ProdSelected extends LightningElement {
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
+                    tips: x.Agency_Pricing__c ? '' : 'Cost: $'+x.Product_Code__c,
                     OpportunityId: this.recordId
                 }
             ]
@@ -695,6 +698,11 @@ export default class ProdSelected extends LightningElement {
         }else{
             this.selection[index].showLastPaid = true; 
         }
+    }
+    hideMarge(){
+        console.log('click ' +this.pryingEyes);
+        
+        this.pryingEyes = this.pryingEyes ? false : true; 
     }
     //open price book search
     openProdSearch(){

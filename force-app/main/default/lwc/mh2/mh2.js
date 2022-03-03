@@ -34,8 +34,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    //console.log(JSON.stringify(products))
-    console.log('running load');
+   console.log(JSON.stringify(products))
     
       let prod = products.map(x =>{
         
@@ -54,22 +53,24 @@
             Quantity: x.Quantity,
             lOne: x.Level_1_UserView__c,
             Floor_Price__c: x.Floor_Price__c,
+            Floor_Type__c: x.Product2.Floor_Type__c,
             UnitPrice:x.CPQ_Unit_Price__c,
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
-            Cost__c: x.Product_Cost__c,
+            Cost__c: x.Product2.Agency_Pricing__c ? '' :'$'+x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
+            prevPurchase: x.Unit_Price__c ? true : false, 
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
-            lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
+            lastMarg: x.Product2.Agency_Pricing__c ? '' : x.Margin__c,
+            lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '',
             docDate: x.Doc_Date__c, 
             TotalPrice: x.TotalPrice,
             Description: x.Description,
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
-            flrText: 'flr price $'+ x.Floor_Price__c,
-            lOneText: 'lev 1 $'+x.Level_1_UserView__c, 
+            levels: 'Lvl 1 $'+x.Level_1_UserView__c +' Lvl 2 $'+x.Level_2_UserView__c, 
             OpportunityId: recordId
         }
       })

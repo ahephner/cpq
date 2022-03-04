@@ -1,6 +1,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
-import SHIPID from '@salesforce/schema/Opportunity.Shipping_Address__c'
+import SHIPID from '@salesforce/schema/Opportunity.Shipping_Address__c';
+import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
@@ -66,7 +67,8 @@ export default class ContactAddress extends LightningElement {
             if(newValue === "new"){
                 this.template.querySelector('c-new-ship-address').openAddress(); 
             }else{
-                const payLoad = {shipAddress: newValue};
+               // this.updateOpp(newValue); 
+                const payLoad = {shipAddress: newValue}; 
                 //send to main comp
                 publish(this.messageContext,Opportunity_Builder, payLoad);
 
@@ -84,10 +86,17 @@ export default class ContactAddress extends LightningElement {
             //console.log(typeof this.options);
             
         }
-        // order(valueSelected){
+        // updateOpp(value){
+        //     console.log(2, value);
             
-        //     this.template.querySelector('.slds-select').value = valueSelected
-            
-            
+        //         const fields = {};
+        //         fields[ID_FIELD.fieldApiName] = this.recordId;
+        //         fields[SHIPADD.fieldApiName] = value;
+        //         console.log('hello');
+                
+        //         console.log(1, fields);
+                
+        //         const shipRec = {fields}
+        //         updateRecord(shipRec)
         // }
 }

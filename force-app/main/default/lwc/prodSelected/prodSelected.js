@@ -174,13 +174,13 @@ export default class ProdSelected extends LightningElement {
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
-                    tips: x.Agency_Pricing__c ? '' : 'Cost: $'+x.Product_Code__c,  
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost,  
                     OpportunityId: this.recordId
                 }
             ]
             this.tQty +=1; 
             this.tPrice += this.agency? this.fPrice : this.levelTwo;
-            this.tPrice = this.tPrice.toFixed(2);
+            this.tPrice = roundNum(this.tPrice,2)
             //this.shpWeight += this.unitWeight
             console.log(this.tQty);
             
@@ -210,14 +210,14 @@ export default class ProdSelected extends LightningElement {
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
-                    tips: x.Agency_Pricing__c ? '' : 'Cost: $'+x.Product_Code__c,
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost,
                     OpportunityId: this.recordId
                 }
             ]
             this.tQty ++;
             this.tPrice += this.agency? this.fPrice : this.levelTwo;
-            //causing error this returns a string not a number
-            this.tPrice = this.tPrice.toFixed(2);
+            
+            this.tPrice = roundNum(this.tPrice,2);
             
             //this.shpWeight += this.unitWeight
         }    
@@ -312,8 +312,13 @@ export default class ProdSelected extends LightningElement {
             this.goodQty = true;   
         }
         let totals =  getTotals(this.selection);
-            
-        this.tPrice = totals.TotalPrice.toFixed(2);
+//handle warning lights if qty is higher than avaliable
+        let want = Number(this.selection[index].Quantity);
+        let aval = Number(this.selection[index].wInv)
+        this.qtyWarning(e.target.name, want,aval)
+
+//round total price and qty
+        this.tPrice = roundNum(totals.TotalPrice, 2)
         //this.shpWeight = totals.Ship_Weight__c;
         this.tQty = totals.Quantity;
         this.unsavedProducts = true; 
@@ -419,8 +424,8 @@ export default class ProdSelected extends LightningElement {
         .then(result=>{
             //need to map over return values and save add in non opp line item info 
             let back = updateNewProducts(newProduct, result);
-            console.log('back');
-            console.log(JSON.stringify(back));
+            // console.log('back');
+            // console.log(JSON.stringify(back));
             
             this.selection =[...alreadyThere, ...back];
             
@@ -433,6 +438,7 @@ export default class ProdSelected extends LightningElement {
                     variant: 'success',
                 }),
             );
+            getRecordNotifyChange({recordId: this.recordId})
         }).then(()=>{
             if(this.shippingAddress != null || !this.shippingAddress){
                 console.log('saving address');
@@ -643,19 +649,32 @@ export default class ProdSelected extends LightningElement {
         }
 
     }
+///Warning Section. Checking if the price is too low or there is enough qty
+    qtyWarning = (target, qty, aval)=>{
+        console.log(1,target,2,qty,3,aval);
+        
+        //let targ = this.template.querySelector(`[data-tar="${target}"]`)
+        if(qty>aval){
+           // targ.classList.toggle('color'); 
+           this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange'; 
+        }else{
+            this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange';
+        }
+        
+    }
     //handles alerting the user if the pricing is good or bad 
     handleWarning = (targ, lev, flr, price)=>{
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
             this.goodPricing = true; 
         }else if(price<lev && price>flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
             this.goodPricing = true;
         }else if(price<flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
             this.goodPricing = false;
         }
     }
@@ -679,13 +698,25 @@ export default class ProdSelected extends LightningElement {
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
                 }else if(price<level && price>floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
-                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="orange";
                 }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
-                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="red"
                     this.goodPricing = false;
                 }
-            }   
+            }
+            //call inventory check
+        this.initQtyCheck();    
+    }
+    initQtyCheck(){
+        for(let i=0; i<this.selection.length; i++){
+            let target = this.selection[i].ProductCode
+            let qty = Number(this.selection[i].Quantity);
+            let aval = Number(this.selection[i].wInv);
+            if(qty>aval){
+                this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange'; 
+             }
+        }
     }
     //Show floor vs last paid
     showValues(e){

@@ -14,6 +14,7 @@ export default class MpMoveFlow2 extends LightningElement {
     @api accountId; 
     @api pbId; 
     @api prevSelected;
+    @api stage; 
     shipOptions;
     @api 
     get addresses(){
@@ -26,7 +27,8 @@ export default class MpMoveFlow2 extends LightningElement {
     showDelete = false;  
     addProducts = false;
     shipAddress = false; 
-    showProducts=true; 
+    showProducts=true;
+    submitted = false;  
     wasEdited = true 
     @track prod = [] 
     @track backUp = [];
@@ -47,6 +49,9 @@ export default class MpMoveFlow2 extends LightningElement {
     shipWeight;
     total; 
     connectedCallback() {
+        if(this.stage ==='Closed Won'|| this.stage === 'Closed Lost'){
+            this.submitted = true; 
+        }
         this.loadProducts(); 
         
     }
@@ -59,8 +64,10 @@ export default class MpMoveFlow2 extends LightningElement {
         let inCode = new Set();
         let codes = [];
         try{
+            console.log(this.oppId);
+            
             let results = await getProducts({oppId: this.oppId})
-            //console.log(results);
+            console.log(results);
             
             if(!results){
                 console.log('should stop')
@@ -98,6 +105,7 @@ export default class MpMoveFlow2 extends LightningElement {
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.prod = await onLoadProducts(mergedLevels, this.recordId); 
             //console.log(JSON.stringify(this.prod))
+            this.backUp = this.prod; 
             this.showSpinner =false; 
          }catch(error){
             let mess = error; 
@@ -254,6 +262,28 @@ export default class MpMoveFlow2 extends LightningElement {
         let index = this.prod.findIndex(prod => prod.Product2Id === evt.target.name);
         this.prod[index].Description = evt.detail.value; 
     }
+    saveAndMove(){
+        this.showSpinner = true; 
+        console.log('in save '+ JSON.stringify(this.prod));
+
+        const newProduct = this.prod.filter(x=>x.Id === '') 
+        const alreadyThere = this.prod.filter(y=>y.Id != '')
+        createProducts({olList: this.prod, oppId: this.oppId})
+        .then(result => {
+            let back = updateNewProducts(newProduct, result);
+            this.prod =[...alreadyThere, ...back]; 
+            this.backUp = this.prod; 
+            this.total = this.orderTotal(this.prod)
+            this.showProducts = false;
+            this.shipAddress = true; 
+            this.showSpinner = false; 
+            
+        }).catch(error=>{
+            alert(JSON.stringify(error))
+           
+        })
+    } 
+
     saveMobile(){
         this.showSpinner = true; 
         console.log('in save '+ JSON.stringify(this.prod));
@@ -262,19 +292,23 @@ export default class MpMoveFlow2 extends LightningElement {
         const alreadyThere = this.prod.filter(y=>y.Id != '')
         createProducts({olList: this.prod, oppId: this.oppId})
         .then(result => {
-            this.showSpinner = false; 
             let back = updateNewProducts(newProduct, result);
-            this.selection =[...alreadyThere, ...back]; 
-            
+            this.prod =[...alreadyThere, ...back]; 
+            this.backUp = this.prod; 
             this.total = this.orderTotal(this.prod)
-            this.showProducts = false;
-            this.shipAddress = true; 
+            this.showSpinner = false; 
             
         }).catch(error=>{
             alert(JSON.stringify(error))
            
         })
     } 
+    handleCancel(){
+        let cf =confirm('Remove Changes?');
+        if(cf === true){
+            this.prod = [...this.backUp]; 
+        }
+    }
     //open close search for products
     openProducts(){
         // this.template.querySelector('c-mobile-search').openSearch();
@@ -361,7 +395,7 @@ export default class MpMoveFlow2 extends LightningElement {
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
-                    levels: 'Lvl 1 $'+this.levelOne +' Lvl 2 $'+this.levelTwo,
+                    levels:'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
                     OpportunityId: this.oppId
                 }
             ]
@@ -394,7 +428,7 @@ export default class MpMoveFlow2 extends LightningElement {
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
-                    levels: 'Lvl 1 $'+this.levelOne +' Lvl 2 $'+this.levelTwo,
+                    levels: 'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
                     OpportunityId: this.oppId
                 }
             ]

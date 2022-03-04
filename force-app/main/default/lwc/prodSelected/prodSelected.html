@@ -54,12 +54,12 @@
                 <!-- Hide from prying -->
                     <template if:false={pryingEyes}>
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
-                            <p class='header'>Margin %</p>
+                            <p class='header hover'>Margin %</p>
                         </div>
                     </template>
                     <template if:true={pryingEyes}>
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
-                            <p class='header'>X</p>
+                            <p class='header hover'>X</p>
                         </div>
                     </template>
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
@@ -91,8 +91,10 @@
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.ProductCode} min='1'
-                                        value={sp.Quantity} onchange={newQTY} step="1"></lightning-input>
+                            <div data-tar={sp.ProductCode}>
+                                <lightning-input type="number"  name={sp.ProductCode} min='1'
+                                value={sp.Quantity} onchange={newQTY} step="1"></lightning-input>
+                            </div>
                         </div>
                         <!-- user price -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
@@ -142,7 +144,7 @@
                         <!-- user margin can be changed or set -->
                         <template if:false={pryingEyes}>
                             <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
-                                <div data-target-id={sp.ProductCode}>
+                                <div data-margin={sp.ProductCode}>
                                 <lightning-input class='liquid' type="number"  
                                                 label="" name={sp.ProductCode} 
                                                 value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
@@ -152,7 +154,7 @@
                         </template>
                         <template if:true={pryingEyes}>
                             <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
-                                <div data-target-id={sp.ProductCode}>
+                                <div data-margin={sp.ProductCode}>
                                 <lightning-input class='liquid' type="number"  
                                                 label="" name={sp.ProductCode} 
                                                 value=''  

@@ -130,16 +130,24 @@
 </template> 
 </div>
 <!-- save buttons -->
-<template if:false={goodPricing}>
+<template if:false={submitted}>
+    <template if:false={goodPricing}>
+        <footer class="slds-modal__footer slds-align_absolute-center">
+            <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+        </footer>
+    </template>
+    <template if:true={goodPricing}>
+        <footer class="slds-modal__footer slds-align_absolute-center">
+            <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
+            <button class="slds-button slds-button_neutral" onclick={saveMobile} title="save">Save</button>
+            <button class="slds-button slds-button_brand" onclick={saveAndMove} title="OK">Save/Shipping</button>
+        </footer>
+</template>
+<template if:true={submitted}>
     <footer class="slds-modal__footer slds-align_absolute-center">
-        <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+        <p>This quote has been submitted. You can clone it</p>
     </footer>
 </template>
-<template if:true={wasEdited}>
-    <footer class="slds-modal__footer slds-align_absolute-center">
-        <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
-        <button class="slds-button slds-button_brand" onclick={saveMobile} title="OK">Save</button>
-    </footer>
 </template>
 
 </template>

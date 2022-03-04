@@ -62,7 +62,7 @@
             showLastPaid: true,
             flrText: 'flr price $'+ x.Floor_Price__c,
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
-            tips: x.Product2.Agency_Pricing__c ? '' : 'Cost: $'+x.Product_Cost__c,
+            tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c,
             OpportunityId: recordId
         }
       })

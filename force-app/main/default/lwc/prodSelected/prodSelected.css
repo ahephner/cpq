@@ -92,7 +92,10 @@
   .tooltip:hover .tooltiptext {
     visibility: visible;
   }
-
+  .color{
+    --slds-c-input-color-background: #ff8080;
+   
+  }
 /* .changedProduct{
     color: #313131; 
     text-align: center;

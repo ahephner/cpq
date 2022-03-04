@@ -17,6 +17,7 @@
         <propertyType name="T" extends="SObject" label="Input Type" description="Generic sObject data type used for input sObject properties" />
         <property name="addresses" type="{T[]}" label="Addresses" description='List of Addresses'  />
         <property name="oppId" type="String" label="recordId" />
+        <property name="stage" type="String" label="StageName" />
         <property name="warehouse" type="String" label="warehouse id" />
         <property name="accountId" type="String" label="account id" />
         <property name="pbId" type="String" label="pricebook id" />

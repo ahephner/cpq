@@ -8,6 +8,7 @@ import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
+
 export default class MpMoveFlow2 extends LightningElement {
     @api oppId;
     @api warehouse;
@@ -303,6 +304,25 @@ export default class MpMoveFlow2 extends LightningElement {
            
         })
     } 
+
+    saveSubmit(){
+        this.showSpinner = true;
+        createProducts({olList: this.prod, oppId:this.oppId})
+        .then(result=>{
+            this.stage = 'Closed Won';
+            const stageChange = new FlowAttributeChangeEvent('stage', this.stage);
+            const shipChange = new FlowAttributeChangeEvent('prevSelected', this.prevSelected);
+            this.dispatchEvent(stageChange);
+            this.dispatchEvent(shipChange);
+            this.handleNext();
+            this.showSpinner = false; 
+    }).catch(error=>{
+        let err = JSON.stringify(error);
+        alert(err);
+        this.showSpinner = false; 
+    })
+    }
+
     handleCancel(){
         let cf =confirm('Remove Changes?');
         if(cf === true){
@@ -507,7 +527,7 @@ allowSave(){
             this.showProducts = true;
             this.shipAddress = false;
             this.prevSelected = x.detail.shipId;
-            console.log(this.prevSelected);
+            this.saveSubmit(); 
             
         }
     }

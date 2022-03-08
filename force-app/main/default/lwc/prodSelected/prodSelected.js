@@ -19,9 +19,10 @@ import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
+import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -36,12 +37,14 @@ export default class ProdSelected extends LightningElement {
     levelOne;
     levelOneMargin; 
     levelTwo;
-    levelTwoMargin;  
-    agency
+    levelTwoMargin;
+    companyLastPaid;  
+    agency;
     sId; 
     productName; 
     prodFound = false
     accountId;
+    deliveryDate; 
     stage;
     warehouse;
     shippingAddress;
@@ -116,6 +119,7 @@ export default class ProdSelected extends LightningElement {
                 this.levelOneMargin = mess.levelOneMargin;
                 this.levelTwo = mess.levelTwoPrice;  
                 this.levelTwoMargin = mess.levelTwoMargin; 
+                this.companyLastPaid = mess.lastPaid
                 this.handleNewProd(); 
                 this.prodFound = true;
             } 
@@ -127,7 +131,7 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
@@ -135,8 +139,9 @@ export default class ProdSelected extends LightningElement {
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
+                this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-
+                console.log('ship Add '+this.shippingAddress)
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -174,7 +179,7 @@ export default class ProdSelected extends LightningElement {
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
-                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost,  
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     OpportunityId: this.recordId
                 }
             ]
@@ -210,7 +215,7 @@ export default class ProdSelected extends LightningElement {
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
-                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost,
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     OpportunityId: this.recordId
                 }
             ]
@@ -355,6 +360,7 @@ export default class ProdSelected extends LightningElement {
 //these are hardcoded to full NEED TO GET DYNAMIC
     get warehouseOptions(){
         return [
+            {label:'All', value:'All'},
             {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
@@ -394,8 +400,8 @@ export default class ProdSelected extends LightningElement {
             prodCodes = [...pcSet];
 
             let inCheck = await inCounts({pc:prodCodes, locId:this.warehouse});
-            console.log('inCheck ' +JSON.stringify(inCheck));
-            this.selection = await newInventory(data, inCheck);
+            //console.log('inCheck ' +JSON.stringify(inCheck));
+            this.selection = this.warehouse === 'All' ? await allInventory(data, inCheck) : await newInventory(data, inCheck);
             //this will cause rerender to run so we can update the warning colors. 
             this.hasRendered = true; 
             //console.log(JSON.stringify(this.selection)); 
@@ -522,11 +528,21 @@ export default class ProdSelected extends LightningElement {
     saveSubmit(){
         this.loaded = false; 
         let valid = this.isValid();
-        if(valid === false){
+        if(valid === 'no ship'){
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Missing Shipping Address',
                     message: 'Please select a shipping address!',
+                    variant: 'error',
+                }),
+            );
+            this.loaded = true; 
+            return; 
+        }else if(valid === 'no delivery'){
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Missing Delivery Date',
+                    message: 'Please select on delivery date!',
                     variant: 'error',
                 }),
             );
@@ -556,6 +572,7 @@ export default class ProdSelected extends LightningElement {
                 // Display fresh data in the form
                // return refreshApex(this.contact);
             })
+            this.unsavedProducts = false; 
         }).catch(error=>{
             console.log(JSON.stringify(error))
             let message = 'Unknown error';
@@ -576,9 +593,11 @@ export default class ProdSelected extends LightningElement {
         })
     }
     isValid(){
-        let res;
+        let res = 'good';
         if(this.shippingAddress ===null || !this.shippingAddress){
-            res = false;
+            res = 'no ship';
+         }else if(this.deliveryDate == null || !this.deliveryDate){
+             res = 'no delivery'
         }
         return res; 
     }
@@ -651,14 +670,15 @@ export default class ProdSelected extends LightningElement {
     }
 ///Warning Section. Checking if the price is too low or there is enough qty
     qtyWarning = (target, qty, aval)=>{
-        console.log(1,target,2,qty,3,aval);
+     ///console.log(1,target,2,qty,3,aval);
         
-        //let targ = this.template.querySelector(`[data-tar="${target}"]`)
+        let targ = this.template.querySelector(`[data-tar="${target}"]`)
         if(qty>aval){
-           // targ.classList.toggle('color'); 
+            //targ.classList.toggle('color'); 
            this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange'; 
-        }else{
-            this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange';
+        }else if(qty<aval){
+            this.template.querySelector(`[data-tar="${target}"]`).style.color = 'black';
+            //targ.classList.toggle('color');
         }
         
     }

@@ -160,6 +160,7 @@ export default class ProdSearch extends LightningElement {
         const rowId = e.detail.row.Id; 
         const rowAg = e.detail.row.Agency_Product__c;
         const rowWeight = e.detail.row.Product2.Ship_Weight__c;
+        const rowLastPaid = e.detail.row.Product2.Last_Purchase_Price__c; 
         //const rowFormulaProdtect = e.detail.row.Level_1_Protection_Formula__c;
        // const rowFormula = e.detail.row.Level_1_Formula__c; 
        
@@ -182,7 +183,8 @@ export default class ProdSearch extends LightningElement {
                  productName: rowName,
                  pbeId: rowId,
                  agencyProduct: rowAg,
-                 prodWeight: rowWeight
+                 prodWeight: rowWeight,
+                 lastPaid: rowLastPaid
              }
                       
     //send it 

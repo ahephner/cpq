@@ -91,8 +91,8 @@
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                            <div data-tar={sp.ProductCode}>
-                                <lightning-input type="number"  name={sp.ProductCode} min='1'
+                            <div>
+                                <lightning-input type="number"  data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
                                 value={sp.Quantity} onchange={newQTY} step="1"></lightning-input>
                             </div>
                         </div>
@@ -198,9 +198,9 @@
                     <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
                         <div class='slds-float_right slds-m-right_medium'>
                             <lightning-button-group>
-                                <lightning-button variant="Neutral" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                                <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
                                 <!-- <lightning-button variant="brand" label="Get Quote" title="Get Quote" onclick={moveStage}></lightning-button> -->
-                                <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button>
+                                <!-- <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button> -->
                             </lightning-button-group>
                         </div>
                     </span>

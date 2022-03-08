@@ -8,6 +8,7 @@ import getAddress from '@salesforce/apex/cpqApex.getAddress'
 import { MessageContext, publish} from 'lightning/messageService';
 export default class ContactAddress extends LightningElement {
         @api recordId; 
+        recId; 
         customer;
         selected; 
        // @track selectObj;
@@ -20,12 +21,15 @@ export default class ContactAddress extends LightningElement {
     messageContext; 
 //get context of the current order. Get the customerid to pass the function that gets avaliable address
 //check and see if there is already a saved ship to 
-        @wire(getRecord, {recordId: '$recordId', fields:[ACCID, SHIPID]})
+        @wire(getRecord, {recordId: '$recordId', fields:[ACCID, SHIPID,ID_FIELD]})
             custFields({data, error}){
                 if(data){
                     this.customer = getFieldValue(data,ACCID);
+                    this.recId = getFieldValue(data, ID_FIELD)
                     this.findAddress(this.customer)
                     this.selected = getFieldValue(data, SHIPID);
+                    console.log(1, this.recId, 2, this.recordId);
+                    
                 }else if(error){
                     this.error = error;
                 }
@@ -68,9 +72,16 @@ export default class ContactAddress extends LightningElement {
                 this.template.querySelector('c-new-ship-address').openAddress(); 
             }else{
                // this.updateOpp(newValue); 
-                const payLoad = {shipAddress: newValue}; 
-                //send to main comp
-                publish(this.messageContext,Opportunity_Builder, payLoad);
+                const fields = {}
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[SHIPID.fieldApiName] = newValue;
+                const fieldsToUpdate = {fields}
+                updateRecord(fieldsToUpdate).then(back=>{
+                    const payLoad = {shipAddress: newValue}; 
+                    //send to main comp
+                    publish(this.messageContext,Opportunity_Builder, payLoad);
+                    
+                })
 
             }
         }

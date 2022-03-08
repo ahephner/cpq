@@ -62,7 +62,7 @@
             showLastPaid: true,
             flrText: 'flr price $'+ x.Floor_Price__c,
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
-            tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c,
+            tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c+' Company Last Paid $' +x.Product2.Last_Purchase_Price__c,
             OpportunityId: recordId
         }
       })
@@ -71,8 +71,8 @@
 
   const updateNewProducts = (noIdProduct, returnedProducts)=>{
     const newProducts=[];
-    console.log(JSON.stringify(noIdProduct))
-    console.log(JSON.stringify(returnedProducts))
+   // console.log(JSON.stringify(noIdProduct))
+    //console.log(JSON.stringify(returnedProducts))
     if(noIdProduct){
       for(let i=0; i<noIdProduct.length;i++){
         let find = returnedProducts.find(item=>item.PricebookEntryId === noIdProduct[i].PricebookEntryId);
@@ -110,8 +110,6 @@
   
   //allows the user to check inventory at other locations
   const newInventory = (selectedProd, counts) =>{
-    console.log('counts in helper')
-    console.log(JSON.stringify(counts))
     //merge selected products on inventory where common product codes
     let merge = selectedProd.map(prod => ({
       ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
@@ -126,7 +124,21 @@
       }
     return merge;
   }
-
+  const allInventory = (selectedProd, counts) =>{
+    console.log('all')
+    let merge = selectedProd.map(prod => ({
+      ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
+                          ...prod
+                      })
+                      )
+      //loop over the joined arrays. Set inventory if there is some otherwise return 0;
+      //have to delete the key value otherwise it is cached.  
+      for(let i=0; i<merge.length; i++){
+            merge[i].wInv = merge[i].Total_Product_Items__c ? merge[i].Total_Product_Items__c : 0
+            delete merge[i].Total_Product_Items__c; 
+      }
+    return merge;
+  }
   //Update totals 
   const totalChange = (q)=>{
     let priceChanged = q.reduce((acc, items)=>{
@@ -143,5 +155,5 @@
         return x;
     }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory}
 

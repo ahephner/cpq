@@ -96,6 +96,10 @@
     --slds-c-input-color-background: #ff8080;
    
   }
+  .noColor{
+    --slds-c-input-color-background: white;
+   
+  }
 /* .changedProduct{
     color: #313131; 
     text-align: center;

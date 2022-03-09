@@ -7,11 +7,22 @@
             </div>
             <div class="slds-grid">
                 <lightning-input label="Close Date" type='date' value={closeDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2"></lightning-input>
-                <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input>
+                <!-- <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input> -->
+                <lightning-combobox
+                name="stage"
+                label="Stage"
+                value={stage}
+                placeholder="Select Progress"
+                options={stageOptions}
+                onchange={handleStageChange}
+                required
+                class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"
+                ></lightning-combobox>
             </div>
             <div class="slds-grid">
                 <lightning-input label="Customer PO#" value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2"></lightning-input>
                 <lightning-input label="Requested Ship Date" type='date' value={deliveryDate} required class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input>
+
             </div>
             <div class="slds-grid">
                 <div class="slds-col slds-size_1-of-2 slds-m-top_xx-small">
@@ -53,6 +64,12 @@
         </lightning-quick-action-panel>
     </template>
     <template if:false={info}>
-        new add 
+        
+            <c-close-win-ship-add
+            acc-id={accountId}
+            onnewaddress={updateAddress}
+            oncloseadd={cancelNewAddress}>
+            </c-close-win-ship-add>
+            
     </template>
 </template>

@@ -15,15 +15,16 @@ const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2,
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
+    msg = 'Adding an address can slow quote acceptance by up to 10 mins in the system'
     info=true; 
     name 
     quoteNumb; 
     closeDate;
-    stage;
+    stage = 'Closed Won';
     po;
     deliveryDate;
     deliverDate2;
-    accId;
+    accountId;
     shipTo; 
     options; 
     localError;
@@ -35,13 +36,13 @@ export default class CloseWinDesktop extends LightningElement {
                 this.name = getFieldValue(data, NAME);
                 this.quoteNumb = getFieldValue(data, QUOTENUM);
                 this.closeDate = getFieldValue(data, CLOSEDATE);
-                this.stage = getFieldValue(data, STAGE);
+                //this.stage = getFieldValue(data, STAGE);
                 this.po = getFieldValue(data, PO);
                 this.deliveryDate = getFieldValue(data, DELIVERYDATE);
                 this.deliverDate2 = getFieldValue(data, DELIVERDATE2);
-                this.accId = getFieldValue(data, ACCID);
+                this.accountId = getFieldValue(data, ACCID);
                 this.shipTo = getFieldValue(data, SHIPTO); 
-                this.findAddress(this.accId); 
+                this.findAddress(this.accountId); 
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)
@@ -80,13 +81,30 @@ export default class CloseWinDesktop extends LightningElement {
 selectChange(event){
     let newValue = this.template.querySelector('.slds-select').value;
     if(newValue === "new"){ 
-        console.log('selecting new');
+        this.info = false; 
     }else{
         this.shipTo = newValue;
         console.log('new ship to '+this.shipTo);
         
     }
 }
+//Stage Options
+get stageOptions() {
+    return [
+        { label: 'Pricing', value: 'Pricing' },
+        { label: 'Working', value: 'Working' },
+        { label: 'Quote', value: 'Quote' },
+        { label: 'Closed Won', value: 'Closed Won' },
+        { label: 'Closed Lost', value: 'Closed Lost' },
+    ];
+}
+
+handleStageChange(event) {
+    this.stage = event.detail.value;
+}
+
+
+//Save Submit section!
 
     handleSave(){
         let ok = this.valid();
@@ -124,6 +142,24 @@ selectChange(event){
             return; 
         } 
         
-
     }
+//New Address info
+        cancelNewAddress(){
+            this.info = true; 
+        }
+
+        updateAddress(event){
+            let value = event.detail.value;
+            
+            let label = event.detail.label;
+            let x = {value, label}
+            this.options.push(x);
+            this.info = true;
+            const evt = new ShowToastEvent({
+                title: 'Address Added',
+                message: this.msg,
+                variant: 'success'
+            });
+            this.dispatchEvent(evt);  
+        }
 }

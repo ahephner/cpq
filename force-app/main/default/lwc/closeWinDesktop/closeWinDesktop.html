@@ -1,12 +1,15 @@
 <template>
+    <template if:true={loaded}>
+        
+    
     <template if:true={info}>
         <lightning-quick-action-panel header="Make Order">
             <div class="slds-grid">
-                <lightning-input label="Name" value={name} class="slds-m-bottom_x-small slds-col slds-size_1-of-2"></lightning-input>
+                <lightning-input label="Name" value={name} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" onchange={newName} required></lightning-input>
                 <lightning-input label="Quote Number" value={quoteNumb} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input>
             </div>
             <div class="slds-grid">
-                <lightning-input label="Close Date" type='date' value={closeDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2"></lightning-input>
+                <lightning-input label="Close Date" type='date' value={closeDate} onchange={newCloseDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" required></lightning-input>
                 <!-- <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input> -->
                 <lightning-combobox
                 name="stage"
@@ -16,19 +19,20 @@
                 options={stageOptions}
                 onchange={handleStageChange}
                 required
-                class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"
+                class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate"
                 ></lightning-combobox>
             </div>
             <div class="slds-grid">
-                <lightning-input label="Customer PO#" value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2"></lightning-input>
-                <lightning-input label="Requested Ship Date" type='date' value={deliveryDate} required class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input>
+                <lightning-input label="Customer PO#" value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2" required={reqPO} onchange={newPo}></lightning-input>
+                <lightning-input label="Requested Ship Date" type='date' value={deliveryDate} required
+                onchange={newDeliveryDate} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate"></lightning-input>
 
             </div>
             <div class="slds-grid">
                 <div class="slds-col slds-size_1-of-2 slds-m-top_xx-small">
                     <label for="ship-select">Shipping Address:</label>
     
-        <select name="address" class="slds-select"  onchange={selectChange} required>
+        <select name="address" class="slds-select valAdd"  onchange={selectChange} required>
             <template if:true={selectedObj}> 
                 <option value={selectedObj.value}>{selectedObj.label}</option>
             </template>
@@ -43,7 +47,7 @@
         </select>
 
                 </div>
-                <lightning-input label="To" type='date' value={deliveryDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
+                <lightning-input label="To" type='date' value={deliveryDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
             </div>
             <div slot="footer">
                 <lightning-button
@@ -72,4 +76,8 @@
             </c-close-win-ship-add>
             
     </template>
+  </template>
+  <template if:false={loaded}>
+    <lightning-spinner alternative-text="Loading"></lightning-spinner>
+</template>
 </template>

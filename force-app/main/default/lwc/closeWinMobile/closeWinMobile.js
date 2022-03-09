@@ -1,11 +1,7 @@
-//NEED A SPINNER 
-
-import { LightningElement, api, wire } from 'lwc';
-import { CloseActionScreenEvent } from 'lightning/actions';
-import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { LightningElement,wire,api } from 'lwc';
 import { getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
 import NAME from '@salesforce/schema/Opportunity.Name';
-import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number__c';
+import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number_Test__c';
 import CLOSEDATE from '@salesforce/schema/Opportunity.CloseDate';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PO from '@salesforce/schema/Opportunity.Customer_PO__c';
@@ -17,9 +13,9 @@ import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
 const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO]
-export default class CloseWinDesktop extends LightningElement {
-    @api recordId;
-    @api objectApiName; 
+export default class CloseWinMobile extends LightningElement {
+    
+    @api recordId; 
     msg = 'Adding an address can slow quote acceptance by up to 10 mins in the system'
     info=true; 
     name;
@@ -100,7 +96,9 @@ get stageOptions() {
 selectChange(event){
     let newValue = this.template.querySelector('.slds-select').value;
     if(newValue === "new"){ 
-        this.info = false; 
+        this.info = false;
+        //console.log('new address please');
+         
     }else{
         this.shipTo = newValue;
         console.log('new ship to '+this.shipTo);
@@ -132,93 +130,16 @@ newDeliveryDate(e){
 newDevDate2(e){
     this.deliverDate2 = e.detail.value; 
 }
-//Save Submit section!
-
-    handleSave(){
-        
-        let ok = this.isInputValid();
-        if(ok){
-            this.loaded = false; 
-            const fields = {}
-            fields[NAME.fieldApiName] = this.name;
-            fields[QUOTENUM.fieldApiName] = this.quoteNumb;
-            fields[CLOSEDATE.fieldApiName] = this.closeDate;
-            fields[STAGE.fieldApiName] = this.stage;
-            fields[PO.fieldApiName] = this.po;
-            fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
-            fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
-            fields[SHIPTO.fieldApiName] = this.shipTo;
-            fields[ID_Field.fieldApiName] = this.recordId; 
-            const opp = {fields}
-            console.log(JSON.stringify(opp))
-            updateRecord(opp)
-                .then(()=>{
-                    this.dispatchEvent(
-                        new ShowToastEvent({
-                            title: 'Submitted',
-                            message: 'Order Sent In!',
-                            variant: 'success'
-                        })
-                    )
-                })
-                .then(()=>{
-                    this.loaded = true; 
-                    this.dispatchEvent(new CloseActionScreenEvent());
-                })
-                .catch(error=>{ 
-                    console.log(JSON.stringify(error));
-                    
-                    
-                    this.dispatchEvent(
-                        new ShowToastEvent({ 
-                            title: 'Error Updating',
-                            message: error.body.output.errors[0].message,
-                            variant:'error'
-                        })
-                    )
-                    this.loaded = true; 
-                })
-            
-        }else{
-           console.log(this.errorMsg)
-        }
-    }
-    handleCancel(){
-        this.dispatchEvent(new CloseActionScreenEvent());
-    }
-    isInputValid() {
-        let isValid = true;
-        let inputFields = this.template.querySelectorAll('lightning-input');
-        const ship = this.template.querySelector('.valAdd');
-        inputFields.forEach(inputField => {
-            if(!inputField.checkValidity()) {
-                inputField.reportValidity();
-                isValid = false;
-            }else if(!ship.checkValidity()){
-                ship.reportValidity(); 
-                isValid = false; 
-            }
-            this.errorMsg[inputField.name] = inputField.value;
-        });
-        return isValid;
-    }
 //New Address info
-        cancelNewAddress(){
-            this.info = true; 
-        }
-
-        updateAddress(event){
-            let value = event.detail.value;
-            
-            let label = event.detail.label;
-            let x = {value, label}
-            this.options.push(x);
-            this.info = true;
-            const evt = new ShowToastEvent({
-                title: 'Address Added',
-                message: this.msg,
-                variant: 'success'
-            });
-            this.dispatchEvent(evt);  
-        }
+cancelNewAddress(){
+    this.info = true; 
+}
+  save() {
+    console.log('rec id '+this.recordId); 
+    //this.dispatchEvent(new CustomEvent('close'));
+  }
+  cancel() {
+    this.dispatchEvent(new CustomEvent('close'));
+   
+  }
 }

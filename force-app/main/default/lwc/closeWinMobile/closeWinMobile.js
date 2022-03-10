@@ -134,12 +134,60 @@ newDevDate2(e){
 cancelNewAddress(){
     this.info = true; 
 }
-  save() {
-    console.log('rec id '+this.recordId); 
+submit() {
+            
+    let ok = this.isInputValid();
+    if(ok){
+        this.loaded = false; 
+        const fields = {}
+        fields[NAME.fieldApiName] = this.name;
+        fields[QUOTENUM.fieldApiName] = this.quoteNumb;
+        fields[CLOSEDATE.fieldApiName] = this.closeDate;
+        fields[STAGE.fieldApiName] = this.stage;
+        fields[PO.fieldApiName] = this.po;
+        fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
+        fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
+        fields[SHIPTO.fieldApiName] = this.shipTo;
+        fields[ID_Field.fieldApiName] = this.recordId; 
+        const opp = {fields}
+        console.log(JSON.stringify(opp))
+        updateRecord(opp)
+            .then(()=>{
+                alert('New Order Submitted!');
+            })
+            .then(()=>{
+                this.loaded = true; 
+                this.dispatchEvent(new CustomEvent('close'));
+            })
+            .catch(error=>{ 
+                console.log(JSON.stringify(error));
+                alert(error.body.output.errors[0].message)
+                this.loaded = true; 
+            })
+        
+    }else{
+       console.log(this.errorMsg)
+    }
     //this.dispatchEvent(new CustomEvent('close'));
   }
   cancel() {
     this.dispatchEvent(new CustomEvent('close'));
    
   }
+  isInputValid() {
+    let isValid = true;
+    let inputFields = this.template.querySelectorAll('lightning-input');
+    const ship = this.template.querySelector('.valAdd');
+    inputFields.forEach(inputField => {
+        if(!inputField.checkValidity()) {
+            inputField.reportValidity();
+            isValid = false;
+        }else if(!ship.checkValidity()){
+            ship.reportValidity(); 
+            isValid = false; 
+        }
+        this.errorMsg[inputField.name] = inputField.value;
+    });
+    return isValid;
+}
 }

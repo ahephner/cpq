@@ -9,8 +9,9 @@
                 <lightning-input label="Quote Number - Read Only" value={quoteNumb} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small" readonly></lightning-input>
             </div>
             <div class="slds-grid">
+                <!-- Close Date -->
                 <lightning-input label="Close Date" type='date' value={closeDate} onchange={newCloseDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" required></lightning-input>
-                <!-- <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input> -->
+                <!-- Stage -->
                 <lightning-combobox
                 name="stage"
                 label="Stage"
@@ -23,30 +24,32 @@
                 ></lightning-combobox>
             </div>
             <div class="slds-grid">
-                <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2" required={reqPO} onchange={newPo}></lightning-input>
-                <lightning-input label="First Requested Delivery Date" type='date' value={deliveryDate} required
-                onchange={newDeliveryDate} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate"></lightning-input>
+                <!-- PO -->
+                <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 " required={reqPO} onchange={newPo}></lightning-input>
+                <!-- SHIPPING ADDRESS -->
+                <div class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate">
+                    <label for="ship-select">Shipping Address:</label>
+                        <select name="address" class="slds-select valAdd"  onchange={selectChange} required>
+                            <template if:true={selectedObj}> 
+                                <option value={selectedObj.value}>{selectedObj.label}</option>
+                            </template>
+                            <template if:false={selectedObj}>
+                                <option value=""></option>
+                            </template>
+                            <template for:each={options} for:item='x'>
+
+                                    <option key={x.value} value={x.value}>{x.label}</option>
+                        </template>
+                            <option value='new'>Add New Shipping Address</option>
+                        </select>
+                </div>
 
             </div>
             <div class="slds-grid">
-                <div class="slds-col slds-size_1-of-2 slds-m-top_xx-small">
-                    <label for="ship-select">Shipping Address:</label>
-    
-        <select name="address" class="slds-select valAdd"  onchange={selectChange} required>
-            <template if:true={selectedObj}> 
-                <option value={selectedObj.value}>{selectedObj.label}</option>
-            </template>
-            <template if:false={selectedObj}>
-                <option value=""></option>
-            </template>
-            <template for:each={options} for:item='x'>
-
-                    <option key={x.value} value={x.value}>{x.label}</option>
-        </template>
-            <option value='new'>Add New Shipping Address</option>
-        </select>
-
-                </div>
+                <!-- First Delivery Date REQUIRED -->
+                <lightning-input label="First Requested Delivery Date" type='date' value={deliveryDate} required
+                onchange={newDeliveryDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate"></lightning-input>
+                <!-- Second Delivery Date -->
                 <lightning-input label="To" type='date' value={deliveryDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
             </div>
             <div slot="footer">
@@ -57,9 +60,9 @@
                 ></lightning-button>
                 <lightning-button
                     variant="brand"
-                    label="Save"
+                    label="Submit Order"
                     class="slds-m-left_x-small"
-                    onclick={handleSave}
+                    onclick={submit}
                 ></lightning-button>
             </div>
             <template if:true={localError}>

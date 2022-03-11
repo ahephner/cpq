@@ -56,7 +56,7 @@ export default class ProdSelected extends LightningElement {
     wasSubmitted; 
     loaded = true;
     goodQty; 
-    tPrice;
+    tPrice = 0.00;
     countOfBadPrice = 0; 
     //shpWeight;
     tQty=0;
@@ -150,9 +150,11 @@ export default class ProdSelected extends LightningElement {
         }
     async handleNewProd(){
         //get last paid only works on new adding product
+        let totalPrice;
+        let totalQty; 
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        
+        console.log(this.invCount)
         if(this.newProd != null){
 
             this.selection = [
@@ -184,11 +186,6 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
-            this.tQty +=1; 
-            this.tPrice += this.agency? this.fPrice : this.levelTwo;
-            this.tPrice = roundNum(this.tPrice,2)
-            //this.shpWeight += this.unitWeight
-            console.log(this.tQty);
             
         }else{
             this.selection = [
@@ -220,14 +217,11 @@ export default class ProdSelected extends LightningElement {
                     OpportunityId: this.recordId
                 }
             ]
-            this.tQty ++;
-            this.tPrice += this.agency? this.fPrice : this.levelTwo;
-            
-            this.tPrice = roundNum(this.tPrice,2);
-            
-            //this.shpWeight += this.unitWeight
         }    
     //  console.log(JSON.stringify(this.selection));
+            let totals =  getTotals(this.selection);
+            this.tPrice = totals.TotalPrice;
+            this.tQty = totals.Quantity;
             this.unsavedProducts = true; 
     }
 

@@ -372,8 +372,8 @@ export default class MobileProdSelected extends LightningElement {
     async getPrevSale(){
     
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
-        this.invCount = await getInventory({locId: this.whId, pId: this.productId })
-        
+        this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
+        console.log(this.InvCount)
         if(newProd !=null){
             
             

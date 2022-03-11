@@ -14,9 +14,11 @@
     </targets>
     <targetConfigs>
         <targetConfig targets='lightning__FlowScreen' category='sales'>
-            <propertyType name="T" extends="SObject" label="Input Type" description="Generic sObject data type used for input sObject properties" />
-            <property name="products" type="{T[]}" label="Products" description='List of Products'  />
-            <property name='results' type='string' label='results' description='to indicate to the flow if the save was successful'/>
+            <property name="oppId" type="String" label="recordId" description="Pass in Record Id"/>    
+            <property name="stage" type="String" label="StageName" description="Pass Stage Name String" />
+            <property name="warehouse" type="String" label="warehouse id" description="Pass WarehouseId"/>
+            <property name="accountId" type="String" label="account id" description="Pass Account Id"/>
+            <property name="pbId" type="String" label="pricebook id" description="Pass Price Book Id"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

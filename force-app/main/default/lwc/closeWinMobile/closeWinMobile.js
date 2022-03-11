@@ -1,7 +1,8 @@
 import { LightningElement,wire,api } from 'lwc';
 import { getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import NAME from '@salesforce/schema/Opportunity.Name';
-import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number_Test__c';
+import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number__c';
 import CLOSEDATE from '@salesforce/schema/Opportunity.CloseDate';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PO from '@salesforce/schema/Opportunity.Customer_PO__c';
@@ -105,6 +106,22 @@ selectChange(event){
         
     }
 }
+updateAddress(event){
+    let value = event.detail.value;
+    console.log('evt detail '+value);
+    let label = event.detail.label;
+    let x = {value, label}
+    this.options.push(x);
+    console.log(2, this.options);
+    
+    this.info = true;
+    const evt = new ShowToastEvent({
+        title: 'Address Added',
+        message: this.msg,
+        variant: 'success'
+    });
+    this.dispatchEvent(evt);  
+}
 
 //Stage Change
 handleStageChange(event) {
@@ -134,10 +151,11 @@ newDevDate2(e){
 cancelNewAddress(){
     this.info = true; 
 }
-submit() {
-            
-    let ok = this.isInputValid();
-    if(ok){
+submit(event) {
+    event.preventDefault();      
+    const ok = this.isInputValid();
+    console.log(ok)
+    if(ok.isValid && ok.validShip){
         this.loaded = false; 
         const fields = {}
         fields[NAME.fieldApiName] = this.name;
@@ -150,7 +168,7 @@ submit() {
         fields[SHIPTO.fieldApiName] = this.shipTo;
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}
-        console.log(JSON.stringify(opp))
+        //console.log(JSON.stringify(opp))
         updateRecord(opp)
             .then(()=>{
                 alert('New Order Submitted!');
@@ -165,8 +183,9 @@ submit() {
                 this.loaded = true; 
             })
         
-    }else{
-       console.log(this.errorMsg)
+    }else if(ok.isValid && !ok.validShip){
+        console.log('in here')
+      alert('Missing Ship Address')
     }
     //this.dispatchEvent(new CustomEvent('close'));
   }
@@ -176,18 +195,21 @@ submit() {
   }
   isInputValid() {
     let isValid = true;
+    let validShip = true; 
     let inputFields = this.template.querySelectorAll('lightning-input');
+    //alert(inputFields)
     const ship = this.template.querySelector('.valAdd');
     inputFields.forEach(inputField => {
         if(!inputField.checkValidity()) {
             inputField.reportValidity();
             isValid = false;
         }else if(!ship.checkValidity()){
-            ship.reportValidity(); 
-            isValid = false; 
+           validShip = false;  
+          //ship.reportValidity(); 
+          isValid = true; 
         }
-        this.errorMsg[inputField.name] = inputField.value;
+        //this.errorMsg[inputField.name] = inputField.value;
     });
-    return isValid;
+    return {isValid, validShip};
 }
 }

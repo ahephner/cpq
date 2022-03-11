@@ -1,8 +1,3 @@
-//NOT USED. This component contains more logic than what was needed in the end. This component assumes we need to have the ability to move the flow to another screen
-//also it calls out to another LWC Mobile Ship Locaton 2 that would handle the ability to enter shipping addresses. In the end we decide to do that on submit. 
-//We also are not submitting the opportunity from this component. We are using a mobile quick action. 
-//See Aura Mobile actions and LWC Close Win Mobile. 
-//MH2 is still used to support certain functions like load products. 
 import { LightningElement,api, track } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
@@ -14,22 +9,13 @@ import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
-export default class MpMoveFlow2 extends LightningElement {
+
+export default class MobileProdSelected extends LightningElement {
     @api oppId;
     @api warehouse;
     @api accountId; 
     @api pbId; 
-    @api prevSelected;
     @api stage; 
-    shipOptions;
-    @api 
-    get addresses(){
-        return this.shipOptions || [];
-    }
-    set addresses(data){
-        this.shipOptions = data; 
-        console.log('add '+JSON.stringify(this.shipOptions))
-    }
     showDelete = false;  
     addProducts = false;
     shipAddress = false; 
@@ -73,13 +59,13 @@ export default class MpMoveFlow2 extends LightningElement {
             console.log(this.oppId);
             
             let results = await getProducts({oppId: this.oppId})
-            console.log(results);
+            console.log(1, results.length);
             
-            if(!results){
+            if(results.length < 1){
                 console.log('should stop')
                 this.showSpinner = false;
                 return; 
-            }else if(results){
+            }else if(results.length>0){
 
                 results.forEach(item =>{
                     inSet.add(item.Product2Id);
@@ -283,7 +269,7 @@ export default class MpMoveFlow2 extends LightningElement {
             this.showProducts = false;
             this.shipAddress = true; 
             this.showSpinner = false; 
-            
+            alert('Products Saved')
         }).catch(error=>{
             alert(JSON.stringify(error))
            
@@ -303,7 +289,7 @@ export default class MpMoveFlow2 extends LightningElement {
             this.backUp = this.prod; 
             this.total = this.orderTotal(this.prod)
             this.showSpinner = false; 
-            
+            alert('Products Saved!')
         }).catch(error=>{
             alert(JSON.stringify(error))
            
@@ -388,7 +374,6 @@ export default class MpMoveFlow2 extends LightningElement {
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.whId, pId: this.productId })
         
-        console.log(JSON.stringify(newProd))
         if(newProd !=null){
             
             
@@ -524,26 +509,4 @@ allowSave(){
         return sum; 
     }
 
-    handleShipping(x){
-        if(x.detail.message === 'return'){
-            this.showProducts = true;
-            this.shipAddress = false;
-        }else if(x.detail.message == 'submit'){
-            this.showProducts = true;
-            this.shipAddress = false;
-            this.prevSelected = x.detail.shipId;
-            this.saveSubmit(); 
-            
-        }
-    }
-    handleNext(){
-        const nextNav = new FlowNavigationNextEvent();
-        try{
-            this.dispatchEvent(nextNav);
-
-        }catch{
-            console.log('break');
-            
-        }
-    }
 }

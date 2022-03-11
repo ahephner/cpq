@@ -33,7 +33,6 @@ export default class CloseWinShipAdd extends LightningElement {
                 //get new name for address
                 newName(e){
                     this.name = e.detail.value; 
-                    console.log(this.accId)
                 }
                 //checks to make sure all the needed fields are filled in. Need to add some more prompts in the future
                 validInfo(){

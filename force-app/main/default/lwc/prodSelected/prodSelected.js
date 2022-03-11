@@ -57,6 +57,7 @@ export default class ProdSelected extends LightningElement {
     loaded = true;
     goodQty; 
     tPrice;
+    countOfBadPrice = 0; 
     //shpWeight;
     tQty=0;
     //hide margin col if non rep is close!
@@ -683,19 +684,27 @@ export default class ProdSelected extends LightningElement {
         
     }
     //handles alerting the user if the pricing is good or bad 
+    //the countOfBadPrice prevents if multiple products are too low if one product is fixed it wont allow save. 
     handleWarning = (targ, lev, flr, price)=>{
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
-            this.goodPricing = true; 
+            this.countOfBadPrice = this.countOfBadPrice > 0 ? this.countOfBadPrice -1 : this.countOfBadPrice; 
+            this.goodPricing = this.countOfBadPrice > 0 ? false:true; 
+           
         }else if(price<lev && price>flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
-            this.goodPricing = true;
+            this.countOfBadPrice = this.countOfBadPrice > 0 ? this.countOfBadPrice -1 : this.countOfBadPrice;
+            this.goodPricing = this.countOfBadPrice > 0 ? false:true;
+            
         }else if(price<flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
-            this.goodPricing = false;
+            this.countOfBadPrice ++; 
+            this.goodPricing = this.countOfBadPrice>0 ? false: true;
+            
+            
         }
     }
     //init will check pricing and render the color 
@@ -722,6 +731,7 @@ export default class ProdSelected extends LightningElement {
                 }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="red"
+                    this.countOfBadPrice ++; 
                     this.goodPricing = false;
                 }
             }

@@ -12,6 +12,7 @@ import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
+import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c'; 
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
 const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO]
 export default class CloseWinMobile extends LightningElement {
@@ -166,6 +167,7 @@ submit(event) {
         fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
         fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
         fields[SHIPTO.fieldApiName] = this.shipTo;
+        fields[SALESPAD_READY.fieldApiName] = true; 
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}
         //console.log(JSON.stringify(opp))

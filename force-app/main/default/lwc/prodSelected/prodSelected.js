@@ -376,6 +376,7 @@ export default class ProdSelected extends LightningElement {
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
+            {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
             {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
 

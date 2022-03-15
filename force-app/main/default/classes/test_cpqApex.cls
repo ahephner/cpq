@@ -185,7 +185,7 @@ public class test_cpqApex {
         insert cust;
         //product creation
         Id pricebookId = Test.getStandardPricebookId();
-        
+        string oppId; 
         //create product2 that is active
         product2 prod = new product2(name ='product', IsActive= True); 
         insert prod; 
@@ -207,6 +207,7 @@ public class test_cpqApex {
        
         //insert w/o synced quote
         insert opp; 
+        oppId = oppId;   
         opportunitylineitem li = new opportunitylineitem(opportunityid = opp.id, product2id = prod.Id, PricebookEntryId=pbe.id,
                                                          unitprice= 4, quantity= 3, CPQ_Margin__c = 1); 
         insert li; 
@@ -220,7 +221,7 @@ public class test_cpqApex {
         toInsert.add(newLi);
         
         Test.startTest();
-        	string messBack = cpqApex.createProducts(toInsert);
+        	list<OpportunityLineItem> messBack = cpqApex.createProducts(toInsert, oppId);
         Test.stopTest(); 
     }  
      @isTest
@@ -253,6 +254,7 @@ public class test_cpqApex {
         	productitem count2 = cpqApex.getInventory(warehouse.id, widget.id);
         	list<productitem> onLoadCount = cpqApex.onLoadGetInventory(warehouse.id, idList); 
         	list<productitem> changeInventory = cpqApex.inCounts(pcList, warehouse.id); 
+        	list<productitem> changeInventoryAll = cpqApex.inCounts(pcList, 'All'); 
         Test.stopTest();
     }
     

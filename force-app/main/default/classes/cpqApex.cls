@@ -23,7 +23,7 @@ public with sharing class cpqApex {
       system.debug(searchterm);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
-                + '  Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
+                + '  Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
           		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
@@ -65,10 +65,10 @@ public with sharing class cpqApex {
       string pf = family; 
       string pbId = priceBookId;  
       string pClass = 'Simple';
-      system.debug('pf '+pf+ ' cat '+category+ ' searchterm ' +searchterm);
+      //system.debug('pf '+pf+ ' cat '+category+ ' searchterm ' +searchterm);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,'
-                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
+                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
           		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass ' ;
                  
@@ -119,10 +119,20 @@ public with sharing class cpqApex {
     //this allows the user to switch the inventory check on the product screen 
     @AuraEnabled
     public static list<productitem> inCounts(list<string> pc, string locId){
-        list<productitem> counts = [select QuantityOnHand, Product_Code__c from
-                                    ProductItem where Product_Class__c = 'Simple' and LocationId =: locId 
-                                    and Product_Code__c In :(pc)];
-        //system.debug(counts);
+        list<productitem> counts = new list<productitem>();
+         
+        if(locId == 'All'){
+            
+            counts = [select Total_Product_Items__c, Product_Code__c from
+                                    ProductItem where Product_Class__c = 'Simple' and Product_Code__c In :(pc)];
+            
+        }else{
+            counts = [select QuantityOnHand, Product_Code__c from
+                             ProductItem where Product_Class__c = 'Simple' and LocationId =: locId 
+                             and Product_Code__c In :(pc)];
+        
+        }
+
         return counts; 
     }
     //this is where we try and get the inventory. For now we are gonna show the inventory across all locations
@@ -134,14 +144,14 @@ public with sharing class cpqApex {
             
             return counts; 
         }
-
-    @AuraEnabled(cacheable = true)
-    public static id getStandardId(string prodCode){
-        id sID = [SELECT Id FROM PricebookEntry WHERE Pricebook2.Name LIKE '%Standard%' AND Product2.ProductCode =: prodCode limit 1].Id;
-        system.debug('prodCode '+ prodCode);
-        system.debug('sId '+ sId);
-        return sId; 
-    }
+//NOT used. Was going to be a part of allowing reps to change price books
+    //@AuraEnabled(cacheable = true)
+    //public static id getStandardId(string prodCode){
+      //  id sID = [SELECT Id FROM PricebookEntry WHERE Pricebook2.Name LIKE '%Standard%' AND Product2.ProductCode =: prodCode limit 1].Id;
+        //system.debug('prodCode '+ prodCode);
+        //system.debug('sId '+ sId);
+        //return sId; 
+   // }
     @AuraEnabled(cacheable=true)
     public static Sales_Doc_Detail__c getLastPaid(string accountID, string Code){
         sales_doc_detail__c order = null; 
@@ -169,14 +179,17 @@ public with sharing class cpqApex {
         return count;
     }
     
-    //save products
+        //save products
     @AuraEnabled
-    public static string createProducts(List<OpportunityLineItem> olList){
-        system.debug('Opp Line ' + olList);
-        string mess; 
-        list<OpportunityLineItem> toUpsert = new list<OpportunityLineItem>();
+    public static list<OpportunityLineItem> createProducts(List<OpportunityLineItem> olList, string oppId){
         
-        for(OpportunityLineItem x : olList){
+        system.debug(olList);
+        system.debug(oppId);
+        list<OpportunityLineItem> toUpsert = new list<OpportunityLineItem>();
+        list<opportunityLineItem> toReturn = new List<OpportunityLineItem>();
+        list<id> newPricebookEntry = new list<id>();
+      
+            for(OpportunityLineItem x : olList){
             OpportunityLineItem ol = new OpportunityLineItem();
             if(String.isBlank(x.Id)){
                 //ol.Id = x.Id;
@@ -192,6 +205,7 @@ public with sharing class cpqApex {
             ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             //ol.TotalPrice = x.TotalPrice; 
             ol.OpportunityId = x.OpportunityId;
+                newPricebookEntry.add(x.PricebookEntryId);
         }else if(!String.isBlank(x.Id)){
             system.debug(x.Name);
             ol.Id = x.Id; 
@@ -211,23 +225,29 @@ public with sharing class cpqApex {
       
             toUpsert.add(ol);
         }
+      		
+            
         
         try{
-            Database.upsert(toUpsert);
-            mess = 'success';
+           Database.UpsertResult[] res = Database.upsert(toUpsert);
+            toReturn = [select id, pricebookentryid from opportunitylineitem where pricebookentryid in:newPricebookEntry and OpportunityId =: oppId];
+            //mess = 'success';
         }catch(exception e){
-            mess = string.valueOf(e);
+            //mess = string.valueOf(e);
+            system.debug(e); 
         }
-        return mess; 
+        return toReturn; 
     }
     
     //ON LOAD SECTION
     //Get products and last paid when a opportunities are loaded!
         //get saved opportunity line items
+    //!Important to get Product2 fields returned as [id, pricebookentryId, product2Id, Product2{Name, ProductCode}]
+    //to access on JS side need to put Product2.Name => Returns product name
     @AuraEnabled
     public static list<OpportunityLineItem> getProducts(string oppId){
-        list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode, TotalPrice,product2.Ship_Weight__c,
-                                          product2.Agency_Pricing__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description 
+        list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode,Product2.Floor_Type__c, TotalPrice,product2.Ship_Weight__c,
+                                          product2.Agency_Pricing__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description, Product2.Last_Purchase_Price__c 
                                           from OpportunityLineItem where opportunityId =: oppId];
         
         return opLi; 

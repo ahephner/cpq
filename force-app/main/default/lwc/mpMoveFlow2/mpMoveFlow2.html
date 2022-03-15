@@ -6,7 +6,16 @@
                         onremove={handleRemLast}>
                     </c-mobile-search>
     </template>
-    <template if:false={addProducts}>
+    <template if:true={shipAddress}>
+        <c-mobile-ship-location-two
+        product-total={total}
+        prev-sel-address={prevSelected}
+        sh-options={shipOptions}
+        customer={accountId}
+        onhandleshipback={handleShipping}>
+        </c-mobile-ship-location-two>
+    </template>
+    <template if:true={showProducts}>
             <div class="slds-grid">
                 <div class='slds-col'>
                     <figure class="iconContainer">
@@ -36,7 +45,7 @@
         <div class='slds-grid slds-wrap'>    
         <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
             <h2 class="slds-text-heading_medium slds-m-bottom_medium">
-                <lightning-input value={item.Product_Name__c} type='text' readonly></lightning-input>
+                <lightning-input value={item.name} type='text' readonly></lightning-input>
             </h2>
         </div>
     <!-- button group -->
@@ -64,7 +73,7 @@
                                     name ={item.Product2Id} readonly></lightning-input>
                 </template>
     <!-- Qty -->
-                <lightning-input value={item.Quantity} type='number' label='Qty' min={minUnits}
+                <lightning-input class="slds-m-bottom_x-small" value={item.Quantity} type='number' label='Qty' min={minUnits}
                                 name ={item.Product2Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
@@ -102,6 +111,14 @@
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Product2Id} readonly></lightning-input>
             </div>
+    <!-- Cost -->
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <lightning-input value={item.Cost__c} type='text'  label='Cost' 
+                                    name ={item.Product2Id} readonly></lightning-input>
+                </div>
+            <div class='slds-col slds-size_1-of-1 slds-m-bottom_x-small'>
+                <lightning-textarea name={item.Product2Id} value={item.Description} label="Product Note" placeholder="type here..." onchange={handleNote}></lightning-textarea>
+            </div>
         </template>
         </div>
         </lightning-layout-item>
@@ -113,16 +130,24 @@
 </template> 
 </div>
 <!-- save buttons -->
-<template if:false={goodPricing}>
+<template if:false={submitted}>
+    <template if:false={goodPricing}>
+        <footer class="slds-modal__footer slds-align_absolute-center">
+            <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+        </footer>
+    </template>
+    <template if:true={goodPricing}>
+        <footer class="slds-modal__footer slds-align_absolute-center">
+            <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
+            <button class="slds-button slds-button_neutral" onclick={saveMobile} title="save">Save</button>
+            <button class="slds-button slds-button_brand" onclick={saveAndMove} title="OK">Save/Shipping</button>
+        </footer>
+</template>
+<template if:true={submitted}>
     <footer class="slds-modal__footer slds-align_absolute-center">
-        <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
+        <p>This quote has been submitted. You can clone it</p>
     </footer>
 </template>
-<template if:true={wasEdited}>
-    <footer class="slds-modal__footer slds-align_absolute-center">
-        <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
-        <button class="slds-button slds-button_brand" onclick={saveMobile} title="OK">Save</button>
-    </footer>
 </template>
 
 </template>

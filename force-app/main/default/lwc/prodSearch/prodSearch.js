@@ -119,9 +119,9 @@ export default class ProdSearch extends LightningElement {
                                  Floor: item.Product2.Floor_Type__c,
                                  qtyOnHand: item.Product2.Total_Product_Items__c
                                 }));
-            console.log('returned products');
+            // console.log('returned products');
             
-            console.log(JSON.stringify(this.prod));
+            // console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
         })
@@ -160,6 +160,7 @@ export default class ProdSearch extends LightningElement {
         const rowId = e.detail.row.Id; 
         const rowAg = e.detail.row.Agency_Product__c;
         const rowWeight = e.detail.row.Product2.Ship_Weight__c;
+        const rowLastPaid = e.detail.row.Product2.Last_Purchase_Price__c; 
         //const rowFormulaProdtect = e.detail.row.Level_1_Protection_Formula__c;
        // const rowFormula = e.detail.row.Level_1_Formula__c; 
        
@@ -182,7 +183,8 @@ export default class ProdSearch extends LightningElement {
                  productName: rowName,
                  pbeId: rowId,
                  agencyProduct: rowAg,
-                 prodWeight: rowWeight
+                 prodWeight: rowWeight,
+                 lastPaid: rowLastPaid
              }
                       
     //send it 
@@ -216,9 +218,9 @@ export default class ProdSearch extends LightningElement {
 handleRemove(x){
     //console.log('connected');
     const prodId = x.detail;
-    console.log('prodId '+ prodId);  
+    //console.log('prodId '+ prodId);  
     const index = this.selection.findIndex(item => item.id === prodId);
-    console.log('index '+ index);
+    //console.log('index '+ index);
     this.selection.splice(index, 1);
     //console.log(this.selection);
     

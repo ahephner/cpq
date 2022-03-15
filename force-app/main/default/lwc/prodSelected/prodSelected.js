@@ -8,19 +8,22 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
+import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
-import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
+import {getRecord, getFieldValue, updateRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { deleteRecord} from 'lightning/uiRecordApi';
 import ACC from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
 import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
+import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory} from 'c/helper'
+
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId;
@@ -34,12 +37,14 @@ export default class ProdSelected extends LightningElement {
     levelOne;
     levelOneMargin; 
     levelTwo;
-    levelTwoMargin;  
-    agency
+    levelTwoMargin;
+    companyLastPaid;  
+    agency;
     sId; 
     productName; 
     prodFound = false
     accountId;
+    deliveryDate; 
     stage;
     warehouse;
     shippingAddress;
@@ -47,9 +52,16 @@ export default class ProdSelected extends LightningElement {
     error;
     goodPricing = true;   
     hasRendered = true;
+    unsavedProducts = false; 
     wasSubmitted; 
-    loaded = true; 
-    
+    loaded = true;
+    goodQty; 
+    tPrice = 0.00;
+    countOfBadPrice = 0; 
+    //shpWeight;
+    tQty=0;
+    //hide margin col if non rep is close!
+    pryingEyes = false
     @track selection = []
 //for message service
     subscritption = null;
@@ -100,7 +112,7 @@ export default class ProdSelected extends LightningElement {
                 this.productName = mess.productName;
                 this.productId = mess.productId 
                 this.pbeId = mess.pbeId;
-                this.unitCost = mess.unitCost;
+                this.unitCost = mess.unitCost
                 this.unitWeight = mess.prodWeight;
                 this.agency = mess.agencyProduct;
                 this.fPrice = mess.floorPrice;
@@ -108,6 +120,7 @@ export default class ProdSelected extends LightningElement {
                 this.levelOneMargin = mess.levelOneMargin;
                 this.levelTwo = mess.levelTwoPrice;  
                 this.levelTwoMargin = mess.levelTwoMargin; 
+                this.companyLastPaid = mess.lastPaid
                 this.handleNewProd(); 
                 this.prodFound = true;
             } 
@@ -119,7 +132,7 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
@@ -127,10 +140,9 @@ export default class ProdSelected extends LightningElement {
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
+                this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                
-                
-                
+                console.log('ship Add '+this.shippingAddress)
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -138,9 +150,11 @@ export default class ProdSelected extends LightningElement {
         }
     async handleNewProd(){
         //get last paid only works on new adding product
+        let totalPrice;
+        let totalQty; 
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        
+        console.log(this.invCount)
         if(this.newProd != null){
 
             this.selection = [
@@ -167,16 +181,18 @@ export default class ProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
-                    lOneText: 'lev 1 $'+this.levelOne,  
+                    lOneText: 'lev 1 $'+this.levelOne,
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     OpportunityId: this.recordId
                 }
             ]
+            
         }else{
             this.selection = [
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
                     PricebookEntryId: this.pbeId,
-                    Id: undefined,
+                    Id: '',
                     Product2Id: this.productId,
                     agency: this.agency,
                     name: this.productName,
@@ -188,7 +204,8 @@ export default class ProdSelected extends LightningElement {
                     lOne: this.agency? this.fPrice : this.levelOne,
                     lTwo: this.levelTwo,
                     lastPaid: 0,
-                    lastMarg: 0,  
+                    lastMarg: 0, 
+                    docDate: 'First Purchase', 
                     CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
@@ -196,11 +213,16 @@ export default class ProdSelected extends LightningElement {
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     OpportunityId: this.recordId
                 }
             ]
         }    
-         
+    //  console.log(JSON.stringify(this.selection));
+            let totals =  getTotals(this.selection);
+            this.tPrice = totals.TotalPrice;
+            this.tQty = totals.Quantity;
+            this.unsavedProducts = true; 
     }
 
     //If a user decides to uncheck a product on the search screen
@@ -237,8 +259,10 @@ export default class ProdSelected extends LightningElement {
             let floor = Number(this.selection[index].floorPrice);
             let unitp = Number(this.selection[index].UnitPrice);
             this.handleWarning(targetId,lOne, floor, unitp )
+            this.tPrice = totalChange(this.selection)
 
         }, 1000)
+        this.unsavedProducts = true;
     }
     
 
@@ -266,30 +290,43 @@ export default class ProdSelected extends LightningElement {
             let lOne = Number(this.selection[index].lOne);
             let floor = Number(this.selection[index].floorPrice);
             let unitp =  Number(this.selection[index].UnitPrice);
-            
             this.handleWarning(targetId,lOne, floor, unitp )
+            //update order totals
+            this.tPrice = totalChange(this.selection)
     },1000)
-        
+    this.unsavedProducts = true; 
     }
     
     newQTY(e){
-        // if(e.detail.value % 1 != 0){
-            
-        //     return
-        // }
+        if(e.detail.value % 1 != 0){
+            this.goodQty = false; 
+            return
+        }
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
-        console.log('index '+index);
         
         this.selection[index].Quantity = Number(e.detail.value);
-        if(this.selection[index].UnitPrice >0){
-            this.selection[index].TotalPrice = (this.selection[index].Quantity * this.selection[index].UnitPrice).toFixed(2); 
-            console.log('qty change '+this.selection[index].TotalPrice);
-            
+ //need to figure out how not run on zeroed out qty. 
+        if(this.selection[index].UnitPrice >0 && this.selection[index].Quantity > 0){
+            this.selection[index].TotalPrice = roundNum(this.selection[index].Quantity * this.selection[index].UnitPrice, 2) 
+            this.selection[index].Ship_Weight__c = Number(this.selection[index].Ship_Weight__c * this.selection[index].Quantity)
+            this.goodQty = true;   
         }
+        let totals =  getTotals(this.selection);
+//handle warning lights if qty is higher than avaliable
+        let want = Number(this.selection[index].Quantity);
+        let aval = Number(this.selection[index].wInv)
+        this.qtyWarning(e.target.name, want,aval)
+
+//round total price and qty
+        this.tPrice = roundNum(totals.TotalPrice, 2)
+        //this.shpWeight = totals.Ship_Weight__c;
+        this.tQty = totals.Quantity;
+        this.unsavedProducts = true; 
     }
     newComment(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
-        this.selection[index].Description = x.detail.value;    
+        this.selection[index].Description = x.detail.value; 
+        this.unsavedProducts = true;    
     }
     
     removeProd(x){
@@ -305,6 +342,12 @@ export default class ProdSelected extends LightningElement {
                     
                     deleteRecord(id); 
                 }
+                //update order totals
+                let totals =  getTotals(this.selection);
+            
+                this.tPrice = totals.TotalPrice;
+                //this.shpWeight = totals.Ship_Weight__c;
+                this.tQty = totals.Quantity;
             }
         }      
     }
@@ -312,6 +355,8 @@ export default class ProdSelected extends LightningElement {
 //these are hardcoded to full NEED TO GET DYNAMIC
     get warehouseOptions(){
         return [
+            {label:'All', value:'All'},
+            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
@@ -331,6 +376,7 @@ export default class ProdSelected extends LightningElement {
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
+            {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
             {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
 
@@ -350,8 +396,8 @@ export default class ProdSelected extends LightningElement {
             prodCodes = [...pcSet];
 
             let inCheck = await inCounts({pc:prodCodes, locId:this.warehouse});
-            console.log('inCheck ' +JSON.stringify(inCheck));
-            this.selection = await newInventory(data, inCheck);
+            //console.log('inCheck ' +JSON.stringify(inCheck));
+            this.selection = this.warehouse === 'All' ? await allInventory(data, inCheck) : await newInventory(data, inCheck);
             //this will cause rerender to run so we can update the warning colors. 
             this.hasRendered = true; 
             //console.log(JSON.stringify(this.selection)); 
@@ -368,12 +414,25 @@ export default class ProdSelected extends LightningElement {
         }    
     }
 
-    //Save Products Only Not Submit
+    // Save Products Only Not Submit
     saveProducts(){
         this.loaded = false; 
+        const newProduct = this.selection.filter(x=>x.Id === '') 
+        const alreadyThere = this.selection.filter(y=>y.Id != '')
+        
         console.log('sending '+JSON.stringify(this.selection))
-        createProducts({olList: this.selection})
+        //createProducts({newProds: newProduct, upProduct: alreadyThere, oppId: this.recordId})
+        createProducts({olList: this.selection, oppId: this.recordId})
         .then(result=>{
+            //need to map over return values and save add in non opp line item info 
+            let back = updateNewProducts(newProduct, result);
+            // console.log('back');
+            // console.log(JSON.stringify(back));
+            
+            this.selection =[...alreadyThere, ...back];
+            
+            //console.log(JSON.stringify(this.selection));
+            
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: result,
@@ -381,6 +440,7 @@ export default class ProdSelected extends LightningElement {
                     variant: 'success',
                 }),
             );
+            getRecordNotifyChange({recordId: this.recordId})
         }).then(()=>{
             if(this.shippingAddress != null || !this.shippingAddress){
                 console.log('saving address');
@@ -392,33 +452,93 @@ export default class ProdSelected extends LightningElement {
                 updateRecord(shipRec)
             } 
         }).catch(error=>{
-            console.log(JSON.stringify(error))
-            let message = 'Unknown error';
-            if (Array.isArray(error.body)) {
-                message = error.body.map(e => e.message).join(', ');
-            } else if (typeof error.body.message === 'string') {
-                message = error.body.message;
-            }
+            
+            let mess = JSON.stringify(error);;
+            
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error Saving Products',
-                    message,
+                    message:mess,
                     variant: 'error',
                 }),
             );
         }).finally(()=>{
+            this.unsavedProducts = false; 
             this.loaded = true; 
         })
+    }
+
+    moveStage(){
+        this.loaded = false;
+        createProducts({olList: this.selection})
+        .then(result=>{
+            if(this.shippingAddress != null || !this.shippingAddress){
+                
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[SHIPADD.fieldApiName] = this.shippingAddress;
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[STAGE.fieldApiName] = 'Quote(45%)';
+                const shipRec = {fields}
+                updateRecord(shipRec)
+            }else{
+                const fields = {}
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[STAGE.fieldApiName] = 'Quote(45%)';
+                const opp = {fields};
+                updateRecord(opp)  
+            } 
+        }) 
+        .then(()=>{
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'Quote Updated',
+                    variant: 'success'
+                })
+            );
+            // Display fresh data in the form
+            getRecordNotifyChange({recordId: this.recordId})
+            this.unsavedProducts = false; 
+            this.loaded = true; 
+        }).catch(error=>{
+            
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title:'Error Updating Record',
+                    message: error.body.message,
+                    variant: 'error'
+                })
+            )
+        })
+        //Needed Winter 23
+        // LightningAlert.open({
+        //     message: 'not connected to anything. This is a new lwc alert!',
+        //     //label defaults to "Alert"
+        //     variant: 'headerless',
+        // }).then((result) => {
+        //     console.log('alert result', result);
+        // });
     }
 
     saveSubmit(){
         this.loaded = false; 
         let valid = this.isValid();
-        if(valid === false){
+        if(valid === 'no ship'){
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Missing Shipping Address',
-                    message: 'If address is missing please contact credit!',
+                    message: 'Please select a shipping address!',
+                    variant: 'error',
+                }),
+            );
+            this.loaded = true; 
+            return; 
+        }else if(valid === 'no delivery'){
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Missing Delivery Date',
+                    message: 'Please select on delivery date!',
                     variant: 'error',
                 }),
             );
@@ -448,6 +568,7 @@ export default class ProdSelected extends LightningElement {
                 // Display fresh data in the form
                // return refreshApex(this.contact);
             })
+            this.unsavedProducts = false; 
         }).catch(error=>{
             console.log(JSON.stringify(error))
             let message = 'Unknown error';
@@ -468,9 +589,11 @@ export default class ProdSelected extends LightningElement {
         })
     }
     isValid(){
-        let res;
+        let res = 'good';
         if(this.shippingAddress ===null || !this.shippingAddress){
-            res = false;
+            res = 'no ship';
+         }else if(this.deliveryDate == null || !this.deliveryDate){
+             res = 'no delivery'
         }
         return res; 
     }
@@ -517,14 +640,16 @@ export default class ProdSelected extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLevels, this.recordId); 
-                console.log('selection '+JSON.stringify(this.selection));
-            // mergedLastPaid.forEach(x=> 
-            //     console.log('Product: '+x.Product2.Name+' doc name '+x.Name+' doc date '+x.Doc_Date__c)
-            // )
+            //get the order totals; 
+            let totals = await getTotals(this.selection);
+            
+            this.tPrice = totals.TotalPrice;
+            //this.shpWeight = totals.Ship_Weight__c;
+            this.tQty = totals.Quantity; 
             
          }catch(error){
             let mess = error; 
-            console.log('error ==> '+error);
+            console.error('error ==> '+error);
             
             this.dispatchEvent(
                 new ShowToastEvent({
@@ -539,20 +664,42 @@ export default class ProdSelected extends LightningElement {
         }
 
     }
+///Warning Section. Checking if the price is too low or there is enough qty
+    qtyWarning = (target, qty, aval)=>{
+     ///console.log(1,target,2,qty,3,aval);
+        
+        let targ = this.template.querySelector(`[data-tar="${target}"]`)
+        if(qty>aval){
+            //targ.classList.toggle('color'); 
+           this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange'; 
+        }else if(qty<aval){
+            this.template.querySelector(`[data-tar="${target}"]`).style.color = 'black';
+            //targ.classList.toggle('color');
+        }
+        
+    }
     //handles alerting the user if the pricing is good or bad 
+    //the countOfBadPrice prevents if multiple products are too low if one product is fixed it wont allow save. 
     handleWarning = (targ, lev, flr, price)=>{
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
-            this.goodPricing = true; 
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
+            this.countOfBadPrice = this.countOfBadPrice > 0 ? this.countOfBadPrice -1 : this.countOfBadPrice; 
+            this.goodPricing = this.countOfBadPrice > 0 ? false:true; 
+           
         }else if(price<lev && price>flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
-            this.goodPricing = true;
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
+            this.countOfBadPrice = this.countOfBadPrice > 0 ? this.countOfBadPrice -1 : this.countOfBadPrice;
+            this.goodPricing = this.countOfBadPrice > 0 ? false:true;
+            
         }else if(price<flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
-            this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
-            this.goodPricing = false;
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
+            this.countOfBadPrice ++; 
+            this.goodPricing = this.countOfBadPrice>0 ? false: true;
+            
+            
         }
     }
     //init will check pricing and render the color 
@@ -575,18 +722,31 @@ export default class ProdSelected extends LightningElement {
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
                 }else if(price<level && price>floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
-                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="orange";
                 }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
-                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="red"
+                    this.countOfBadPrice ++; 
                     this.goodPricing = false;
                 }
-            }   
+            }
+            //call inventory check
+        this.initQtyCheck();    
+    }
+    initQtyCheck(){
+        for(let i=0; i<this.selection.length; i++){
+            let target = this.selection[i].ProductCode
+            let qty = Number(this.selection[i].Quantity);
+            let aval = Number(this.selection[i].wInv);
+            if(qty>aval){
+                this.template.querySelector(`[data-tar="${target}"]`).style.color = 'orange'; 
+             }
+        }
     }
     //Show floor vs last paid
     showValues(e){
-        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
-
+        let index = this.selection.findIndex(prod => prod.ProductCode === e.target.dataset.targetId);
+        
         if(this.selection[index].showLastPaid){
             console.log('turning false');
             
@@ -594,6 +754,11 @@ export default class ProdSelected extends LightningElement {
         }else{
             this.selection[index].showLastPaid = true; 
         }
+    }
+    hideMarge(){
+        console.log('click ' +this.pryingEyes);
+        
+        this.pryingEyes = this.pryingEyes ? false : true; 
     }
     //open price book search
     openProdSearch(){

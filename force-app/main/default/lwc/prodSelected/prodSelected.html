@@ -7,7 +7,11 @@
         </template>
     <template if:true={loaded}>
         <div class='slds-grid'>
-            <span class='slds-col slds-size_8-of-12'></span>
+            <span class='slds-col slds-size_8-of-12'>
+                <template if:true={unsavedProducts}>
+                    <p class="changedProduct">You have unsaved changes!</p>
+                </template>
+            </span>
             <span class='slds-col slds-size_4-of-12 slds-m-bottom_x-small'>
                 <div class='slds-float_right slds-m-right_medium'>
                     <lightning-button-group>
@@ -47,9 +51,17 @@
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                     <p class='header'>Last Margin</p>
                 </div>
-                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                    <p class='header'>Margin %</p>
-                </div>
+                <!-- Hide from prying -->
+                    <template if:false={pryingEyes}>
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
+                            <p class='header hover'>Margin %</p>
+                        </div>
+                    </template>
+                    <template if:true={pryingEyes}>
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
+                            <p class='header hover'>X</p>
+                        </div>
+                    </template>
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                     <p class='header'>WH</p>
                 </div>
@@ -70,15 +82,19 @@
                             <lightning-icon icon-name="utility:close" name={sp.Id} size='small' class='hover'
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
                         </div> -->
-                        <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
+                        <div class="slds-col slds-size_2-of-12 slds-align_absolute-center slds-m-top_large">
                             <lightning-icon icon-name="utility:close" name={sp.ProductCode} size='x-small' class='hover'
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
-                            <p class='pName'>{sp.name}</p>
+                            <p class='pName tooltip'>{sp.name}
+                                <lightning-helptext content={sp.tips}></lightning-helptext>
+                            </p>
                         </div>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.ProductCode} min='1'
-                                        value={sp.Quantity} onchange={newQTY} step="1"></lightning-input>
+                            <div>
+                                <lightning-input type="number"  data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
+                                value={sp.Quantity} onchange={newQTY} step="1"></lightning-input>
+                            </div>
                         </div>
                         <!-- user price -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
@@ -92,41 +108,61 @@
                         </div>
                     <template if:true={sp.showLastPaid}>
                         <!-- last paid -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
-                            <lightning-input type="number" name={sp.ProductCode}  label='' class='ro hover' 
-                                        value={sp.lastPaid} formatter="currency" readonly  onclick={showValues}></lightning-input>
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_medium">
+                            <!-- <lightning-input type="number" name={sp.ProductCode}  label='' class='ro hover' 
+                                        value={sp.lastPaid} formatter="currency" readonly  onclick={showValues}></lightning-input> -->
                                         <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
+            
+                                        <p onclick={showValues} class="lastPaid"  data-target-id={sp.ProductCode}>{sp.lastPaid}</p>            
+                                        <p onclick={showValues} class="docDate"  data-target-id={sp.ProductCode}>{sp.docDate}</p>
+                                        
                         </div>
                         <!-- last margin -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <lightning-input type="number" name={sp.ProductCode} label="" class='ro hover'
-                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>   
+                            <lightning-input type="number" data-target-id={sp.ProductCode} label="" class='ro hover'
+                                        value={sp.lastMarg} formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>
+                                        <!-- <p onclick={showValues} class="textInfo"  data-target-id={sp.ProductCode}>{sp.lastMarg}</p>  -->
                         </div>
                     </template>
                     <template if:false={sp.showLastPaid}>
                         <!-- Floor -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_medium slds-align_absolute-center">
-                            <lightning-input type="text" name={sp.ProductCode}  label='' class='ro hover' 
-                                        value={sp.flrText}  readonly onclick={showValues}></lightning-input>
+                            <!-- <lightning-input type="text" name={sp.ProductCode}  label='' class='ro hover slds-text-body_small' 
+                                        value={sp.flrText}  readonly onclick={showValues}></lightning-input> -->
+                                        <p onclick={showValues} class="backSide"  data-target-id={sp.ProductCode}>{sp.flrText}</p>  
                                         <!-- <lightning-helptext content={sp.docDate}></lightning-helptext> -->
                         </div>
                         <!-- level 1 -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <div class='hover'>
+                            <!-- <div class='hover'>
                                 <lightning-input type="text" name={sp.ProductCode} label="" class='ro'
                                 value={sp.lOneText}  step="0.01" readonly onclick={showValues}></lightning-input>
-                            </div>
+                            </div> -->
+                            <p onclick={showValues} class="backSide2"  data-target-id={sp.ProductCode}>{sp.lOneText}</p>
                         </div>
                     </template>
                         <!-- user margin can be changed or set -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
-                            <div data-target-id={sp.ProductCode}>
-                            <lightning-input class='liquid' type="number"  
-                                            label="" name={sp.ProductCode} 
-                                            value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
-                                            read-only={sp.agency} ></lightning-input>
+                        <template if:false={pryingEyes}>
+                            <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
+                                <div data-margin={sp.ProductCode}>
+                                <lightning-input class='liquid' type="number"  
+                                                label="" name={sp.ProductCode} 
+                                                value={sp.CPQ_Margin__c} onchange={newMargin} step="0.01" 
+                                                read-only={sp.agency} ></lightning-input>
+                                </div>
                             </div>
-                        </div>
+                        </template>
+                        <template if:true={pryingEyes}>
+                            <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
+                                <div data-margin={sp.ProductCode}>
+                                <lightning-input class='liquid' type="number"  
+                                                label="" name={sp.ProductCode} 
+                                                value=''  
+                                                readonly></lightning-input>
+                                </div>
+                            </div>
+                        </template>
+
                         <!-- qty at this location -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
                             <lightning-input class='liquid ro' type="number"  
@@ -147,7 +183,6 @@
                 </template>
             </div>
             </div>
-            <!--Buttons to save-->
             <template if:true={wasSubmitted}>
                 <div class='slds-align_absolute-center'>
                     <p>Quote has been submitted you can clone this!</span></p>    
@@ -156,18 +191,25 @@
         <template if:false={wasSubmitted}>
             <template if:true={goodPricing}>
                 <div class='slds-grid'>
-                    <span class='slds-col slds-size_2-of-3'></span>
+                    <span class='slds-col slds-size_2-of-3'>
+                        <!-- <p class="totals">Ship Weight: {shpWeight}--></p><p class="totals">Total Qty: {tQty}</p><p class="totals">Total Price: ${tPrice}</p> 
+                    </span>
+                    <!-- Button Group to save -->
                     <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
                         <div class='slds-float_right slds-m-right_medium'>
-                            <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
-                            <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button>
+                            <lightning-button-group>
+                                <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                                <!-- <lightning-button variant="brand" label="Get Quote" title="Get Quote" onclick={moveStage}></lightning-button> -->
+                                <!-- <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button> -->
+                            </lightning-button-group>
                         </div>
                     </span>
                 </div>
             </template>
             <template if:false={goodPricing}>
                 <div class='slds-align_absolute-center'>
-                    <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>    
+                    <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>     
+                    
                 </div>
             </template>
         </template>

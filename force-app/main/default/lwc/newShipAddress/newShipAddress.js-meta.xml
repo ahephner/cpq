@@ -20,13 +20,4 @@
         <!--<target>lightningCommunity__Page_Layout</target>-->
         <!--<target>lightningCommunity__Theme_Layout</target>-->
     </targets>
-    <targetConfigs>
-        <targetConfig targets="lightning__RecordPage">
-            <property name="prop1" type="String" />
-            <supportedFormFactors>
-                <supportedFormFactor type="Large" />
-                <supportedFormFactor type="Small" />
-            </supportedFormFactors>
-        </targetConfig>
-    </targetConfigs>
 </LightningComponentBundle>

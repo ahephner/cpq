@@ -1,5 +1,6 @@
   //used to merge inventory and selected products on load
-   const mergeInv = (a1, a2) =>{
+  const mergeInv = (a1, a2) =>{
+    //a1 = results a2 = inventory check
     let merge
     if(a2){
         merge = a1.map(itm => ({
@@ -32,46 +33,53 @@
 
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
+  //WARNING IF YOU DO SOMETHING LIKE '$'+x.Product_Cost__c  will throw errors
   const onLoadProducts = (products, recordId) =>{
-    console.log(JSON.stringify(products))
       let prod = products.map(x =>{
-        
+         
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
+            readOnly: true,
+            showInfo: false, 
+            editQTY: true,
+            icon: 'utility:edit',
+            Agency__c: x.Product2.Agency_Pricing__c, 
             PricebookEntryId: x.PricebookEntryId,
             Product2Id: x.Product2Id,
             name: x.Product2.Name,
             ProductCode: x.Product2.ProductCode,
             Quantity: x.Quantity,
             lOne: x.Level_1_UserView__c,
-            floorPrice: x.Floor_Price__c,
+            Floor_Price__c: x.Floor_Price__c,
+            Floor_Type__c: x.Product2.Floor_Type__c,
             UnitPrice:x.CPQ_Unit_Price__c,
-            //MinPrice: x.UnitPrice, 
+            MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
-            Cost__c: x.Product_Cost__c,
+            Cost__c: x.Product2.Agency_Pricing__c ? '' : x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
             wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
+            prevPurchase: x.Unit_Price__c ? true : false, 
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
-            lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
+            lastMarg: x.Product2.Agency_Pricing__c ? '' : x.Margin__c,
+            lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '',//
             docDate: x.Doc_Date__c, 
             TotalPrice: x.TotalPrice,
             Description: x.Description,
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
-            flrText: 'flr price $'+ x.Floor_Price__c,
-            lOneText: 'lev 1 $'+x.Level_1_UserView__c,
-            tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c+' Company Last Paid $' +x.Product2.Last_Purchase_Price__c,
-            OpportunityId: recordId
+            levels: 'flr $'+x.Floor_Price__c+' Lvl 1 $'+x.Level_1_UserView__c, 
+            OpportunityId: x.OpportunityId
         }
       })
+      console.log(JSON.stringify(prod))
       return prod; 
   }
 
   const updateNewProducts = (noIdProduct, returnedProducts)=>{
     const newProducts=[];
-   // console.log(JSON.stringify(noIdProduct))
+    //console.log(JSON.stringify(noIdProduct))
     //console.log(JSON.stringify(returnedProducts))
     if(noIdProduct){
       for(let i=0; i<noIdProduct.length;i++){
@@ -110,6 +118,8 @@
   
   //allows the user to check inventory at other locations
   const newInventory = (selectedProd, counts) =>{
+    console.log('counts in helper')
+    console.log(JSON.stringify(counts))
     //merge selected products on inventory where common product codes
     let merge = selectedProd.map(prod => ({
       ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
@@ -124,21 +134,7 @@
       }
     return merge;
   }
-  const allInventory = (selectedProd, counts) =>{
-    console.log('all')
-    let merge = selectedProd.map(prod => ({
-      ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
-                          ...prod
-                      })
-                      )
-      //loop over the joined arrays. Set inventory if there is some otherwise return 0;
-      //have to delete the key value otherwise it is cached.  
-      for(let i=0; i<merge.length; i++){
-            merge[i].wInv = merge[i].Total_Product_Items__c ? merge[i].Total_Product_Items__c : 0
-            delete merge[i].Total_Product_Items__c; 
-      }
-    return merge;
-  }
+
   //Update totals 
   const totalChange = (q)=>{
     let priceChanged = q.reduce((acc, items)=>{
@@ -155,5 +151,5 @@
         return x;
     }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum}
 

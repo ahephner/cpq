@@ -4,11 +4,36 @@
 }
 
 .hover{
-    cursor: pointer!important;
+    cursor: pointer;
 }
 
 .ro{
     margin-left: 25%;
+    font-size: small;
+}
+
+.lastPaid{
+    cursor: pointer;
+    margin-top:10%;
+    margin-left: 54%;
+}
+.docDate{
+    cursor: pointer;
+    font-size: smaller;
+    margin-left: 44%; 
+}
+
+.backSide{
+    cursor: pointer;
+    margin-top: 15%;
+    margin-left:20%;
+    font-size:12px;
+}
+.backSide2{
+    cursor: pointer;
+    margin-top: 20%;
+    margin-left:35%;
+    font-size:12px;
 }
 
 .price{
@@ -26,3 +51,79 @@
 .goodPrice{
     -webkit-text-fill-color: black;
 }
+.totals{
+    display: inline-block;
+    margin-left: 15px;
+    font-weight: bold;
+}
+.changedProduct{
+    color: #f54049;
+    margin-top: 1%;
+    margin-left: 5%;
+    font-weight: bold;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -60px;
+  }
+  
+  .tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: black transparent transparent transparent;
+  }
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+  .color{
+    --slds-c-input-color-background: #ff8080;
+   
+  }
+  .noColor{
+    --slds-c-input-color-background: white;
+   
+  }
+/* .changedProduct{
+    color: #313131; 
+    text-align: center;
+    margin-top: 1%;
+    margin-left: 5%;
+    -webkit-animation: colorchange 20s infinite alternate; 
+}
+@keyframes colorchange{
+    0%{
+      color: red;  
+    }
+    20%{
+        color: orangered;
+    }
+    40%{
+        color: orange;
+    }
+    60%{
+        color: #fdb42d;
+    }
+    80%{
+        color: orange
+    }
+    100%{
+        color:orangered; 
+    }
+} */

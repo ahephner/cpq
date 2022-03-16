@@ -218,7 +218,7 @@ export default class ProdSelected extends LightningElement {
                 }
             ]
         }    
-    //  console.log(JSON.stringify(this.selection));
+            //console.log(JSON.stringify(this.selection));
             let totals =  getTotals(this.selection);
             this.tPrice = totals.TotalPrice;
             this.tQty = totals.Quantity;
@@ -353,6 +353,7 @@ export default class ProdSelected extends LightningElement {
     }
     //get warehouse options
 //these are hardcoded to full NEED TO GET DYNAMIC
+
     get warehouseOptions(){
         return [
             {label:'All', value:'All'},
@@ -375,6 +376,7 @@ export default class ProdSelected extends LightningElement {
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
+            {label:'820 | ATS - Wheeling', value:'13175000000L3CnAAK'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
@@ -382,6 +384,7 @@ export default class ProdSelected extends LightningElement {
 
         ];
     }
+
     //check other inventory
     async checkInventory(locId){
         this.warehouse = locId.detail.value; 

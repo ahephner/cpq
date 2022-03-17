@@ -33,7 +33,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    console.log(JSON.stringify(products))
+    //console.log(JSON.stringify(products))
       let prod = products.map(x =>{
         
         return   {
@@ -62,6 +62,7 @@
             showLastPaid: true,
             flrText: 'flr price $'+ x.Floor_Price__c,
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
+            goodPrice: x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false,
             tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c+' Company Last Paid $' +x.Product2.Last_Purchase_Price__c,
             OpportunityId: recordId
         }
@@ -90,12 +91,14 @@
   //on load get product totals for ship weight, total price and quantity. 
   const getTotals = (products)=>{
     const totals = products.reduce((basket, items) => {
-                            //console.log(basket) //is the const first loop blank
-                            //console.log(items) //is the object of data you want to reduce
+                //console.log(basket) //is the const first loop blank
+                //console.log(items) //is the object of data you want to reduce
           for (const [keyName, valueCount] of Object.entries(items)) {
-            //only get the fields we want to add ship weight add this below ||keyName ==='Ship_Weight__c'
-          if(keyName  ==='TotalPrice' || keyName==='Quantity'){
-            //if the basket does not contain the key add the key and set the value to 0
+            //only get the fields we want to add ship weight add this below     
+            ///||keyName ==='Ship_Weight__c'
+          if(keyName  ==='TotalPrice' || keyName==='Quantity' || keyName ==='Cost__c'){
+            //if the basket does not contain the key add the key and 
+            //set the value to 0
             if (!basket[keyName]) {
                 basket[keyName] = 0;
             }
@@ -154,6 +157,17 @@
         let x = Number(Math.round(parseFloat(value+'e'+dec))+'e-'+dec); 
         return x;
     }
+
+  const checkPricing = (prods) =>{
+    let check = true; 
+    for(let i=0; i<prods.length; i++){
+        if(!prods[i].goodPrice){
+          check = false;
+          return check;
+        }
+    }
+    return check;
+  }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory, checkPricing}
 

@@ -22,7 +22,7 @@ import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory, checkPricing} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -60,6 +60,7 @@ export default class ProdSelected extends LightningElement {
     countOfBadPrice = 0; 
     //shpWeight;
     tQty=0;
+    tMargin = 0; 
     //hide margin col if non rep is close!
     pryingEyes = false
     @track selection = []
@@ -105,10 +106,11 @@ export default class ProdSelected extends LightningElement {
             //console.log('new product');
             
             this.productCode = mess.productCode;
+            
             let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
             
             //check if the product is already on the bill. Can't have duplicates
-            if(alreadyThere<0){
+            if(alreadyThere<0 || this.productCode === 'Manual Charge'){
                 this.productName = mess.productName;
                 this.productId = mess.productId 
                 this.pbeId = mess.pbeId;
@@ -183,6 +185,7 @@ export default class ProdSelected extends LightningElement {
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +'\n Company Last Paid $' +this.companyLastPaid,
+                    goodPrice: true, 
                     OpportunityId: this.recordId
                 }
             ]
@@ -214,14 +217,17 @@ export default class ProdSelected extends LightningElement {
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +'\n Company Last Paid $' +this.companyLastPaid,
+                    goodPrice: true,
                     OpportunityId: this.recordId
                 }
             ]
         }    
-    //  console.log(JSON.stringify(this.selection));
+      
             let totals =  getTotals(this.selection);
             this.tPrice = totals.TotalPrice;
             this.tQty = totals.Quantity;
+            let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
+            this.tMargin = roundNum(margin, 2);
             this.unsavedProducts = true; 
     }
 
@@ -258,8 +264,11 @@ export default class ProdSelected extends LightningElement {
             let lOne = Number(this.selection[index].lOne);
             let floor = Number(this.selection[index].floorPrice);
             let unitp = Number(this.selection[index].UnitPrice);
-            this.handleWarning(targetId,lOne, floor, unitp )
-            this.tPrice = totalChange(this.selection)
+            this.handleWarning(targetId,lOne, floor, unitp, index )
+            let totals =  getTotals(this.selection);
+            this.tPrice = roundNum(totals.TotalPrice, 2)
+            let margin = ((this.tPrice - totals.Cost__c)/this.tPrice) * 100;
+            this.tMargin = roundNum(margin, 2);
 
         }, 1000)
         this.unsavedProducts = true;
@@ -290,9 +299,13 @@ export default class ProdSelected extends LightningElement {
             let lOne = Number(this.selection[index].lOne);
             let floor = Number(this.selection[index].floorPrice);
             let unitp =  Number(this.selection[index].UnitPrice);
-            this.handleWarning(targetId,lOne, floor, unitp )
+            this.handleWarning(targetId,lOne, floor, unitp, index )
             //update order totals
-            this.tPrice = totalChange(this.selection)
+            let totals =  getTotals(this.selection);
+            this.tPrice = roundNum(totals.TotalPrice, 2)
+            console.log(totals.Cost__c)
+            let margin = ((this.tPrice - totals.Cost__c)/this.tPrice) * 100;
+            this.tMargin = roundNum(margin, 2);
     },1000)
     this.unsavedProducts = true; 
     }
@@ -348,6 +361,8 @@ export default class ProdSelected extends LightningElement {
                 this.tPrice = totals.TotalPrice;
                 //this.shpWeight = totals.Ship_Weight__c;
                 this.tQty = totals.Quantity;
+                let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
+                this.tMargin = roundNum(margin, 2);
             }
         }      
     }
@@ -640,12 +655,15 @@ export default class ProdSelected extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLevels, this.recordId); 
+            
             //get the order totals; 
             let totals = await getTotals(this.selection);
             
             this.tPrice = totals.TotalPrice;
             //this.shpWeight = totals.Ship_Weight__c;
             this.tQty = totals.Quantity; 
+            let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
+            this.tMargin = roundNum(margin, 2);
             
          }catch(error){
             let mess = error; 
@@ -680,27 +698,27 @@ export default class ProdSelected extends LightningElement {
     }
     //handles alerting the user if the pricing is good or bad 
     //the countOfBadPrice prevents if multiple products are too low if one product is fixed it wont allow save. 
-    handleWarning = (targ, lev, flr, price)=>{
+    handleWarning = (targ, lev, flr, price, ind)=>{
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
-            this.countOfBadPrice = this.countOfBadPrice > 0 ? this.countOfBadPrice -1 : this.countOfBadPrice; 
-            this.goodPricing = this.countOfBadPrice > 0 ? false:true; 
-           
+            this.selection[ind].goodPrice = true; 
+            this.goodPricing = checkPricing(this.selection);
         }else if(price<lev && price>flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
-            this.countOfBadPrice = this.countOfBadPrice > 0 ? this.countOfBadPrice -1 : this.countOfBadPrice;
-            this.goodPricing = this.countOfBadPrice > 0 ? false:true;
-            
+            this.selection[ind].goodPrice = true;
+            this.goodPricing = checkPricing(this.selection);
         }else if(price<flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
-            this.countOfBadPrice ++; 
-            this.goodPricing = this.countOfBadPrice>0 ? false: true;
-            
+            this.selection[ind].goodPrice = false;
+            this.goodPricing = checkPricing(this.selection);
+           
             
         }
+        
+        
     }
     //init will check pricing and render the color 
     //should only run on load. Then handleWarning function above runs because it only runs over the individual line
@@ -725,11 +743,11 @@ export default class ProdSelected extends LightningElement {
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="orange";
                 }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
-                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="red"
-                    this.countOfBadPrice ++; 
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="red" 
                     this.goodPricing = false;
                 }
             }
+           //console.log(this.countOfBadPrice)
             //call inventory check
         this.initQtyCheck();    
     }

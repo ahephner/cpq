@@ -63,6 +63,7 @@ export default class ProdSelected extends LightningElement {
     tMargin = 0; 
     //hide margin col if non rep is close!
     pryingEyes = false
+    manLineCount = 0; 
     @track selection = []
 //for message service
     subscritption = null;
@@ -186,6 +187,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne,
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +'\n Company Last Paid $' +this.companyLastPaid,
                     goodPrice: true, 
+                    manLine:false,
                     OpportunityId: this.recordId
                 }
             ]
@@ -218,6 +220,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne, 
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +'\n Company Last Paid $' +this.companyLastPaid,
                     goodPrice: true,
+                    manLine: false,
                     OpportunityId: this.recordId
                 }
             ]
@@ -230,7 +233,41 @@ export default class ProdSelected extends LightningElement {
             this.tMargin = roundNum(margin, 2);
             this.unsavedProducts = true; 
     }
-
+    //add manual line
+    addManualLine(){
+        this.manLineCount ++; 
+        this.selection = [
+            ...this.selection, {
+                sObjectType: 'OpportunityLineItem',
+                PricebookEntryId: this.pbeId,
+                Id: '',
+                Product2Id: this.productId,
+                agency: false,
+                name: 'Manual Line '+ this.manLineCount,
+                ProductCode: 'Manual Line',
+                Ship_Weight__c: 0,
+                Quantity: 1,
+                UnitPrice: 0.00,
+                floorPrice: 0.00,
+                lOne: 1.00,
+                lTwo: 0.00,
+                lastPaid: 0,
+                lastMarg: 0, 
+                docDate: '', 
+                CPQ_Margin__c: 0.00,
+                Cost__c: 0.00,
+                TotalPrice: 0.00,
+                wInv: 0.00,
+                showLastPaid: true,
+                flrText: 'flr price $'+ this.fPrice,
+                lOneText: 'lev 1 $'+this.levelOne, 
+                tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +'\n Company Last Paid $' +this.companyLastPaid,
+                goodPrice: true,
+                manLine: true,
+                OpportunityId: this.recordId
+            }
+        ]
+    }
     //If a user decides to uncheck a product on the search screen
     handleRemove(y){
         console.log('handleRemove');

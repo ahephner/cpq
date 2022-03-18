@@ -100,6 +100,9 @@
     --slds-c-input-color-background: white;
    
   }
+  .manLine{
+      width: 95%;
+  }
 /* .changedProduct{
     color: #313131; 
     text-align: center;

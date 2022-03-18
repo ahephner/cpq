@@ -660,9 +660,11 @@ export default class ProdSelected extends LightningElement {
             //get the order totals; 
             let totals = await getTotals(this.selection);
             
-            this.tPrice = totals.TotalPrice;
+            this.tPrice = roundNum(totals.TotalPrice,2);
             //this.shpWeight = totals.Ship_Weight__c;
             this.tQty = totals.Quantity; 
+            let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
+            this.tMargin = roundNum(margin, 2);
             
          }catch(error){
             let mess = error; 

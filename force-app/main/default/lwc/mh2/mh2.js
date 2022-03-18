@@ -70,6 +70,7 @@
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
             levels: 'flr $'+x.Floor_Price__c+' Lvl 1 $'+x.Level_1_UserView__c, 
+            goodPrice: x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false,
             OpportunityId: x.OpportunityId
         }
       })
@@ -150,6 +151,16 @@
         let x = Number(Math.round(parseFloat(value+'e'+dec))+'e-'+dec); 
         return x;
     }
+    const checkPricing = (prods) =>{
+      let check = true; 
+      for(let i=0; i<prods.length; i++){
+          if(!prods[i].goodPrice){
+            check = false;
+            return check;
+          }
+      }
+      return check;
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing}
 

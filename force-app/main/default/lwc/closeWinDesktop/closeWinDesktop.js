@@ -53,6 +53,7 @@ export default class CloseWinDesktop extends LightningElement {
                 this.findAddress(this.accountId);
                 this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                 this.loaded = true; 
+               
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)
@@ -90,7 +91,8 @@ get stageOptions() {
    }
    get selectedObj(){
     let label;
-        if(this.options && this.selected){
+    
+        if(this.options && this.shipTo){
             label = this.options.find((x)=>x.value===this.shipTo)
         }
         

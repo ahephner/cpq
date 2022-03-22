@@ -32,7 +32,7 @@
                 <div class="slds-col slds-size_1-of-2 slds-m-top_xx-small">
                     <label for="ship-select">Shipping Address:</label>
     
-        <select name="address" class="slds-select valAdd"  onchange={selectChange} required>
+        <select name="address" class="slds-select valAdd"  onchange={selectChange} required={shipReq}>
             <template if:true={selectedObj}> 
                 <option value={selectedObj.value}>{selectedObj.label}</option>
             </template>

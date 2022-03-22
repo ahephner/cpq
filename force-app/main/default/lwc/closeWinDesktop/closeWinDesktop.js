@@ -16,8 +16,9 @@ import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
+import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE]
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
@@ -34,7 +35,9 @@ export default class CloseWinDesktop extends LightningElement {
     deliverDate2;
     accountId;
     shipTo;
+    shipType; 
     options;
+    shipReq; 
     errorMsg = {};
     custPOLabel; 
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
@@ -50,10 +53,12 @@ export default class CloseWinDesktop extends LightningElement {
                 this.accountId = getFieldValue(data, ACCID);
                 this.shipTo = getFieldValue(data, SHIPTO); 
                 this.reqPO = getFieldValue(data, REQPO);
+                this.shipType = getFieldValue(data, SHIPTYPE);
                 this.findAddress(this.accountId);
                 this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                 this.loaded = true; 
-               
+                this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
+                console.log(this.shipReq);
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)

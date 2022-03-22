@@ -13,9 +13,9 @@ import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
-import UNIT_COUNT from  '@salesforce/schema/Opportunity.Unit_Total__c';
+import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, UNIT_COUNT]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE]
 export default class CloseWinMobile extends LightningElement {
     
     @api recordId; 
@@ -32,19 +32,15 @@ export default class CloseWinMobile extends LightningElement {
     deliverDate2;
     accountId;
     shipTo;
+    shipType;
     options;
-    unitTotal
+    shipReq; 
     errorMsg = {};
     custPOLabel; 
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
-                this.unitTotal = getFieldValue(data, UNIT_COUNT);
-                //check if there are products on the order. 
-                    if(this.unitTotal > 1 || this.unitTotal === undefined){
-                        this.noProducts = true;
-                        return; 
-                    }else{ 
+                
                         this.noProducts = false; 
                         this.name = getFieldValue(data, NAME);
                         this.quoteNumb = getFieldValue(data, QUOTENUM);
@@ -55,11 +51,13 @@ export default class CloseWinMobile extends LightningElement {
                         this.deliverDate2 = getFieldValue(data, DELIVERDATE2);
                         this.accountId = getFieldValue(data, ACCID);
                         this.shipTo = getFieldValue(data, SHIPTO); 
+                        this.shipType = getFieldValue(data, SHIPTYPE);
                         this.reqPO = getFieldValue(data, REQPO);
                         this.findAddress(this.accountId);
                         this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                         this.loaded = true; 
-                    }
+                        this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true; 
+                    
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)

@@ -1,0 +1,57 @@
+<template>
+    <template if:true={loaded}>
+        <template if:true={info}>
+        <lightning-quick-action-panel hearder="Get Quote">
+            <div class="slds-grid">
+                <lightning-input label="Opp Stage" 
+                        read-only="true" 
+                        class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" value={stage}></lightning-input>
+                
+                <div class="slds-col slds-size_1-of-2 slds-m-top_xx-small">
+                    <label for="ship-select">Shipping Address:</label>
+                
+                    <select name="address" class="slds-select valAdd"  onchange={selectChange} required={shipReq}>
+                        <template if:true={selectedObj}> 
+                            <option value={selectedObj.value}>{selectedObj.label}</option>
+                        </template>
+                        <template if:false={selectedObj}>
+                            <option value=""></option>
+                        </template>
+                        <template for:each={options} for:item='x'>
+            
+                                <option key={x.value} value={x.value}>{x.label}</option>
+                    </template>
+                        <option value='new'>Add New Shipping Address</option>
+                    </select>
+            
+                </div>
+            </div>
+            <div slot="footer">
+                <lightning-button
+                    variant="neutral"
+                    label="Cancel"
+                    onclick={handleCancel}
+                ></lightning-button>
+                <lightning-button
+                    variant="brand"
+                    label="Save"
+                    class="slds-m-left_x-small"
+                    onclick={handleSave}
+                ></lightning-button>
+            </div>
+        </lightning-quick-action-panel>
+        <!-- close info -->
+        </template>
+            <template if:false={info}>
+            <c-close-win-ship-add
+            acc-id={accountId}
+            onnewaddress={updateAddress}
+            oncloseadd={cancelNewAddress}>
+            </c-close-win-ship-add>
+    </template>
+        <!-- close loaded if tru -->
+    </template>
+    <template if:false={loaded}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+    </template>
+</template>

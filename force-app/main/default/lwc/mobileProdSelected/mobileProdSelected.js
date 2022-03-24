@@ -470,7 +470,7 @@ allowSave(){
                  this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
                  this.prod[ind].goodPrice = true; 
                  this.goodPricing = checkPricing(this.prod);
-             }else if(price<lev && price>floor){
+             }else if(price<lev && price>=floor){
                  this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
                  this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
                  this.prod[ind].goodPrice = true; 
@@ -500,7 +500,7 @@ allowSave(){
                  if(price>level){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
-                 }else if(price<level && price>floor){
+                 }else if(price<level && price>=floor){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
                  }else if(price<floor){

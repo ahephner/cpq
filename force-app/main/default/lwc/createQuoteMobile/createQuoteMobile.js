@@ -11,8 +11,8 @@ import PDF_CHECKBOX from '@salesforce/schema/Opportunity.Generate_PDF_Quote_Chec
 const FIELDS = [SHIPTO, ACCID, STAGE, PDF_CHECKBOX];
 const SUCCESS_TITLE = 'Quote is being Created';
 const SUCCESS_MESS = 'Quote will be in the files section in a few mins depending on internet speed'
-export default class CreateQuoteDesktop extends LightningElement { 
-    @api recordId
+export default class CreateQuoteMobile extends LightningElement { 
+    @api recordId;
     stage = 'Quote';
     //checking what the actual stage of the opp is. If closed/won we don't want to move back to quote
     stageFromRecord; 
@@ -21,7 +21,7 @@ export default class CreateQuoteDesktop extends LightningElement {
     info = true;
     loaded = false; 
     options;
-    error; 
+    error;
 
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
@@ -65,6 +65,7 @@ export default class CreateQuoteDesktop extends LightningElement {
            
            })
    }
+
    get selectedObj(){
     let label;
     
@@ -82,19 +83,18 @@ selectChange(event){
         this.info = false; 
     }else{
         this.shipTo = newValue;
-        console.log('new ship to '+this.shipTo);
+        
         
     }
 }
 
 handleCancel(){ 
-    this.dispatchEvent(new CloseActionScreenEvent());
+    this.dispatchEvent(new CustomEvent('close'));
 }
 
 cancelNewAddress(){ 
     this.info = true; 
 }
-
 handleSave(){ 
     this.loaded = false;
     console.log(this.stageFromRecord)
@@ -119,7 +119,7 @@ handleSave(){
                     )
                 }).then(()=>{
                     this.loaded = true;
-                    this.dispatchEvent(new CloseActionScreenEvent());
+                    this.dispatchEvent(new CustomEvent('close'));
                 }).catch((error)=>{
                     this.error = JSON.stringify(error);
                     alert('error  '+this.error);
@@ -145,7 +145,7 @@ handleSave(){
                     )
                 }).then(()=>{
                     this.loaded = true;
-                    this.dispatchEvent(new CloseActionScreenEvent());
+                    this.dispatchEvent(new CustomEvent('close'));
                 }).catch((error)=>{
                     this.error = JSON.stringify(error);
                     alert('error  '+this.error);

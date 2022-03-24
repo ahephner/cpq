@@ -706,7 +706,7 @@ export default class ProdSelected extends LightningElement {
             this.selection[ind].goodPrice = true; 
             this.goodPricing = checkPricing(this.selection);
            
-        }else if(price<lev && price>flr){
+        }else if(price<lev && price>=flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
             this.selection[ind].goodPrice = true;
@@ -738,7 +738,7 @@ export default class ProdSelected extends LightningElement {
                     //console.log('good to go '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
                     this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
-                }else if(price<level && price>floor){
+                }else if(price<level && price>=floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="orange";
                 }else if(price<floor){

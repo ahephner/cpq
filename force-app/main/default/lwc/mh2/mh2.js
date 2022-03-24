@@ -69,8 +69,9 @@
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
-            levels: 'flr $'+x.Floor_Price__c+' Lvl 1 $'+x.Level_1_UserView__c, 
-            goodPrice: x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false,
+            levels: 'flr $'+x.Floor_Price__c+' Lvl 1 $'+x.Level_1_UserView__c,
+            //check if it's agency product if not eval floor pricing 
+            goodPrice:x.Product2.Agency_Pricing__c ? true : (x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false),
             OpportunityId: x.OpportunityId
         }
       })

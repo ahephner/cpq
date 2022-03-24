@@ -6,7 +6,7 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange} from 'c/mh2'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 
@@ -40,12 +40,19 @@ export default class MobileProdSelected extends LightningElement {
     levelTwoMargin; 
     shipWeight;
     total; 
+    hasRendered = true;
     connectedCallback() {
         if(this.stage ==='Closed Won'|| this.stage === 'Closed Lost'){
             this.submitted = true; 
         }
         this.loadProducts(); 
         
+    }
+    renderedCallback(){
+        if(this.prod.length>0 && this.hasRendered){
+            this.initPriceCheck();
+        }
+
     }
     //on load get products
     //get last paid next
@@ -213,7 +220,7 @@ export default class MobileProdSelected extends LightningElement {
             let unitp = Number(this.prod[index].UnitPrice);
             //console.log('handlePrice pass to warning');
             
-            this.handleWarning(targetId,lOne, flr, unitp );
+            this.handleWarning(targetId,lOne, flr, unitp,index );
         },500)
     }
 
@@ -234,7 +241,7 @@ export default class MobileProdSelected extends LightningElement {
             let lOne = Number(this.prod[index].lOne);
             let flr = Number(this.prod[index].Floor_Price__c);
             let unitp = Number(this.prod[index].UnitPrice);
-            this.handleWarning(targetId,lOne, flr, unitp )
+            this.handleWarning(targetId,lOne, flr, unitp, index )
         },500)
     }
 //delete individual line items. 
@@ -406,6 +413,7 @@ export default class MobileProdSelected extends LightningElement {
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
                     levels:'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
+                    goodPrice: true,
                     OpportunityId: this.oppId
                 }
             ]
@@ -439,6 +447,7 @@ export default class MobileProdSelected extends LightningElement {
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
                     levels: 'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
+                    goodPrice: true,
                     OpportunityId: this.oppId
                 }
             ]
@@ -453,23 +462,25 @@ allowSave(){
 
      //PRICE WARNING SECTION 
         //handles showing the user prompts
-        handleWarning = (targ, lev, floor, price)=>{
-            console.log(1, targ, 2, lev, 3, floor, 4, price);
+        handleWarning = (targ, lev, floor, price,ind)=>{
+            //console.log(1, targ, 2, lev, 3, floor, 4, price);
              
              if(price > lev){
                  this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
                  this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
-                 this.goodPricing = true;
-                 this.wasEdited = true; 
-             }else if(price<lev && price>floor){
+                 this.prod[ind].goodPrice = true; 
+                 this.goodPricing = checkPricing(this.prod);
+             }else if(price<lev && price>=floor){
                  this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
                  this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="orange";
-                 this.goodPricing = true;
+                 this.prod[ind].goodPrice = true; 
+                 this.goodPricing = checkPricing(this.prod);
                  this.wasEdited = true; 
              }else if(price<floor){
                  this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
                  this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
-                 this.goodPricing = false;
+                 this.prod[ind].goodPrice = false;
+                 this.goodPricing = checkPricing(this.prod);
                  this.wasEdited = false; 
              }
          }
@@ -481,7 +492,7 @@ allowSave(){
              for(let i=0; i<this.prod.length; i++){
                  let target = this.prod[i].Product2Id
                  let level = Number(this.prod[i].lOne);
-                 let cost = Number(this.prod[i].Cost__c);
+                 let floor = Number(this.prod[i].Floor_Price__c);
                  let price = Number(this.prod[i].UnitPrice);
                 // console.log(i);
                  
@@ -489,10 +500,10 @@ allowSave(){
                  if(price>level){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
-                 }else if(price<level && price>cost){
+                 }else if(price<level && price>=floor){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
-                 }else if(price<cost){
+                 }else if(price<floor){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
                      this.goodPricing = false;

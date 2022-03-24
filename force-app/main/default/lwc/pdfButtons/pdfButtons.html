@@ -1,0 +1,16 @@
+<template>
+    <template if:true={loaded}>
+
+        <div class='slds-m-top_small slds-m-bottom_small slds-align_absolute-center'>
+            <lightning-button variant="brand" label="cancel" title="Primary action" 
+            onclick={handleReturn} class="slds-m-left_x-small"></lightning-button>
+            <lightning-button variant="success" label="Send Email" title="Send Email" 
+            onclick={moveNext} class="slds-m-left_x-small"></lightning-button>
+            
+        </div>
+    </template>
+
+    <template if:false={loaded}>
+        <lightning-spinner alternative-text="Loading"></lightning-spinner>
+    </template>
+</template>

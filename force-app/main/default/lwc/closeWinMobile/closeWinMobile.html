@@ -29,7 +29,7 @@
                 <!-- SHIPPING ADDRESS -->
                 <div class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate">
                     <label for="ship-select">Shipping Address:</label>
-                        <select name="address" class="slds-select valAdd"  onchange={selectChange} required>
+                        <select name="address" class="slds-select valAdd"  onchange={selectChange} required={shipReq}>
                             <template if:true={selectedObj}> 
                                 <option value={selectedObj.value}>{selectedObj.label}</option>
                             </template>
@@ -50,7 +50,7 @@
                 <lightning-input label="First Requested Delivery Date" type='date' value={deliveryDate} required
                 onchange={newDeliveryDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate"></lightning-input>
                 <!-- Second Delivery Date -->
-                <lightning-input label="To" type='date' value={deliveryDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
+                <lightning-input label="To" type='date' value={deliverDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
             </div>
             <div slot="footer">
                 <lightning-button

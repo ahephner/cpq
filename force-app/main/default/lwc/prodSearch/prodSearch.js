@@ -102,8 +102,8 @@ export default class ProdSearch extends LightningElement {
 //search for product
       search(){
         this.loaded = false; 
-       console.log('searchKey '+this.searchKey);
-       
+       //console.log('searchKey '+this.searchKey);
+       console.log(1,this.searchKey, 2, this.cat, 3, this.pf, 4, this.priceBookId)
         searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.priceBookId })
         .then((result) => {
            //can't use dot notation on native tables 
@@ -121,7 +121,7 @@ export default class ProdSearch extends LightningElement {
                                 }));
             // console.log('returned products');
             
-            // console.log(JSON.stringify(this.prod));
+            //console.log(JSON.stringify(this.prod));
             this.error = undefined;
             
         })

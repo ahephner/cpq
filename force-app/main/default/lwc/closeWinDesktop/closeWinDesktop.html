@@ -32,7 +32,7 @@
                 <div class="slds-col slds-size_1-of-2 slds-m-top_xx-small">
                     <label for="ship-select">Shipping Address:</label>
     
-        <select name="address" class="slds-select valAdd"  onchange={selectChange} required>
+        <select name="address" class="slds-select valAdd"  onchange={selectChange} required={shipReq}>
             <template if:true={selectedObj}> 
                 <option value={selectedObj.value}>{selectedObj.label}</option>
             </template>
@@ -47,7 +47,7 @@
         </select>
 
                 </div>
-                <lightning-input label="To" type='date' value={deliveryDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
+                <lightning-input label="To" type='date' value={deliverDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
             </div>
             <div slot="footer">
                 <lightning-button
@@ -57,7 +57,7 @@
                 ></lightning-button>
                 <lightning-button
                     variant="brand"
-                    label="Save"
+                    label="Submit"
                     class="slds-m-left_x-small"
                     onclick={handleSave}
                 ></lightning-button>

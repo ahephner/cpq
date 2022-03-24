@@ -12,9 +12,10 @@ import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
-import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c'; 
+import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
+import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE]
 export default class CloseWinMobile extends LightningElement {
     
     @api recordId; 
@@ -31,25 +32,32 @@ export default class CloseWinMobile extends LightningElement {
     deliverDate2;
     accountId;
     shipTo;
+    shipType;
     options;
+    shipReq; 
     errorMsg = {};
     custPOLabel; 
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
-                this.name = getFieldValue(data, NAME);
-                this.quoteNumb = getFieldValue(data, QUOTENUM);
-                this.closeDate = getFieldValue(data, CLOSEDATE);
-                //this.stage = getFieldValue(data, STAGE);
-                this.po = getFieldValue(data, PO);
-                this.deliveryDate = getFieldValue(data, DELIVERYDATE);
-                this.deliverDate2 = getFieldValue(data, DELIVERDATE2);
-                this.accountId = getFieldValue(data, ACCID);
-                this.shipTo = getFieldValue(data, SHIPTO); 
-                this.reqPO = getFieldValue(data, REQPO);
-                this.findAddress(this.accountId);
-                this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
-                this.loaded = true; 
+                
+                        this.noProducts = false; 
+                        this.name = getFieldValue(data, NAME);
+                        this.quoteNumb = getFieldValue(data, QUOTENUM);
+                        this.closeDate = getFieldValue(data, CLOSEDATE);
+                        //this.stage = getFieldValue(data, STAGE);
+                        this.po = getFieldValue(data, PO);
+                        this.deliveryDate = getFieldValue(data, DELIVERYDATE);
+                        this.deliverDate2 = getFieldValue(data, DELIVERDATE2);
+                        this.accountId = getFieldValue(data, ACCID);
+                        this.shipTo = getFieldValue(data, SHIPTO); 
+                        this.shipType = getFieldValue(data, SHIPTYPE);
+                        this.reqPO = getFieldValue(data, REQPO);
+                        this.findAddress(this.accountId);
+                        this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
+                        this.loaded = true; 
+                        this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true; 
+                    
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)
@@ -87,7 +95,7 @@ get stageOptions() {
    }
    get selectedObj(){
     let label;
-        if(this.options && this.selected){
+        if(this.options && this.shipTo){
             label = this.options.find((x)=>x.value===this.shipTo)
         }
         

@@ -6,7 +6,13 @@
                 <lightning-input type="search" class="slds-col slds-size_1-of-1" 
                 name="name" label="Product or Code Hit Enter to Search" ></lightning-input>
             </div>
-            
+
+            <template if:false={loaded}>
+                <div class="exampleHolder">
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </div>
+            </template>
+        <template if:true={loaded}>
             <lightning-layout multiple-rows="true">
                 <template for:each={prod} for:item='x'>
                     <lightning-layout-item size="12" key={x.Id} name={x.Id} class="slds-box slds-p-around_none 
@@ -41,12 +47,46 @@
             </lightning-layout-item>
                 </template>
             </lightning-layout>
-
+        </template>
         
     </lightning-card>
 </template>
 <template if:false={formSize}>
-    <p>I am a phone</p>
+    <div onkeyup={handleKeyUp}>
+        <lightning-input type="search" class="slds-col slds-size_1-of-1" 
+        name="name" label="Product or Code Tap Return or Enter to Search" ></lightning-input>
+    </div>
+    <template if:false={loaded}>
+        <div class="exampleHolder">
+            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        </div>
+    </template>
+    <template if:true={loaded}>
+    <lightning-layout multiple-rows="true">
+        <template for:each={prod} for:item='x'>
+            <lightning-layout-item size="12" key={x.Id} name={x.Id} class="slds-box slds-p-around_none 
+            slds-m-top_x-small slds-m-bottom_small slds-m-horizontal_none">
+            <div class='slds-grid slds-wrap'>
+                <div class='slds-col slds-size_1-of-1 slds-m-left_x-small'>
+                    <h4 class="slds-text-heading_medium slds-m-bottom_medium">{x.name}</h4>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <span>Status: {x.stock}</span>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <p>Floor:<lightning-formatted-number value={x.flr} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <p>Level 1:<lightning-formatted-number value={x.lev1} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <p>Level 2:<lightning-formatted-number value={x.lev2} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
+                </div>
+            </div>
+        </lightning-layout-item>
+        </template>
+    </lightning-layout>
+</template>
 </template>
 </template>
 

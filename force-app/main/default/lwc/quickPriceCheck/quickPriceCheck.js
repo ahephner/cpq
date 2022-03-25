@@ -6,11 +6,12 @@ export default class QuickPriceCheck extends LightningElement {
     formSize; 
     searchTerm;
     priceBook = '01s410000077vSKAAY';
+    loaded; 
     @track prod = [];
     
     connectedCallback(){ 
         this.formSize = this.screenSize(FORM_FACTOR);
-        console.log('formsize '+ this.formSize);
+        this.loaded = true; 
         
     }
 
@@ -26,7 +27,7 @@ export default class QuickPriceCheck extends LightningElement {
     }
 
     search(){
-        console.log(this.flexipageRegionWidth)
+        this.loaded = false
         checkPrice({priceBookId: this.priceBook, searchKey: this.searchTerm})
         .then((res)=>{ 
             console.log(JSON.stringify(res))
@@ -44,6 +45,7 @@ export default class QuickPriceCheck extends LightningElement {
                     return {...x, name, flr, lev1, lev2, stock}
                 })
         }).then(()=>{
+            this.loaded = true; 
             this.searchTerm = ''; 
             let x = this.template.querySelector('lightning-input').value;
             x = ''; 

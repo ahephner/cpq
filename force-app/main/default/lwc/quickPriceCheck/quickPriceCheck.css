@@ -9,3 +9,10 @@ span.SMALL{
 .numb{ 
     margin-top: 5px;
 }
+
+.exampleHolder{
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}

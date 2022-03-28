@@ -202,7 +202,7 @@ public with sharing class cpqApex {
             ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
             ol.Description = x.Description;
-            ol.Single_Product_Weight__c  = x.Ship_Weight__c;
+            //ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             //ol.TotalPrice = x.TotalPrice; 
             ol.OpportunityId = x.OpportunityId;
                 newPricebookEntry.add(x.PricebookEntryId);
@@ -216,7 +216,7 @@ public with sharing class cpqApex {
             ol.UnitPrice = x.UnitPrice;
             ol.CPQ_Margin__c = x.CPQ_Margin__c;
             ol.Cost__c = x.Cost__c;
-            ol.Single_Product_Weight__c  = x.Ship_Weight__c;
+            //ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             ol.Description = x.Description;
             //ol.TotalPrice = x.TotalPrice; 
             //ol.OpportunityId = x.OpportunityId;

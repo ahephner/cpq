@@ -1,0 +1,18 @@
+span.LARGE{
+    background: red;
+}
+
+span.SMALL{
+    background: blue;
+}
+
+.numb{ 
+    margin-top: 5px;
+}
+
+.exampleHolder{
+    position: relative;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}

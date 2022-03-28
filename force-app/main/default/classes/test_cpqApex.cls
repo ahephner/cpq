@@ -409,4 +409,39 @@ public class test_cpqApex {
         Test.stopTest();
         system.assertEquals(2, addresses.size());
     }
+   @isTest
+    static void Test_quickPriceSearch(){
+        //date for opp
+        Date myDate = Date.newInstance(2040, 1, 4);
+        //create test customer
+        Account cust = new Account();
+        cust.Name = 'Test123456';
+        cust.Type = 'Customer';
+        cust.Customer_Name__c = 'Test Customer 123456';
+        insert cust;
+        //product creation
+        Id pricebook = Test.getStandardPricebookId();
+
+        product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
+                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+        insert prod; 
+        
+        product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
+                                    Subcategory__c='Chemicals-Fungicide', Product_Family__c='FoliarPak', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+        insert prod2;
+        
+        PricebookEntry pbe = new PricebookEntry(Pricebook2Id = pricebook, Product2Id=prod.id,
+                                                 unitprice=100, IsActive = True, UseStandardPrice=False);
+        PricebookEntry pbe2 = new PricebookEntry(Pricebook2Id = pricebook, Product2Id=prod2.id,
+                                                 unitprice=100, IsActive = True, UseStandardPrice=False);
+
+        insert pbe;
+        insert pbe2;
+        
+        Test.startTest();
+        	List<PricebookEntry> nameOnly = quickPriceSearch.getPricing(priceBook, 'Widget');
+        	List<PricebookEntry> code = quickPriceSearch.getPricing(priceBook, '321');
+        	
+        Test.stopTest();
+    } 
 }

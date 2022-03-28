@@ -48,16 +48,19 @@
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center ">
                     <p class='header'>Last Paid</p>
                 </div>
-                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                    <p class='header'>Last Margin</p>
-                </div>
                 <!-- Hide from prying -->
-                    <template if:false={pryingEyes}>
+                <template if:false={pryingEyes}>
+                <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge}>
+                    <p class='header hover'>Last Margin</p>
+                </div>
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
                             <p class='header hover'>Margin %</p>
                         </div>
                     </template>
                     <template if:true={pryingEyes}>
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge}>
+                            <p class='header hover'>X</p>
+                        </div>
                         <div class="slds-col slds-size_1-of-12 slds-align_absolute-center" onclick={hideMarge} >
                             <p class='header hover'>X</p>
                         </div>
@@ -118,11 +121,20 @@
                                         
                         </div>
                         <!-- last margin -->
+                    <template if:false={pryingEyes}>
                         <div class="slds-col slds-size_1-of-12 slds-m-right_large">
                             <lightning-input type="number" data-target-id={sp.ProductCode} label="" class='ro hover'
                                         value={sp.lastMarg} formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>
                                         <!-- <p onclick={showValues} class="textInfo"  data-target-id={sp.ProductCode}>{sp.lastMarg}</p>  -->
                         </div>
+                    </template>
+                    <template if:true={pryingEyes}>
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_large">
+                            <lightning-input type="number" data-target-id={sp.ProductCode} label="" class='ro hover'
+                                        value='' formatter="percent" step="0.01" readonly onclick={showValues}></lightning-input>
+                                        <!-- <p onclick={showValues} class="textInfo"  data-target-id={sp.ProductCode}>{sp.lastMarg}</p>  -->
+                        </div>
+                    </template>
                     </template>
                     <template if:false={sp.showLastPaid}>
                         <!-- Floor -->

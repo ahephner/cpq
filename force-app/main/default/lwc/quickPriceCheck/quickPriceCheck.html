@@ -1,12 +1,23 @@
 <template>
     <template if:true={formSize}>
     <lightning-card  variant="Narrow"  title="Price Check">
-        
+        <template if:false={showInventory}>
             <div onkeyup={handleKeyUp}>
-                <lightning-input type="search" class="slds-col slds-size_1-of-1" 
+                <lightning-input type="search" class="slds-col slds-size_1-of-1 slds-m-bottom_xx-small" 
                 name="name" label="Product or Code Hit Enter to Search" ></lightning-input>
             </div>
+        </template>
+                 <!-- Inventory selector -->
+        <template if:true={showInventory}>
+            <lightning-combobox
+            name="warehouse"
+            label="Warehouse"
+            value={warehouse}
+            options={warehouseOptions}
+            onchange={checkInventory} ></lightning-combobox>
+        </template>   
 
+        <lightning-button class="slds-col slds-size_1-of-1" variant="brand" label={btnLabel} title="CheckInv" onclick={enableInventory}></lightning-button>
             <template if:false={loaded}>
                 <div class="exampleHolder">
                     <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
@@ -16,7 +27,7 @@
             <lightning-layout multiple-rows="true">
                 <template for:each={prod} for:item='x'>
                     <lightning-layout-item size="12" key={x.Id} name={x.Id} class="slds-box slds-p-around_none 
-                slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
+                    slds-m-top_x-small slds-m-bottom_medium slds-m-horizontal_none">
                         <div class="slds-grid slds-wrap">
                             <div class="slds-col slds-size_3-of-4 slds-m-left_x-small">
                                 <p class="name">
@@ -28,21 +39,35 @@
                                     Status: <b>{x.stock}</b>
                                 </span>
                             </div>
-                            <div class="slds-col slds-size_1-of-4 slds-m-left_x-small">
+                        <template if:false={showInventory}>
+                            <div class="slds-col slds-size_1-of-5 slds-m-left_x-small">
                                 <span class="numb">
                                     floor: ${x.flr}
                                 </span>
                             </div>
-                            <div class="slds-col slds-size_1-of-4">
+                            <div class="slds-col slds-size_1-of-5">
                                 <span class="numb">
                                     level 1: ${x.lev1}
                                 </span>
                             </div>
-                            <div class="slds-col slds-size_1-of-4">
+                            <div class="slds-col slds-size_1-of-5">
                                 <span class="numb">
                                     level 2: ${x.lev2}
                                 </span>
                             </div>
+                        </template>
+                            <template if:true={showInventory}>
+                                <div class="slds-col slds-size_1-of-3 slds-m-left_x-small">
+                                    <span class="numb">
+                                        All Company QTY: {x.allStock}
+                                    </span>
+                                </div>
+                                <div class="slds-col slds-size_1-of-3">
+                                    <span class="numb">
+                                        Qty at this Location: {x.wInv}
+                                    </span>
+                                </div>
+                            </template>
                         </div>
             </lightning-layout-item>
                 </template>
@@ -52,10 +77,23 @@
     </lightning-card>
 </template>
 <template if:false={formSize}>
-    <div onkeyup={handleKeyUp}>
-        <lightning-input type="search" class="slds-col slds-size_1-of-1" 
-        name="name" label="Product or Code Tap Return or Enter to Search" ></lightning-input>
-    </div>
+    <template if:false={showInventory}>
+        <div onkeyup={handleKeyUp}>
+            <lightning-input type="search" class="slds-col slds-size_1-of-1 slds-m-bottom_xx-small" 
+            name="name" label="Product or Code Tap Return or Enter to Search" ></lightning-input>
+        </div>
+    </template>
+    <template if:true={showInventory}>
+        <lightning-combobox
+        name="warehouse"
+        class="slds-m-bottom_xx-small"
+        label="Warehouse"
+        value={warehouse}
+        options={warehouseOptions}
+        onchange={checkInventory} ></lightning-combobox>
+    </template>   
+
+    <lightning-button class="slds-col slds-size_1-of-1" variant="brand" label={btnLabel} title="CheckInv" onclick={enableInventory}></lightning-button>
     <template if:false={loaded}>
         <div class="exampleHolder">
             <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
@@ -73,6 +111,7 @@
                 <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
                     <span>Status: {x.stock}</span>
                 </div>
+            <template if:false={showInventory}>
                 <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
                     <p>Floor:<lightning-formatted-number value={x.flr} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
                 </div>
@@ -82,6 +121,19 @@
                 <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
                     <p>Level 2:<lightning-formatted-number value={x.lev2} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
                 </div>
+            </template>
+            <template if:true={showInventory}>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <span class="numb">
+                        All Company QTY: {x.allStock}
+                    </span>
+                </div>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <span class="numb">
+                        Qty at this Location: {x.wInv}
+                    </span>
+                </div>
+            </template>
             </div>
         </lightning-layout-item>
         </template>

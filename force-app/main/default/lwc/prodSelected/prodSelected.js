@@ -382,7 +382,7 @@ export default class ProdSelected extends LightningElement {
             {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
             {label:'440 | ATS Lewis Center', value:'1312M00000001o0QAA'},
             {label:'450 | ATS Brecksville', value:'1312M00000001o1QAA'},
-            {label:'470 | ATS Youngstown', value:'1312M00000001o2QAA'},
+            {label:'470 | ATS Boardman', value:'1312M00000001o2QAA'},
             {label:'510 | ATS Travis City', value:'1312M00000001o3QAA'},
             {label:'520 | ATS Farmington Hills', value:'1312M00000001o4QAA'},
             {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},

@@ -200,7 +200,25 @@
                     <p>Quote has been submitted you can clone this!</span></p>    
                 </div>
             </template>
-        <template if:false={wasSubmitted}>
+    <template if:false={wasSubmitted}>
+            <template if:true={dropShip}>
+                <div class='slds-grid'>
+                    <span class='slds-col slds-size_2-of-3'>
+                        <!-- <p class="totals">Ship Weight: {shpWeight}--></p><p class="totals">Total Qty: {tQty}</p><p class="totals">Total Price: ${tPrice}</p><p class="totals">Total Margin: {tMargin}%</p> 
+                    </span>
+                    <!-- Button Group to save -->
+                    <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
+                        <div class='slds-float_right slds-m-right_medium'>
+                            <lightning-button-group>
+                                <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                                <!-- <lightning-button variant="brand" label="Get Quote" title="Get Quote" onclick={moveStage}></lightning-button> -->
+                                <!-- <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button> -->
+                            </lightning-button-group>
+                        </div>
+                    </span>
+                </div>
+            </template>
+            <template if:false={dropShip}>
             <template if:true={goodPricing}>
                 <div class='slds-grid'>
                     <span class='slds-col slds-size_2-of-3'>
@@ -224,7 +242,8 @@
                     
                 </div>
             </template>
-        </template>
+            </template>
+    </template>
     </template>
         <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>

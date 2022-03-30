@@ -22,7 +22,8 @@ import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c'
+import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
+import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory, checkPricing ,getShipping} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
@@ -46,6 +47,8 @@ export default class ProdSelected extends LightningElement {
     prodFound = false
     accountId;
     deliveryDate; 
+    shipType;
+    dropShip;  
     stage;
     warehouse;
     shippingAddress;
@@ -134,7 +137,7 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
@@ -142,9 +145,11 @@ export default class ProdSelected extends LightningElement {
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
-                this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
+                this.deliveryDate = getFieldValue(data, DELIVERYDATE);
+                this.shipType = getFieldValue(data, SHIPTYPE);  
+                this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                console.log('ship Add '+this.shippingAddress)
+                console.log('ship type '+this.shipType)
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 

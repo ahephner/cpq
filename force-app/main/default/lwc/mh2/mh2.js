@@ -71,7 +71,7 @@
             showLastPaid: true,
             levels: 'flr $'+x.Floor_Price__c+' Lvl 1 $'+x.Level_1_UserView__c,
             //check if it's agency product if not eval floor pricing 
-            goodPrice:x.Product2.Agency_Pricing__c ? true : (x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false),
+            goodPrice:x.Product2.Agency_Pricing__c ? true : (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             OpportunityId: x.OpportunityId
         }
       })
@@ -162,6 +162,13 @@
       }
       return check;
     }
+
+    const getShipping = (prod)=>{
+      let total = prod.reduce((w, item)=>{
+        return w + item.UnitPrice;
+      }, 0)
+      return total; 
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping}
 

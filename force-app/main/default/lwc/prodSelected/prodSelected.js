@@ -22,7 +22,8 @@ import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
 import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory, checkPricing} from 'c/helper'
+import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory, checkPricing ,getShipping} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -436,15 +437,13 @@ export default class ProdSelected extends LightningElement {
         this.loaded = false; 
         const newProduct = this.selection.filter(x=>x.Id === '') 
         const alreadyThere = this.selection.filter(y=>y.Id != '')
-        
+        let shipTotal = this.selection.filter(y => y.ProductCode.includes('SHIPPING'));
         console.log('sending '+JSON.stringify(this.selection))
         //createProducts({newProds: newProduct, upProduct: alreadyThere, oppId: this.recordId})
         createProducts({olList: this.selection, oppId: this.recordId})
         .then(result=>{
             //need to map over return values and save add in non opp line item info 
             let back = updateNewProducts(newProduct, result);
-            // console.log('back');
-            // console.log(JSON.stringify(back));
             
             this.selection =[...alreadyThere, ...back];
             
@@ -459,15 +458,17 @@ export default class ProdSelected extends LightningElement {
             );
             getRecordNotifyChange({recordId: this.recordId})
         }).then(()=>{
-            if(this.shippingAddress != null || !this.shippingAddress){
-                console.log('saving address');
+            if(shipTotal.length>0){
+                console.log('saving shipping');
+                let shipCharge = getShipping(shipTotal);
                 
                 const fields = {};
                 fields[ID_FIELD.fieldApiName] = this.recordId;
-                fields[SHIPADD.fieldApiName] = this.shippingAddress;
+                fields[SHIPCHARGE.fieldApiName] = shipCharge;
                 const shipRec = {fields}
                 updateRecord(shipRec)
             } 
+         
         }).catch(error=>{
             
             let mess = JSON.stringify(error);;
@@ -700,6 +701,8 @@ export default class ProdSelected extends LightningElement {
     //handles alerting the user if the pricing is good or bad 
     //the countOfBadPrice prevents if multiple products are too low if one product is fixed it wont allow save. 
     handleWarning = (targ, lev, flr, price, ind)=>{
+        console.log(1,lev, 2, flr, 3, price);
+        
         if(price > lev){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
@@ -709,6 +712,12 @@ export default class ProdSelected extends LightningElement {
         }else if(price<lev && price>=flr){
             this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
             this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
+            this.selection[ind].goodPrice = true;
+            this.goodPricing = checkPricing(this.selection);
+            
+        }else if(price===lev && price>=flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
             this.selection[ind].goodPrice = true;
             this.goodPricing = checkPricing(this.selection);
             
@@ -741,6 +750,9 @@ export default class ProdSelected extends LightningElement {
                 }else if(price<level && price>=floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="orange";
+                }else if(price === level && price>=floor){
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
                 }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="red" 

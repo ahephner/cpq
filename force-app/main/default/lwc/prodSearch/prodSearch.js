@@ -38,7 +38,7 @@ export default class ProdSearch extends LightningElement {
         },
         {label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}},
         {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
-        {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
+        {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}, sortable: "true"},
         {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
         {label: 'Floor Price', fieldName:'Floor_Price__c', 
         type:'currency', cellAttributes:{alignment:'center'}},

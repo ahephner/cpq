@@ -6,7 +6,10 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing} from 'c/mh2'
+import {updateRecord } from 'lightning/uiRecordApi';
+import ID_FIELD from '@salesforce/schema/Opportunity.Id';
+import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing, getShipping} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 
@@ -289,6 +292,7 @@ export default class MobileProdSelected extends LightningElement {
 
         const newProduct = this.prod.filter(x=>x.Id === '') 
         const alreadyThere = this.prod.filter(y=>y.Id != '')
+        let shipTotal = this.prod.filter(y => y.ProductCode.includes('SHIPPING'));
         createProducts({olList: this.prod, oppId: this.oppId})
         .then(result => {
             let back = updateNewProducts(newProduct, result);
@@ -297,6 +301,18 @@ export default class MobileProdSelected extends LightningElement {
             this.total = this.orderTotal(this.prod)
             this.showSpinner = false; 
             alert('Products Saved!')
+        }).then(()=>{
+            if(shipTotal.length>0){
+                console.log('saving shipping');
+                let shipCharge = getShipping(shipTotal);
+                
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.oppId;
+                fields[SHIPCHARGE.fieldApiName] = shipCharge;
+                const shipRec = {fields}
+                updateRecord(shipRec)
+            } 
+         
         }).catch(error=>{
             alert(JSON.stringify(error))
            
@@ -463,7 +479,7 @@ allowSave(){
      //PRICE WARNING SECTION 
         //handles showing the user prompts
         handleWarning = (targ, lev, floor, price,ind)=>{
-            //console.log(1, targ, 2, lev, 3, floor, 4, price);
+            console.log(1, targ, 2, lev, 3, floor, 4, price);
              
              if(price > lev){
                  this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
@@ -476,7 +492,14 @@ allowSave(){
                  this.prod[ind].goodPrice = true; 
                  this.goodPricing = checkPricing(this.prod);
                  this.wasEdited = true; 
-             }else if(price<floor){
+             }else if(price===lev && price>=floor){
+                 console.log('should be good')
+                this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+                this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="black";
+                this.prod[ind].goodPrice = true;
+                this.goodPricing = checkPricing(this.prod);
+                this.wasEdited = true; 
+            }else if(price<floor){
                  this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
                  this.template.querySelector(`[data-target-id="${targ}"]`).style.color ="red";
                  this.prod[ind].goodPrice = false;
@@ -503,7 +526,10 @@ allowSave(){
                  }else if(price<level && price>=floor){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
-                 }else if(price<floor){
+                 }else if(price===level && price>=floor){
+                    this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="black";                    
+                }else if(price<floor){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"
                      this.goodPricing = false;

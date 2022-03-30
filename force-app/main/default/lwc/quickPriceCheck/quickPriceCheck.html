@@ -16,7 +16,9 @@
             options={warehouseOptions}
             onchange={checkInventory} ></lightning-combobox>
         </template>   
-
+        <template if:false={showInventory}>
+            <lightning-button class="slds-col slds-size_1-of-1 slds-m-right_x-small slds-m-left_x-small" variant="brand" label='Search' title="CheckInv" onclick={callSearch}></lightning-button>    
+        </template>
         <lightning-button class="slds-col slds-size_1-of-1" variant="brand" label={btnLabel} title="CheckInv" onclick={enableInventory}></lightning-button>
             <template if:false={loaded}>
                 <div class="exampleHolder">
@@ -92,7 +94,9 @@
         options={warehouseOptions}
         onchange={checkInventory} ></lightning-combobox>
     </template>   
-
+    <template if:false={showInventory}>
+        <lightning-button class="slds-col slds-size_1-of-1 slds-m-right_x-small slds-m-left_x-small" variant="brand" label='Search' title="CheckInv" onclick={callSearch}></lightning-button>    
+    </template>
     <lightning-button class="slds-col slds-size_1-of-1" variant="brand" label={btnLabel} title="CheckInv" onclick={enableInventory}></lightning-button>
     <template if:false={loaded}>
         <div class="exampleHolder">

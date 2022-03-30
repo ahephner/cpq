@@ -33,7 +33,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    console.log(JSON.stringify(products))
+    
       let prod = products.map(x =>{
         
         return   {
@@ -62,11 +62,12 @@
             showLastPaid: true,
             flrText: 'flr price $'+ x.Floor_Price__c,
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
-            goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false),
+            goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c+' Company Last Paid $' +x.Product2.Last_Purchase_Price__c,
             OpportunityId: recordId
         }
       })
+      console.log(JSON.stringify(prod))
       return prod; 
   }
 
@@ -166,6 +167,13 @@
       }
       return check;
     }
+
+    const getShipping = (prod)=>{
+      let total = prod.reduce((w, item)=>{
+        return w + item.UnitPrice;
+      }, 0)
+      return total; 
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory, checkPricing}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory, checkPricing,getShipping}
 

@@ -122,6 +122,16 @@
 </div>
 <!-- save buttons -->
 <template if:false={submitted}>
+    <!--if drop ship allow saves-->
+    <template if:true={dropShip}>
+            <footer class="slds-modal__footer slds-align_absolute-center">
+                <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
+                <button class="slds-button slds-button_neutral" onclick={saveMobile} title="save">Save</button>
+            </footer>
+    
+    </template>
+    <!--if it isnt drop ship enforce floor-->
+    <template if:false={dropShip}>
     <template if:false={goodPricing}>
         <footer class="slds-modal__footer slds-align_absolute-center">
             <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>
@@ -132,6 +142,7 @@
             <button class="slds-button slds-button_neutral" onclick={handleCancel} title="Cancel">Cancel</button>
             <button class="slds-button slds-button_neutral" onclick={saveMobile} title="save">Save</button>
         </footer>
+</template>
 </template>
 </template>
 <template if:true={submitted}>

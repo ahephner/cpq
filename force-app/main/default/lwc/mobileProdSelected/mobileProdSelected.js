@@ -17,7 +17,8 @@ export default class MobileProdSelected extends LightningElement {
     @api oppId;
     @api warehouse;
     @api accountId; 
-    @api pbId; 
+    @api pbId;
+    @api shipType;  
     @api stage; 
     showDelete = false;  
     addProducts = false;
@@ -44,10 +45,14 @@ export default class MobileProdSelected extends LightningElement {
     shipWeight;
     total; 
     hasRendered = true;
+    dropShip;
     connectedCallback() {
+        console.log(this.shipType);
         if(this.stage ==='Closed Won'|| this.stage === 'Closed Lost'){
             this.submitted = true; 
         }
+        //if ship type is drop ship we allow save regardless of pricing. 
+        this.dropShip = this.shipType === 'DS'? true: false; 
         this.loadProducts(); 
         
     }
@@ -528,7 +533,7 @@ allowSave(){
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="orange";
                  }else if(price===level && price>=floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
-                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="black";                    
+                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";                    
                 }else if(price<floor){
                      this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                      this.template.querySelector(`[data-target-id="${target}"]`).style.color ="red"

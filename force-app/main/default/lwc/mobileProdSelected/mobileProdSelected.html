@@ -64,7 +64,7 @@
                                     name ={item.Product2Id} readonly></lightning-input>
                 </template>
     <!-- Qty -->
-                <lightning-input class="slds-m-bottom_x-small" value={item.Quantity} type='number' label='Qty' min={minUnits}
+                <lightning-input class="slds-m-bottom_x-small" value={item.Quantity} type='number' label='Qty' step="0.01" min={minUnits}
                                 name ={item.Product2Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->

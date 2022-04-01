@@ -6,7 +6,7 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
-import {updateRecord } from 'lightning/uiRecordApi';
+import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing, getShipping} from 'c/mh2'
@@ -259,9 +259,11 @@ export default class MobileProdSelected extends LightningElement {
             let cf = confirm('Do you want to delete this line item')
             if(cf === true){
                 this.prod.splice(index, 1);
-            }if(id){
                 deleteRecord(id);
             }
+            
+            
+            this.goodPricing = checkPricing(this.prod);
         }
     }
 //Notes could maybe do something with onblur instead

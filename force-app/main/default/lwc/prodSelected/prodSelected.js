@@ -24,11 +24,11 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, roundNum,totalChange, allInventory, checkPricing ,getShipping} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
-    @api recordId;
+    @api recordId; 
     pbeId; 
     productId; 
     productCode;
@@ -65,8 +65,10 @@ export default class ProdSelected extends LightningElement {
     //shpWeight;
     tQty=0;
     tMargin = 0;
+    tCost = 0;
     //hide margin col if non rep is close!
     pryingEyes = false
+    numbOfManLine = 0
     @track selection = []
 //for message service
     subscritption = null;
@@ -128,9 +130,9 @@ export default class ProdSelected extends LightningElement {
                 this.companyLastPaid = mess.lastPaid
                 this.handleNewProd(); 
                 this.prodFound = true;
-            } 
-        }
-   
+             }        
+            }
+        
     }
     unsubscribeToMessageChannel() {
         unsubscribe(this.subscription);
@@ -145,11 +147,11 @@ export default class ProdSelected extends LightningElement {
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
-                this.deliveryDate = getFieldValue(data, DELIVERYDATE);
+                this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
                 this.shipType = getFieldValue(data, SHIPTYPE);  
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                console.log('ship type '+this.shipType)
+                //console.log('ship type '+this.shipType)
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -161,7 +163,7 @@ export default class ProdSelected extends LightningElement {
         let totalQty; 
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        console.log(this.invCount)
+        
         if(this.newProd != null){
 
             this.selection = [
@@ -191,6 +193,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne,
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     goodPrice: true,
+                    manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
                     OpportunityId: this.recordId
                 }
             ]
@@ -223,6 +226,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne, 
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     goodPrice: true,
+                    manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
                     OpportunityId: this.recordId
                 }
             ]
@@ -231,9 +235,55 @@ export default class ProdSelected extends LightningElement {
             let totals =  getTotals(this.selection);
             this.tPrice = totals.TotalPrice;
             this.tQty = totals.Quantity;
-            let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
-            this.tMargin = roundNum(margin, 2);
+            this.tCost = getCost(this.selection) 
+            if(!this.agency){
+                let margin = setMargin(this.tCost, this.tPrice)
+                this.tMargin = roundNum(margin, 2);
+            }
             this.unsavedProducts = true; 
+    }
+
+    addManualLine(){
+        this.numbOfManLine ++;
+        if(this.numbOfManLine<10){ 
+
+        this.selection = [
+            ...this.selection, {
+                sObjectType: 'OpportunityLineItem',
+                //have to get hard coded id
+                PricebookEntryId: '01u75000004xmuzAAA',
+                Id: '',
+                Product2Id: '01t75000000bV2aAAE',
+                agency: false,
+                name: 'Manual Line.'+this.numbOfManLine,
+                ProductCode: 'Manual Line.'+this.numbOfManLine,
+                Ship_Weight__c: 0,
+                Quantity: 1,
+                UnitPrice: 0,
+                floorPrice: 0,
+                lOne: 0,
+                lTwo: 0,
+                lastPaid: 0,
+                lastMarg: 0, 
+                docDate: 'First Purchase', 
+                CPQ_Margin__c: 0,
+                Cost__c: 1,
+                TotalPrice: 0,
+                wInv: 0,
+                showLastPaid: true,
+                flrText: 'flr price $',
+                lOneText: 'lev 1 $', 
+                tips: 'manual line',
+                goodPrice: true,
+                manLine: true,
+                OpportunityId: this.recordId
+            }
+        ]
+        this.unsavedProducts = true; 
+        }else{
+            alert('can only have 9 man lines')
+        }
+        console.log(this.selection)
     }
 
     //If a user decides to uncheck a product on the search screen
@@ -271,9 +321,11 @@ export default class ProdSelected extends LightningElement {
             let unitp = Number(this.selection[index].UnitPrice);
             this.handleWarning(targetId,lOne, floor, unitp, index)
             let totals =  getTotals(this.selection);
-            this.tPrice = roundNum(totals.TotalPrice, 2)
-            let margin = ((this.tPrice - totals.Cost__c)/this.tPrice) * 100;
-            this.tMargin = roundNum(margin, 2);
+            this.tPrice = roundNum(totals.TotalPrice, 2);
+            if(!this.selection[index].agency){
+                let margin = setMargin(this.tCost, this.tPrice)
+                this.tMargin = roundNum(margin, 2);
+            }
 
         }, 1000)
         this.unsavedProducts = true;
@@ -308,18 +360,19 @@ export default class ProdSelected extends LightningElement {
             //update order totals
             let totals =  getTotals(this.selection);
             this.tPrice = roundNum(totals.TotalPrice, 2)
-            
-            let margin = ((this.tPrice - totals.Cost__c)/this.tPrice) * 100;
-            this.tMargin = roundNum(margin, 2);
+            if(!this.selection[index].agency){
+                let margin = setMargin(this.tCost, this.tPrice)
+                this.tMargin = roundNum(margin, 2);
+            }
     },1000)
     this.unsavedProducts = true; 
     }
     
     newQTY(e){
-        if(e.detail.value % 1 != 0){
-            this.goodQty = false; 
-            return
-        }
+        // if(e.detail.value % 1 != 0){
+        //     this.goodQty = false; 
+        //     return
+        // }
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.name)
         
         this.selection[index].Quantity = Number(e.detail.value);
@@ -335,11 +388,17 @@ export default class ProdSelected extends LightningElement {
         let aval = Number(this.selection[index].wInv)
         this.qtyWarning(e.target.name, want,aval)
 
-//round total price and qty
+//round total price and qty set margin
         this.tPrice = roundNum(totals.TotalPrice, 2)
         //this.shpWeight = totals.Ship_Weight__c;
         this.tQty = totals.Quantity;
+        this.tCost = getCost(this.selection)
         this.unsavedProducts = true; 
+        if(!this.selection[index].agency){
+            let margin = setMargin(this.tCost, this.tPrice)
+            this.tMargin = roundNum(margin, 2);
+        }
+
     }
     newComment(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
@@ -355,7 +414,7 @@ export default class ProdSelected extends LightningElement {
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
                 this.selection.splice(index, 1);
-                if(id != undefined){
+                if(id){
                     console.log('deleting prod');
                     
                     deleteRecord(id); 
@@ -366,8 +425,11 @@ export default class ProdSelected extends LightningElement {
                 this.tPrice = totals.TotalPrice;
                 //this.shpWeight = totals.Ship_Weight__c;
                 this.tQty = totals.Quantity;
-                let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
+                this.tCost = getCost(this.selection);  
+                let margin = setMargin(this.tCost, this.tPrice)
                 this.tMargin = roundNum(margin, 2);
+                //check pricing
+                this.goodPricing = checkPricing(this.selection);
             }
         }      
     }
@@ -665,11 +727,14 @@ export default class ProdSelected extends LightningElement {
             this.selection = await onLoadProducts(mergedLevels, this.recordId); 
             //get the order totals; 
             let totals = await getTotals(this.selection);
-            
+            //set the number of manual lines on the order
+            this.numbOfManLine = await getManLines(this.selection);
             this.tPrice = roundNum(totals.TotalPrice,2);
             //this.shpWeight = totals.Ship_Weight__c;
-            this.tQty = totals.Quantity; 
-            let margin = ((totals.TotalPrice - totals.Cost__c)/totals.TotalPrice) * 100;
+            this.tQty = totals.Quantity;
+            this.tCost = await getCost(this.selection);  
+            console.log('total cost '+this.tCost)
+            let margin = setMargin(this.tCost, this.tPrice)
             this.tMargin = roundNum(margin, 2);
             
          }catch(error){
@@ -751,13 +816,13 @@ export default class ProdSelected extends LightningElement {
                 if(price>level){
                     //console.log('good to go '+this.selection[i].name);
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
-                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="black";
                 }else if(price<level && price>=floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="orange";
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="orange";
                 }else if(price === level && price>=floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="black";
-                    this.template.querySelector(`[data-target-id="${target}"]`).style.color ="black";
+                    this.template.querySelector(`[data-margin="${target}"]`).style.color ="black";
                 }else if(price<floor){
                     this.template.querySelector(`[data-id="${target}"]`).style.color ="red";
                     this.template.querySelector(`[data-margin="${target}"]`).style.color ="red" 

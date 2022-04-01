@@ -38,6 +38,7 @@
 
 .price{
     margin-left: 35%;
+    width: 113%;
 }
 
 .tooLow{
@@ -56,13 +57,16 @@
     margin-left: 15px;
     font-weight: bold;
 }
-.changedProduct{
+.changedProduct1{
     color: #f54049;
     margin-top: 1%;
     margin-left: 5%;
     font-weight: bold;
 }
 
+.qtyMark{
+    width: 60%;
+}
 .tooltip .tooltiptext {
     visibility: hidden;
     width: 120px;
@@ -100,11 +104,17 @@
     --slds-c-input-color-background: white;
    
   }
-/* .changedProduct{
+
+  .manLine{
+      width: 90%; 
+      margin-left: 5%;
+  }
+.changedProduct{
     color: #313131; 
     text-align: center;
     margin-top: 1%;
     margin-left: 5%;
+    font-size: medium;
     -webkit-animation: colorchange 20s infinite alternate; 
 }
 @keyframes colorchange{
@@ -126,4 +136,4 @@
     100%{
         color:orangered; 
     }
-} */
+}

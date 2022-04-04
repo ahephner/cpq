@@ -25,6 +25,15 @@
                     </figure>
                 </div>
             </div>
+    <!-- Mobile Search Location -->
+    <label for="ship-select">Inventory Reference:</label>
+    <select name="Warehouse" class="slds-select valAdd"  onchange={selectChange}>
+        <option value=""></option>
+        <template for:each={warehouseOptions} for:item='x'>
+
+            <option key={x.value} value={x.value}>{x.label}</option>
+        </template>
+    </select>
     <!--Product Cards!-->
     <div class='slds-scrollable_y cardClass' style='height:40rem; width:100%'>
     <lightning-layout multiple-rows="true">

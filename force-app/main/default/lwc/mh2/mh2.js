@@ -169,6 +169,23 @@
       }, 0)
       return total; 
     }
+
+    //called when a users selects 'All' in inventory reference
+    const allInventory = (selectedProd, counts) =>{
+      console.log('all')
+      let merge = selectedProd.map(prod => ({
+        ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
+                            ...prod
+                        })
+                        )
+        //loop over the joined arrays. Set inventory if there is some otherwise return 0;
+        //have to delete the key value otherwise it is cached.  
+        for(let i=0; i<merge.length; i++){
+              merge[i].wInv = merge[i].Total_Product_Items__c ? merge[i].Total_Product_Items__c : 0
+              delete merge[i].Total_Product_Items__c; 
+        }
+      return merge;
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory}
 

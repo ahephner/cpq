@@ -19,6 +19,7 @@
             <property name="warehouse" type="String" label="warehouse id" description="Pass WarehouseId"/>
             <property name="accountId" type="String" label="account id" description="Pass Account Id"/>
             <property name="pbId" type="String" label="pricebook id" description="Pass Price Book Id"/>
+            <property name="shipType" type="String" label="ship type" description="pass ship type value"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

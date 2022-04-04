@@ -24,15 +24,15 @@ public class cpqOppClone {
         Opportunity newOp;
         List<OpportunityLineItem> opli = new List<OpportunityLineItem>(); 
        Date cd = System.today() + 14; 
-         
+       String nameDate = String.valueOf(System.today());  
         try{
-         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, 
+         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, account.name,
                 Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c FROM Opportunity where id = :opp.Id]; 
   
             newOp = opp.clone(false);
             
-            newOp.Name += ' Cloned';
-            newOp.StageName = 'Working(25%)';
+            newOp.Name = newOp.Account.Name+ ' '+ nameDate;
+            newOp.StageName = 'Working';
             newOp.CloseDate = cd;
             //newOp.Warehouse__c = opp.Warehouse__c;
          //   newOp.CloseDate = cd;  
@@ -80,12 +80,12 @@ public class cpqOppClone {
             prodMap.put(x.product2Id, x);
         }
         
-        List<PricebookEntry> pbe = [Select id, product2Id, UnitPrice from pricebookentry where pricebook2id =: pbId and product2Id in: prodMap.keySet()];
+        List<PricebookEntry> pbe = [Select id, product2Id, UnitPrice,Product_Cost__c from pricebookentry where pricebook2id =: pbId and product2Id in: prodMap.keySet()];
         for(pricebookentry x:pbe){
             pbeMap.put(x.product2Id, x);
         }
-        
-
+        system.debug('map line items');
+        system.debug(pbeMap);
         for(opportunitylineitem ol: lineItems){
             system.debug('ol '+ol);
            // decimal marg = (ol.UnitPrice/pbeMap.get(ol.Product2Id).UnitPrice)*100;
@@ -100,9 +100,15 @@ public class cpqOppClone {
                     description = ol.description,
                     OpportunityId  = newOpId));                
             }else{
-                decimal salesCal = ( pbeMap.get(ol.Product2Id).UnitPrice / (1 - ol.CPQ_Margin__c/100));
+                decimal salesCal;
+                if(ol.CPQ_Margin__c == 100){
+                     salesCal = ( pbeMap.get(ol.Product2Id).Product_Cost__c / 1 );
+                }else{
+                     salesCal = ( pbeMap.get(ol.Product2Id).Product_Cost__c / (1 - ol.CPQ_Margin__c/100));
+                }
+                
                 decimal salesPrice = salesCal.setScale(2, RoundingMode.HALF_UP); 
-          
+          		system.debug('salesPrice '+salesPrice);
                 newLines.add(new OpportunityLineItem(					
                     PricebookEntryId = pbeMap.get(ol.Product2Id).id,
                     product2id = ol.product2id,

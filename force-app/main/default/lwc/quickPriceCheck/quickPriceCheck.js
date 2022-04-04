@@ -31,6 +31,11 @@ export default class QuickPriceCheck extends LightningElement {
         }
     }
 
+    callSearch(){ 
+        this.searchTerm = this.template.querySelector('lightning-input').value
+        this.search();
+    }
+
     search(){
         if(this.searchTerm.length < 3){
             alert('search must be at least 3 letters');
@@ -49,7 +54,7 @@ export default class QuickPriceCheck extends LightningElement {
                 let ProductCode;  
                 this.prod = res.map(x=>{
                     name= x.Product2.Name,
-                    flr = x.Product2.Floor_Price__c,
+                    flr = x.Floor_Price__c,
                     lev1 = x.Level_1_UserView__c,
                     lev2 = x.Level_2_UserView__c,
                     stock = x.Product2.Product_Status__c,
@@ -125,7 +130,7 @@ export default class QuickPriceCheck extends LightningElement {
             prodCodes = [...pcSet];
 
             let inCheck = await inCounts({pc:prodCodes, locId:this.warehouse});
-            console.log('inCheck ' +JSON.stringify(inCheck));
+           // console.log('inCheck ' +JSON.stringify(inCheck));
             this.prod = this.warehouse === 'All' ? await allInventory(data, inCheck) : await newInventory(data, inCheck);
             //this will cause rerender to run so we can update the warning colors. 
             //console.log('back')

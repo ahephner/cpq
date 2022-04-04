@@ -33,7 +33,7 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    console.log(JSON.stringify(products))
+    
       let prod = products.map(x =>{
         
         return   {
@@ -62,14 +62,26 @@
             showLastPaid: true,
             flrText: 'flr price $'+ x.Floor_Price__c,
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
-            goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c < x.CPQ_Unit_Price__c ? true: false),
+            goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c+' Company Last Paid $' +x.Product2.Last_Purchase_Price__c,
+            manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false, 
             OpportunityId: recordId
         }
       })
+      console.log(JSON.stringify(prod))
       return prod; 
   }
 
+  //this sets the number of manual lines on the order so we don't add more than 10
+  const getManLines = (list) =>{ 
+     let numbofLines = 0; 
+     for(let i=0; i<list.length;i++){ 
+       if(list[i].manLine){
+         numbofLines ++; 
+       }
+     }
+     return numbofLines; 
+  }
   const updateNewProducts = (noIdProduct, returnedProducts)=>{
     const newProducts=[];
    // console.log(JSON.stringify(noIdProduct))
@@ -95,7 +107,7 @@
                             //console.log(items) //is the object of data you want to reduce
           for (const [keyName, valueCount] of Object.entries(items)) {
             //only get the fields we want to add ship weight add this below ||keyName ==='Ship_Weight__c'
-          if(keyName  ==='TotalPrice' || keyName==='Quantity' || keyName ==='Cost__c'){
+          if(keyName  ==='TotalPrice' || keyName==='Quantity'){
             //if the basket does not contain the key add the key and set the value to 0
             if (!basket[keyName]) {
                 basket[keyName] = 0;
@@ -108,7 +120,16 @@
     }, {});
     return totals; 
   }
-  
+  const getCost = (list)=>{ 
+    let totalCost = 0;
+    for(let i=0; i<list.length;i++){
+       let x = Number(list[i].Cost__c * list[i].Quantity);
+       //console.log('x '+x);
+       
+       totalCost += x; 
+    }
+    return totalCost; 
+  }
   //allows the user to check inventory at other locations
   const newInventory = (selectedProd, counts) =>{
     //merge selected products on inventory where common product codes
@@ -166,6 +187,19 @@
       }
       return check;
     }
+
+    const getShipping = (prod)=>{
+      let total = prod.reduce((w, item)=>{
+        return w + item.UnitPrice;
+      }, 0)
+      return total; 
+    }
+
+    const setMargin = (cost, revenue)=>{
+      //console.log(1, cost,2,revenue)
+      let margin = ((revenue - cost)/revenue) * 100;
+      return margin; 
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals, totalChange, roundNum, allInventory, checkPricing}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin}
 

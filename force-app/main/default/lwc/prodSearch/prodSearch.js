@@ -38,7 +38,7 @@ export default class ProdSearch extends LightningElement {
         },
         {label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}},
         {label: 'Code', fieldName:'ProductCode', cellAttributes:{alignment:'center'}},
-        {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}},
+        {label: 'Status', fieldName:'Status', cellAttributes:{alignment:'center'}, sortable: "true"},
         {label:'Floor Type', fieldName:'Floor', cellAttributes:{alignment:'center'}},
         {label: 'Floor Price', fieldName:'Floor_Price__c', 
         type:'currency', cellAttributes:{alignment:'center'}},
@@ -103,7 +103,7 @@ export default class ProdSearch extends LightningElement {
       search(){
         this.loaded = false; 
        //console.log('searchKey '+this.searchKey);
-       console.log(1,this.searchKey, 2, this.cat, 3, this.pf, 4, this.priceBookId)
+       //console.log(1,this.searchKey, 2, this.cat, 3, this.pf, 4, this.priceBookId)
         searchProduct({searchKey: this.searchKey, cat: this.cat, family: this.pf, priceBookId:this.priceBookId })
         .then((result) => {
            //can't use dot notation on native tables 
@@ -224,5 +224,44 @@ handleRemove(x){
     this.selection.splice(index, 1);
     //console.log(this.selection);
     
+}
+
+//handle table sorting sorting
+ //Grabbed this from a salesforce example
+ handleSortdata(event) {
+    // field name
+    this.sortBy = event.detail.fieldName;
+
+    // sort direction
+    this.sortDirection = event.detail.sortDirection;
+
+    // calling sortdata function to sort the data based on direction and selected field
+    this.sortData(event.detail.fieldName, event.detail.sortDirection);
+}
+
+sortData(fieldname, direction) {
+    // serialize the data before calling sort function
+    let parseData = JSON.parse(JSON.stringify(this.prod));
+
+    // Return the value stored in the field
+    let keyValue = (a) => {
+        return a[fieldname];
+    };
+
+    // cheking reverse direction 
+    let isReverse = direction === 'asc' ? 1: -1;
+
+    // sorting data 
+    parseData.sort((x, y) => {
+        x = keyValue(x) ? keyValue(x) : ''; // handling null values
+        y = keyValue(y) ? keyValue(y) : '';
+
+        // sorting values based on direction
+        return isReverse * ((x > y) - (y > x));
+    });
+
+    // set the sorted data to data table data
+    this.prod = parseData;
+
 }
 }

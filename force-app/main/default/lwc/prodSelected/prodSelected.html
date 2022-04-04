@@ -6,10 +6,11 @@
                 size="large"></lightning-spinner>
         </template>
     <template if:true={loaded}>
+        <template if:false={wasSubmitted}>
         <div class='slds-grid'>
             <span class='slds-col slds-size_8-of-12'>
                 <template if:true={unsavedProducts}>
-                    <p class="changedProduct">You have unsaved changes!</p>
+                    <p class="changedProduct1">You have unsaved changes!</p>
                 </template>
             </span>
             <span class='slds-col slds-size_4-of-12 slds-m-bottom_x-small'>
@@ -23,6 +24,7 @@
                     options={warehouseOptions}
                     onchange={checkInventory} ></lightning-combobox>
                     <lightning-button class='slds-m-top_large' variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button> 
+                    <!-- <lightning-button class='slds-m-top_large' variant="brand" label="Manual Line" title="manLine" onclick={addManualLine}></lightning-button> -->
                     <!-- <lightning-button class='slds-m-top_large' variant="Neutral" label="Get Pricing" title="pricing" onclick={initPriceCheck}></lightning-button>  -->
                     </lightning-button-group>   
                 </div>
@@ -33,6 +35,12 @@
                 </div>
             </span> -->
         </div>
+    </template>
+    <template if:true={wasSubmitted}>
+        <div class='slds-align_absolute-center'>
+            <p class="changedProduct">Quote has been submitted you can clone this!</p>    
+        </div>
+    </template>
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
             <div class='slds-grid header'>
@@ -93,10 +101,10 @@
                             </p>
                         </div>
                         <!-- user qty -->
-                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center ">
                             <div>
-                                <lightning-input type="number"  data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
-                                value={sp.Quantity} onchange={newQTY} step="1"></lightning-input>
+                                <lightning-input type="number" class='qtyMark' data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
+                                value={sp.Quantity} onchange={newQTY} step="0.01"></lightning-input>
                             </div>
                         </div>
                         <!-- user price -->
@@ -109,6 +117,7 @@
                                         read-only={sp.agency} ></lightning-input>
                                     </div>
                         </div>
+                <template if:false={sp.manLine}>
                     <template if:true={sp.showLastPaid}>
                         <!-- last paid -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_medium">
@@ -191,16 +200,44 @@
                             <lightning-input type="text" value={sp.Description} 
                                              name={sp.ProductCode} onchange={newComment} label=""></lightning-input>
                         </div>
+            </template>
+<!--For Man Lines-->
+                <template if:true={sp.manLine}>
+                    <div class='slds-col slds-size_8-of-12'>
+                        <div data-margin={sp.ProductCode}>
+                        <lightning-input type="text" value={sp.Description} class="manLine"
+                            name={sp.ProductCode} onchange={newComment} label="Comment CUSTOMER FACING"></lightning-input>
+                        </div>
+                    </div>
+                </template>
                     </div>
                 </template>
             </div>
             </div>
             <template if:true={wasSubmitted}>
                 <div class='slds-align_absolute-center'>
-                    <p>Quote has been submitted you can clone this!</span></p>    
+                    <p class="changedProduct">Quote has been submitted you can clone this!</span></p>    
                 </div>
             </template>
-        <template if:false={wasSubmitted}>
+    <template if:false={wasSubmitted}>
+            <template if:true={dropShip}>
+                <div class='slds-grid'>
+                    <span class='slds-col slds-size_2-of-3'>
+                        <!-- <p class="totals">Ship Weight: {shpWeight}--></p><p class="totals">Total Qty: {tQty}</p><p class="totals">Total Price: ${tPrice}</p><p class="totals">Total Margin: {tMargin}%</p> 
+                    </span>
+                    <!-- Button Group to save -->
+                    <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
+                        <div class='slds-float_right slds-m-right_medium'>
+                            <lightning-button-group>
+                                <lightning-button variant="brand" label="Save" title="save" onclick={saveProducts}></lightning-button>
+                                <!-- <lightning-button variant="brand" label="Get Quote" title="Get Quote" onclick={moveStage}></lightning-button> -->
+                                <!-- <lightning-button variant="success" label="Save Submit" title="save" onclick={saveSubmit}></lightning-button> -->
+                            </lightning-button-group>
+                        </div>
+                    </span>
+                </div>
+            </template>
+            <template if:false={dropShip}>
             <template if:true={goodPricing}>
                 <div class='slds-grid'>
                     <span class='slds-col slds-size_2-of-3'>
@@ -224,7 +261,8 @@
                     
                 </div>
             </template>
-        </template>
+            </template>
+    </template>
     </template>
         <template if:false={prodFound}>
             <div class='slds-m-around_large slds-align_absolute-center'>

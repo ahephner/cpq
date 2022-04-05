@@ -558,6 +558,7 @@ allowSave(){
 
     //warehouse information
     get warehouseOptions(){
+        
         return [
             {label:'All', value:'All'},
             {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
@@ -587,7 +588,15 @@ allowSave(){
 
         ];
     }
-
+    //on load get warehouse value
+    get selectedObj(){
+        let label;
+            if(this.warehouseOptions && this.warehouse){
+                label = this.warehouseOptions.find((x)=>x.value===this.warehouse)
+            }
+            
+            return label;   
+    }
     async selectChange(evt){
         let newWarehouse = this.template.querySelector('.slds-select').value;
         

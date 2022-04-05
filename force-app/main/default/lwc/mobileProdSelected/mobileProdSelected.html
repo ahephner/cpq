@@ -28,7 +28,12 @@
     <!-- Mobile Search Location -->
     <label for="ship-select">Inventory Reference:</label>
     <select name="Warehouse" class="slds-select valAdd"  onchange={selectChange}>
-        <option value=""></option>
+        <template if:true={selectedObj}> 
+            <option value={selectedObj.value}>{selectedObj.label}</option>
+        </template>
+        <template if:false={selectedObj}>
+            <option value=""></option>
+        </template>
         <template for:each={warehouseOptions} for:item='x'>
 
             <option key={x.value} value={x.value}>{x.label}</option>
@@ -91,13 +96,18 @@
     <!-- Total Price -->
                 <lightning-input value={item.TotalPrice} name ={item.Product2Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
             </div>
+            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+    <!--Inventory  -->
+                <lightning-input value={item.wInv} type='number' 
+                                name ={item.Product2Id} label='Inventory at my locaton' readonly></lightning-input>
+            </div>
         </template>
     <!--Shows more info like inventory if we can link it some how and costs-->    
         <template if:true={item.showInfo}>
             <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
-    <!--Inventory  -->
-                <lightning-input value={item.wInv} type='number' 
-                                name ={item.Product2Id} label='Inventory at my locaton' readonly></lightning-input>
+    <!-- Cost -->
+                <lightning-input value={item.Cost__c} type='text'  label='Cost' 
+                                name ={item.Product2Id} readonly></lightning-input>
     <!-- levels  -->
                 <lightning-input value={item.levels} type='text' formatter="text" label='Level Pricing' 
                                 name ={item.Product2Id} readonly></lightning-input>
@@ -111,11 +121,7 @@
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Product2Id} readonly></lightning-input>
             </div>
-    <!-- Cost -->
-                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
-                    <lightning-input value={item.Cost__c} type='text'  label='Cost' 
-                                    name ={item.Product2Id} readonly></lightning-input>
-                </div>
+
             <div class='slds-col slds-size_1-of-1 slds-m-bottom_x-small'>
                 <lightning-textarea name={item.Product2Id} value={item.Description} label="Product Note" placeholder="type here..." onchange={handleNote}></lightning-textarea>
             </div>

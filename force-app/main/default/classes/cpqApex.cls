@@ -97,7 +97,7 @@ public with sharing class cpqApex {
       }else{
  			
       }	
-      	 
+      query += ' order by Product_Status__c  desc nulls last';     
        
        list<PricebookEntry> results = Database.query(query);
 	    	

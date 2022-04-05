@@ -85,6 +85,7 @@ export default class MobileSearch extends LightningElement {
                 let agency;
                 let onhand; 
                 let weight;
+                let status;
                 this.prod = results.map(x =>{
                     Name = x.Product2.Name,
                     ProductCode = x.Product2.ProductCode,
@@ -92,11 +93,12 @@ export default class MobileSearch extends LightningElement {
                     onhand = x.Product2.Total_Product_Items__c,
                     icon = 'action:new',
                     title = '',
-                    weight = x.Product2.Ship_Weight__c
-                    return {...x, Name, ProductCode, icon, title, agency, onhand, weight}
+                    weight = x.Product2.Ship_Weight__c,
+                    status = x.Product2.Product_Status__c
+                    return {...x, Name, ProductCode, icon, title, agency, onhand, weight, status}
                 })
                 //this.prod = results; 
-                
+              
                 
             }).catch((error)=>{
                 this.error = error;

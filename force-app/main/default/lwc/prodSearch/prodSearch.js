@@ -163,7 +163,7 @@ export default class ProdSearch extends LightningElement {
         const rowLastPaid = e.detail.row.Product2.Last_Purchase_Price__c; 
         //const rowFormulaProdtect = e.detail.row.Level_1_Protection_Formula__c;
        // const rowFormula = e.detail.row.Level_1_Formula__c; 
-       
+    
         //get that row button so we can update it  
         let index = this.prod.find((item) => item.Id === rowId);
         //console.log('rowWeight '+rowWeight);

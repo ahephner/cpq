@@ -44,6 +44,11 @@
                         <template if:false={showInventory}>
                             <div class="slds-col slds-size_1-of-5 slds-m-left_x-small">
                                 <span class="numb">
+                                    cost: ${x.cost}
+                                </span>
+                            </div>
+                            <div class="slds-col slds-size_1-of-5 slds-m-left_x-small">
+                                <span class="numb">
                                     floor: ${x.flr}
                                 </span>
                             </div>
@@ -116,6 +121,9 @@
                     <span>Status: {x.stock}</span>
                 </div>
             <template if:false={showInventory}>
+                <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                    <p>Cost:<lightning-formatted-number value={x.cost} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
+                </div>
                 <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
                     <p>Floor:<lightning-formatted-number value={x.flr} format-style="currency" currency-code="USD"></lightning-formatted-number></p>
                 </div>

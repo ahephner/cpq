@@ -147,7 +147,7 @@
     return merge;
   }
   const allInventory = (selectedProd, counts) =>{
-    console.log('all')
+    
     let merge = selectedProd.map(prod => ({
       ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
                           ...prod

@@ -379,7 +379,6 @@ export default class ProdSelected extends LightningElement {
  //need to figure out how not run on zeroed out qty. 
         if(this.selection[index].UnitPrice >0 && this.selection[index].Quantity > 0){
             this.selection[index].TotalPrice = roundNum(this.selection[index].Quantity * this.selection[index].UnitPrice, 2) 
-            this.selection[index].Ship_Weight__c = Number(this.selection[index].Ship_Weight__c * this.selection[index].Quantity)
             this.goodQty = true;   
         }
         let totals =  getTotals(this.selection);
@@ -458,7 +457,7 @@ export default class ProdSelected extends LightningElement {
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
-            {label:'820 | ATS - Wheeling', value:'13175000000L3CnAAK'},
+            {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},

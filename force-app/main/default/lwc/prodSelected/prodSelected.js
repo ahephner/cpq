@@ -194,6 +194,7 @@ export default class ProdSelected extends LightningElement {
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                   // Account__c: this.accountId, 
                     OpportunityId: this.recordId
                 }
             ]
@@ -227,6 +228,7 @@ export default class ProdSelected extends LightningElement {
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                   // Account__c: this.accountId,
                     OpportunityId: this.recordId
                 }
             ]

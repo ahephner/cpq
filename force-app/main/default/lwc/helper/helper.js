@@ -36,6 +36,7 @@
     
       let prod = products.map(x =>{
         
+        
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
@@ -51,7 +52,7 @@
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
             Cost__c: x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
-            wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
+            wInv: x.Quantity_Available__c ? x.Quantity_Available__c : 0,
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
             docDate: x.Doc_Date__c, 
@@ -141,8 +142,8 @@
       //loop over the joined arrays. Set inventory if there is some otherwise return 0;
       //have to delete the key value otherwise it is cached.  
       for(let i=0; i<merge.length; i++){
-            merge[i].wInv = merge[i].QuantityOnHand ? merge[i].QuantityOnHand:0
-            delete merge[i].QuantityOnHand; 
+            merge[i].wInv = merge[i].Quantity_Available__c ? merge[i].Quantity_Available__c:0
+            delete merge[i].Quantity_Available__c; 
       }
     return merge;
   }

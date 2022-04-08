@@ -434,7 +434,7 @@ export default class MobileProdSelected extends LightningElement {
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
                     Description: '', 
-                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
@@ -468,7 +468,7 @@ export default class MobileProdSelected extends LightningElement {
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
                     Description: '',
-                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
@@ -561,7 +561,7 @@ allowSave(){
         
         return [
             {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
+            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},

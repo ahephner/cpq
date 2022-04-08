@@ -97,7 +97,7 @@ public with sharing class cpqApex {
       }else{
  			
       }	
-      query += ' order by Product_Status__c  desc nulls last';     
+      	 query += ' order by Product_Status__c  desc nulls last';    
        
        list<PricebookEntry> results = Database.query(query);
 	    	
@@ -127,7 +127,7 @@ public with sharing class cpqApex {
                                     ProductItem where Product_Class__c = 'Simple' and Product_Code__c In :(pc)];
             
         }else{
-            counts = [select QuantityOnHand, Product_Code__c from
+            counts = [select QuantityOnHand, Product_Code__c, Quantity_Available__c from
                              ProductItem where Product_Class__c = 'Simple' and LocationId =: locId 
                              and Product_Code__c In :(pc)];
         
@@ -139,7 +139,7 @@ public with sharing class cpqApex {
     //then will get at that location on select similar to last paid. 
     @AuraEnabled(cacheable = true)
         public static list<productitem> inventoryCount(list<id> ids){
-            list<productitem> counts = [select id, quantityonhand,Product2Id from productitem
+            list<productitem> counts = [select id, quantityonhand,Product2Id, Quantity_Available__c from productitem
                                        where product2Id in : ids and Product_Class__c = 'Simple'];
             
             return counts; 
@@ -169,7 +169,7 @@ public with sharing class cpqApex {
     public static ProductItem getInventory(string locId, string pId){
         ProductItem count = null;
         
-        list<ProductItem> countList = [select id, QuantityOnHand from productitem 
+        list<ProductItem> countList = [select id, QuantityOnHand, Quantity_Available__c from productitem 
                             	      where Product_Class__c= 'Simple' and LocationId =:locId 
                                       and Product2Id =:pId limit 1];
         
@@ -193,7 +193,7 @@ public with sharing class cpqApex {
             OpportunityLineItem ol = new OpportunityLineItem();
             if(String.isBlank(x.Id)){
                 //ol.Id = x.Id;
-                system.debug(x.ProductCode); 
+                system.debug(x.Ship_Weight__c); 
             ol.PricebookEntryId = x.PricebookEntryId;
             ol.Product2Id = x.Product2Id;
             ol.Quantity = x.Quantity;
@@ -207,7 +207,7 @@ public with sharing class cpqApex {
             ol.OpportunityId = x.OpportunityId;
                 newPricebookEntry.add(x.PricebookEntryId);
         }else if(!String.isBlank(x.Id)){
-            system.debug(x.Name);
+            system.debug(x.Ship_Weight__c);
             ol.Id = x.Id; 
             //ol.PricebookEntryId = x.PricebookEntryId;
             //ol.Product2Id = x.Product2Id;
@@ -257,7 +257,7 @@ public with sharing class cpqApex {
     public static list<ProductItem> onLoadGetInventory(string locId, list<id> pIds){
         list<ProductItem> cl; 
         //system.debug('pIds '+pIds + ' locId '+locId);
-        list<ProductItem> countList = [select product2id, QuantityOnHand from productitem
+        list<ProductItem> countList = [select product2id, QuantityOnHand, Quantity_Available__c from productitem
                                       where LocationId =: locId and product2id in:(pIds)
                                       and Product_Class__c = 'Simple'];
         

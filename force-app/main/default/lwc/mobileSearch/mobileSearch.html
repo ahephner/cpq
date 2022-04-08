@@ -51,9 +51,10 @@
                             <!--inner grid-->
                         <div class='slds-grid'>
                             <div class='slds-col slds-size_10-of-12'>
-                                <h6 class=" slds-m-bottom_medium">
-                                    <lightning-input value={x.Name} type='text' readonly></lightning-input>
-                                </h6>
+                                <div class=" slds-m-bottom_medium">
+                                    <p>{x.Name}</p>
+                                    <p class="prodCode slds-p-top_xxx-small">{x.ProductCode}</p>
+                                </div>
                             </div>
                             <div class='slds-col slds-size_1-of-12 slds-m-left_x-small slds-m-top_x-small'>
                                 <figure class='slds-float_right'>

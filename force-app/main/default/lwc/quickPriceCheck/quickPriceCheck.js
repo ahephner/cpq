@@ -91,7 +91,7 @@ export default class QuickPriceCheck extends LightningElement {
     get warehouseOptions(){
         return [
             {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
+            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
@@ -136,7 +136,7 @@ export default class QuickPriceCheck extends LightningElement {
             this.prod = this.warehouse === 'All' ? await allInventory(data, inCheck) : await newInventory(data, inCheck);
             //this will cause rerender to run so we can update the warning colors. 
             //console.log('back')
-            //console.log(JSON.stringify(this.prod)); 
+            console.log(JSON.stringify(this.prod)); 
         }catch(error){
             this.error = error;
             const evt = new ShowToastEvent({

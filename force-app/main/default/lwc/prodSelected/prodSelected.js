@@ -187,7 +187,7 @@ export default class ProdSelected extends LightningElement {
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
@@ -220,7 +220,7 @@ export default class ProdSelected extends LightningElement {
                     CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    wInv: !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
@@ -438,7 +438,7 @@ export default class ProdSelected extends LightningElement {
     get warehouseOptions(){
         return [
             {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
+            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},

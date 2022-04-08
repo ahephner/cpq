@@ -4,13 +4,15 @@ import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
+import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing, getShipping} from 'c/mh2'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
+
 
 
 export default class MobileProdSelected extends LightningElement {
@@ -44,6 +46,7 @@ export default class MobileProdSelected extends LightningElement {
     levelTwoMargin; 
     shipWeight;
     total; 
+    
     hasRendered = true;
     dropShip;
     connectedCallback() {
@@ -431,7 +434,7 @@ export default class MobileProdSelected extends LightningElement {
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
                     Description: '', 
-                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
@@ -465,7 +468,7 @@ export default class MobileProdSelected extends LightningElement {
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
                     Description: '',
-                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
                     Ship_Weight__c: this.shipWeight,
@@ -553,4 +556,73 @@ allowSave(){
         return sum; 
     }
 
+    //warehouse information
+    get warehouseOptions(){
+        
+        return [
+            {label:'All', value:'All'},
+            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
+            {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
+            {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
+            {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
+            {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
+            {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
+            {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
+            {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
+            {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
+            {label:'440 | ATS Lewis Center', value:'1312M00000001o0QAA'},
+            {label:'450 | ATS Brecksville', value:'1312M00000001o1QAA'},
+            {label:'470 | ATS Boardman', value:'1312M00000001o2QAA'},
+            {label:'510 | ATS Travis City', value:'1312M00000001o3QAA'},
+            {label:'520 | ATS Farmington Hills', value:'1312M00000001o4QAA'},
+            {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},
+            {label:'710 | ATS - St. Peters', value:'1312M00000001o6QAA'},
+            {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
+            {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
+            {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
+            {label:'820 | ATS - Wheeling', value:'13175000000L3CnAAK'},
+            {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
+            {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
+            {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
+            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
+
+        ];
+    }
+    //on load get warehouse value
+    get selectedObj(){
+        let label;
+            if(this.warehouseOptions && this.warehouse){
+                label = this.warehouseOptions.find((x)=>x.value===this.warehouse)
+            }
+            
+            return label;   
+    }
+    async selectChange(evt){
+        let newWarehouse = this.template.querySelector('.slds-select').value;
+        
+        //this.showProducts = false;
+        this.showSpinner = true;
+        let data = [...this.prod];
+        let pcSet = new Set();
+        let prodCodes = [];
+        try{ 
+            data.forEach(x=>{
+                pcSet.add(x.ProductCode);
+            })
+            prodCodes = [...pcSet];
+            //console.log(2, prodCodes)
+            let getInventory= await inCounts({pc:prodCodes, locId:newWarehouse});
+            //console.log(JSON.stringify(getInventory))
+            this.prod = newWarehouse === "All" ? await allInventory(data , getInventory) : await newInventory(data, getInventory);
+           // this.showProducts = true;
+            this.showSpinner = false;
+            this.hasRendered = true; 
+            console.log('new inventory');
+            
+            console.log(JSON.stringify(this.prod))
+         
+        }catch(error){
+            console.log(JSON.stringify('errors -> '+error))
+        }
+    }
 }

@@ -58,7 +58,7 @@
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
             Cost__c: x.Product2.Agency_Pricing__c ? '' : x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
-            wInv: x.QuantityOnHand ? x.QuantityOnHand : 0,
+            wInv: x.Quantity_Available__c ? x.Quantity_Available__c : 0,
             prevPurchase: x.Unit_Price__c ? true : false, 
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : x.Margin__c,
@@ -131,8 +131,9 @@
       //loop over the joined arrays. Set inventory if there is some otherwise return 0;
       //have to delete the key value otherwise it is cached.  
       for(let i=0; i<merge.length; i++){
-            merge[i].wInv = merge[i].QuantityOnHand ? merge[i].QuantityOnHand:0
-            delete merge[i].QuantityOnHand; 
+        console.log(1, merge[i].Quantity_Available__c)
+            merge[i].wInv = merge[i].Quantity_Available__c ? merge[i].Quantity_Available__c:0
+            delete merge[i].Quantity_Available__c; 
       }
     return merge;
   }
@@ -169,6 +170,23 @@
       }, 0)
       return total; 
     }
+
+    //called when a users selects 'All' in inventory reference
+    const allInventory = (selectedProd, counts) =>{
+      console.log('all')
+      let merge = selectedProd.map(prod => ({
+        ...counts.find((inv) => (inv.Product_Code__c === prod.ProductCode)),
+                            ...prod
+                        })
+                        )
+        //loop over the joined arrays. Set inventory if there is some otherwise return 0;
+        //have to delete the key value otherwise it is cached.  
+        for(let i=0; i<merge.length; i++){
+              merge[i].wInv = merge[i].Total_Product_Items__c ? merge[i].Total_Product_Items__c : 0
+              delete merge[i].Total_Product_Items__c; 
+        }
+      return merge;
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory}
 

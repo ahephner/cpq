@@ -8,7 +8,7 @@ public class cpqQuickActions {
         string url;
         try{
         	id userId = UserInfo.getUserId();
-            Date cd = System.today();
+            Date cd = System.today() +14;
              
        		List<Sales_Rep__c> rep = [select id from Sales_Rep__c where Salesforce_User__c =: userID limit 1];
             if(rep.size()>0){

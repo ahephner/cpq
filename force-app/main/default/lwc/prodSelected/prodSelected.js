@@ -187,13 +187,14 @@ export default class ProdSelected extends LightningElement {
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    wInv:  !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
                     tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                   // Account__c: this.accountId, 
                     OpportunityId: this.recordId
                 }
             ]
@@ -220,13 +221,14 @@ export default class ProdSelected extends LightningElement {
                     CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    wInv: !this.invCount ? 0 :this.invCount.QuantityOnHand,
+                    wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
-                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
+                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                   // Account__c: this.accountId,
                     OpportunityId: this.recordId
                 }
             ]
@@ -379,7 +381,6 @@ export default class ProdSelected extends LightningElement {
  //need to figure out how not run on zeroed out qty. 
         if(this.selection[index].UnitPrice >0 && this.selection[index].Quantity > 0){
             this.selection[index].TotalPrice = roundNum(this.selection[index].Quantity * this.selection[index].UnitPrice, 2) 
-            this.selection[index].Ship_Weight__c = Number(this.selection[index].Ship_Weight__c * this.selection[index].Quantity)
             this.goodQty = true;   
         }
         let totals =  getTotals(this.selection);
@@ -439,7 +440,7 @@ export default class ProdSelected extends LightningElement {
     get warehouseOptions(){
         return [
             {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
+            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
@@ -458,7 +459,7 @@ export default class ProdSelected extends LightningElement {
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
-            {label:'820 | ATS - Wheeling', value:'13175000000L3CnAAK'},
+            {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},

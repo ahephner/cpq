@@ -78,7 +78,7 @@ export default class MobileSearchFilters extends LightningElement {
             {label: 'CSI', value:'Quali-Pro'},
             {label: 'E.C. Grow', value:'E.C. Grow'},
             {label: 'FMC', value:'FMC'},
-            {label: 'Foliar-Pak', value:'Foliar-Pak'},
+            {label: 'Foliar-Pak', value:'FoliarPak'},
             {label: 'Holganix', value:'Holganix'},
             {label: 'House', value:'House'},
             {label: 'JRM', value:'JRM'},

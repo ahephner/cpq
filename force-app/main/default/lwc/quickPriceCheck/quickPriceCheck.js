@@ -46,6 +46,7 @@ export default class QuickPriceCheck extends LightningElement {
         .then((res)=>{ 
            // console.log(JSON.stringify(res))
                 let name;
+                let cost; 
                 let flr;
                 let lev1;
                 let lev2;
@@ -53,14 +54,15 @@ export default class QuickPriceCheck extends LightningElement {
                 let allStock;
                 let ProductCode;  
                 this.prod = res.map(x=>{
-                    name= x.Product2.Name,
+                    name= x.Product2.Name + ' - '+ x.Product2.ProductCode,
+                    cost = x.Agency_Product__c ? 'Agency' : x.Product_Cost__c,
                     flr = x.Floor_Price__c,
                     lev1 = x.Level_1_UserView__c,
                     lev2 = x.Level_2_UserView__c,
                     stock = x.Product2.Product_Status__c,
                     allStock = x.Product2.Total_Product_Items__c
                     ProductCode = x.Product2.ProductCode
-                    return {...x, name, flr, lev1, lev2, stock, allStock, ProductCode}
+                    return {...x, name, cost, flr, lev1, lev2, stock, allStock, ProductCode}
                 })
         }).then(()=>{
             this.loaded = true; 
@@ -89,7 +91,7 @@ export default class QuickPriceCheck extends LightningElement {
     get warehouseOptions(){
         return [
             {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'13175000000Q0kDAAS'}, 
+            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
             {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
@@ -108,7 +110,7 @@ export default class QuickPriceCheck extends LightningElement {
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
-            {label:'820 | ATS - Wheeling', value:'13175000000L3CnAAK'},
+            {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
@@ -134,7 +136,7 @@ export default class QuickPriceCheck extends LightningElement {
             this.prod = this.warehouse === 'All' ? await allInventory(data, inCheck) : await newInventory(data, inCheck);
             //this will cause rerender to run so we can update the warning colors. 
             //console.log('back')
-            //console.log(JSON.stringify(this.prod)); 
+            console.log(JSON.stringify(this.prod)); 
         }catch(error){
             this.error = error;
             const evt = new ShowToastEvent({

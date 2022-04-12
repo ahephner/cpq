@@ -4,9 +4,11 @@ import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
+import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
+import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -24,7 +26,7 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -53,6 +55,7 @@ export default class ProdSelected extends LightningElement {
     warehouse;
     shippingAddress;
     invCount;
+    lastQuote
     error;
     goodPricing = true;   
     hasRendered = true;
@@ -161,9 +164,10 @@ export default class ProdSelected extends LightningElement {
         //get last paid only works on new adding product
         let totalPrice;
         let totalQty; 
-        this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
-        this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        
+        this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
+        this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
+        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode});
+        console.log('lq '+this.lastQuote)
         if(this.newProd != null){
 
             this.selection = [
@@ -183,18 +187,22 @@ export default class ProdSelected extends LightningElement {
                     lTwo: this.levelTwo, 
                     CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
+                    displayCost: this.agency ? 'Agency' : this.unitCost,
                     lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
+                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
-                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid,
+                    companyLastPaid: this.companyLastPaid,
+                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
-                   // Account__c: this.accountId, 
                     OpportunityId: this.recordId
                 }
             ]
@@ -220,15 +228,19 @@ export default class ProdSelected extends LightningElement {
                     docDate: 'First Purchase', 
                     CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
                     Cost__c: this.unitCost,
+                    displayCost: this.agency ? 'Agency' : this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
                     wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
+                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
-                    tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
+                    companyLastPaid: this.companyLastPaid,
+                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
-                   // Account__c: this.accountId,
                     OpportunityId: this.recordId
                 }
             ]
@@ -508,7 +520,7 @@ export default class ProdSelected extends LightningElement {
         let shipTotal = this.selection.filter(y => y.ProductCode.includes('SHIPPING'));
         console.log('sending '+JSON.stringify(this.selection))
         //createProducts({newProds: newProduct, upProduct: alreadyThere, oppId: this.recordId})
-        createProducts({olList: this.selection, oppId: this.recordId})
+        createProducts({olList: this.selection, oppId: this.recordId, accId: this.accountId})
         .then(result=>{
             //need to map over return values and save add in non opp line item info 
             let back = updateNewProducts(newProduct, result);
@@ -710,14 +722,16 @@ export default class ProdSelected extends LightningElement {
             let invenCheck = await onLoadGetInventory({locId: this.warehouse, pIds: prodIdInv});
             //console.log('invCheck '+JSON.stringify(invenCheck));
             
-            
+            //get last paid and last quote then merge together
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
-            //console.log('lp '+JSON.stringify(lastPaid));
-            
+            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes});
+
             let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
             
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
+
+            mergedInven = await mergeLastQuote(lastQuote, mergedInven);
             //merge last paid saved products
             let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
             //MERGE the price levels and saved products

@@ -26,6 +26,23 @@
               return a1;
             }   
    }
+
+   //merge last quote amount
+   const mergeLastQuote = (a1, a3) =>{
+     console.log(JSON.stringify(a1));
+     console.log(JSON.stringify(a3));
+    let merge  
+      if(a3){
+        merge = a1.map(res =>({
+          ...a3.find((lp)=>(lp.Product2Id === res.Product2Id)),
+            ...res
+              })
+                )
+                return merge; 
+            }else{
+              return a1;
+            }   
+   }
    
   //used to calculate the line total on when the price or units are changed
   const lineTotal = (units, charge)=> (units * charge).toFixed(2);
@@ -36,7 +53,7 @@
     
       let prod = products.map(x =>{
         
-        
+        //console.log(JSON.stringify(products));
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
@@ -51,25 +68,29 @@
             //MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
             Cost__c: x.Product_Cost__c,
+            displayCost: x.Product2.Agency_Pricing__c ? 'Agency' : x.Product_Cost__c, 
             agency: x.Product2.Agency_Pricing__c ,
             wInv: x.Quantity_Available__c ? x.Quantity_Available__c : 0,
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
+            companyLastPaid: x.Product2.Last_Purchase_Price__c,
             docDate: x.Doc_Date__c, 
             TotalPrice: x.TotalPrice,
             Description: x.Description,
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
+            lastQuoteAmount: x.Last_Quote_Price__c,
+            lastQuoteMargin: x.Last_Quote_Margin__c,
+            lastQuoteDate: x.Quote_Date__c,
             flrText: 'flr price $'+ x.Floor_Price__c,
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
-            tips: x.Product2.Agency_Pricing__c ? 'Agency' : 'Cost: $'+x.Product_Cost__c+' Company Last Paid $' +x.Product2.Last_Purchase_Price__c + ' Code '+x.Product2.ProductCode,
             manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false, 
             OpportunityId: recordId
         }
       })
-      console.log(JSON.stringify(prod))
+      //console.log(JSON.stringify(prod))
       return prod; 
   }
 
@@ -202,5 +223,5 @@
       return margin; 
     }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
 

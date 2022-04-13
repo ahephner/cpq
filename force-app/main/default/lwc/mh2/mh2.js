@@ -28,6 +28,22 @@
             }   
    }
    
+      //merge last quote amount
+      const mergeLastQuote = (a1, a3) =>{
+        // console.log(JSON.stringify(a1));
+        // console.log(JSON.stringify(a3));
+       let merge  
+         if(a3){
+           merge = a1.map(res =>({
+             ...a3.find((lp)=>(lp.Product2Id === res.Product2Id)),
+               ...res
+                 })
+                   )
+                   return merge; 
+               }else{
+                 return a1;
+               }   
+      }
   //used to calculate the line total on when the price or units are changed
   const lineTotal = (units, charge)=> (units * charge).toFixed(2);
 
@@ -35,6 +51,7 @@
   //if you want to add another field to the screen start it here
   //WARNING IF YOU DO SOMETHING LIKE '$'+x.Product_Cost__c  will throw errors
   const onLoadProducts = (products, recordId) =>{
+    //console.log(JSON.stringify(products))
       let prod = products.map(x =>{
          
         return   {
@@ -57,6 +74,7 @@
             MinPrice: x.UnitPrice, 
             CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
             Cost__c: x.Product2.Agency_Pricing__c ? '' : x.Product_Cost__c,
+            displayCost: x.Product2.Agency_Pricing__c ? 'Agency' : x.Product_Cost__c,
             agency: x.Product2.Agency_Pricing__c ,
             wInv: x.Quantity_Available__c ? x.Quantity_Available__c : 0,
             prevPurchase: x.Unit_Price__c ? true : false, 
@@ -69,13 +87,15 @@
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
-            levels: 'flr $'+x.Floor_Price__c+' Lvl 1 $'+x.Level_1_UserView__c,
+            lastQuoteAmount: '$'+x.Last_Quote_Price__c + ' '+ x.Quote_Date__c,
+            lastQuoteMargin: x.Last_Quote_Margin__c,
+            levels:'Lvl 1 $'+x.Level_1_UserView__c + ' Lvl 2 $'+x.Level_2_UserView__c,
             //check if it's agency product if not eval floor pricing 
             goodPrice:x.Product2.Agency_Pricing__c ? true : (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             OpportunityId: x.OpportunityId
         }
       })
-      console.log(JSON.stringify(prod))
+      //console.log(JSON.stringify(prod))
       return prod; 
   }
 
@@ -188,5 +208,5 @@
       return merge;
     }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory, mergeLastQuote}
 

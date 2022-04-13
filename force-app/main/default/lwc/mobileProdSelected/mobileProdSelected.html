@@ -106,10 +106,13 @@
         <template if:true={item.showInfo}>
             <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
     <!-- Cost -->
-                <lightning-input value={item.Cost__c} type='text'  label='Cost' 
+                <lightning-input value={item.displayCost} type='text'  label='Cost' 
                                 name ={item.Product2Id} readonly></lightning-input>
     <!-- levels  -->
                 <lightning-input value={item.levels} type='text' formatter="text" label='Level Pricing' 
+                                name ={item.Product2Id} readonly></lightning-input>
+    <!-- Last Quote Amount -->
+                <lightning-input value={item.lastQuoteAmount} type='text'  label='Last Quote' 
                                 name ={item.Product2Id} readonly></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
@@ -120,6 +123,9 @@
     <!-- Floor Type -->
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Product2Id} readonly></lightning-input>
+    <!-- Last Quote Margin -->
+                <lightning-input value={item.lastQuoteMargin} type='number'  label='Last Quote Marg' 
+                            name ={item.Product2Id} readonly></lightning-input>
             </div>
 
             <div class='slds-col slds-size_1-of-1 slds-m-bottom_x-small'>

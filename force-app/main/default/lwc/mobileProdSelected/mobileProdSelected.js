@@ -1,16 +1,18 @@
 import { LightningElement,api, track } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
+import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 
@@ -46,6 +48,7 @@ export default class MobileProdSelected extends LightningElement {
     levelTwoMargin; 
     shipWeight;
     total; 
+    lastQuote; 
     
     hasRendered = true;
     dropShip;
@@ -100,14 +103,17 @@ export default class MobileProdSelected extends LightningElement {
             
             
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
-            //console.log('lp '+JSON.stringify(lastPaid));
+            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes});
             
             let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
             
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
             //merge last paid saved products
-            let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
+            let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid); 
+            
+            //merge last quote
+            mergedLastPaid = await mergeLastQuote(lastQuote, mergedInven); 
             //MERGE the price levels and saved products
             let mergedLevels = await mergeInv(mergedLastPaid, priceLevels);
             
@@ -406,7 +412,8 @@ export default class MobileProdSelected extends LightningElement {
     
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        console.log(this.InvCount)
+        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode});
+
         if(newProd !=null){
             
             
@@ -425,6 +432,7 @@ export default class MobileProdSelected extends LightningElement {
                     lTwo: this.agProduct ? this.floorPrice : this.levelTwo,
                     CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
                     Cost__c: this.unitCost,
+                    displayCost: this.agProduct ? 'Agency' : this.unitCost,
                     prevPurchase: true,
                     lastPaid: newProd.Unit_Price__c,
                     lastMarg: this.agProduct ? '' : newProd.Margin__c,
@@ -437,8 +445,10 @@ export default class MobileProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c + ' '+ this.lastQuote.Quote_Date__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
                     Ship_Weight__c: this.shipWeight,
-                    levels:'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
+                    levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
                     OpportunityId: this.oppId
                 }
@@ -463,6 +473,7 @@ export default class MobileProdSelected extends LightningElement {
                     lastMarg: this.agProduct ? 0: '', 
                     CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
                     Cost__c: this.agProduct ? '': this.unitCost,
+                    displayCost: this.agProduct ? 'Agency' : this.unitCost,
                     TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
@@ -471,8 +482,10 @@ export default class MobileProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c + ' '+ this.lastQuote.Quote_Date__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
                     Ship_Weight__c: this.shipWeight,
-                    levels: 'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
+                    levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
                     OpportunityId: this.oppId
                 }

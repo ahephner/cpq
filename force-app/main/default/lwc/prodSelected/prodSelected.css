@@ -64,8 +64,12 @@
     font-weight: bold;
 }
 
+.qtyDiv{
+    padding-left: 3.2%;
+}
 .qtyMark{
-    width: 60%;
+    width: 75%;
+    
 }
 .tooltip .tooltiptext {
     visibility: hidden;
@@ -139,102 +143,47 @@
 }
 
 
-/* This is the pop up on the info screen */
-/* .tip{ 
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background-size:cover;
-    background-color: red;
-    background-position: center;
-    position: relative;
-} */
-
-/* .tip:hover::after{
-    content: attr(data-tooltip);
-} */
-.tip::before,
-.tip::after{
-    --scale: 0;
-    --tool-tip-color: #333;
-    --arrow-size: 10px; 
+.innerInfo{
     position: absolute;
+      font-size: 14px;
+      background: #333;
+      color: #ffffff;
+      padding: 5px 8px;
+      border-radius: 5px;
+      box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      pointer-events: none;
+      transition: 150ms transform;
+      transform-origin:bottom center;
+      bottom: 150%;
+      left: 50%;
+      margin-left: -60px;
+        
+    }
+    .hasInfo .innerInfo::before {
+      position: absolute;
+      content: "";
+      height: 8px;
+      width: 8px;
+      background: #333;
+      bottom: -3px;
+      left: 50%;
+      transform: translate(-50%) rotate(45deg);
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    .hasInfo:hover .innerInfo{
+        opacity:1;
+        /* transform: translateX(-120px) translateY(-30%); */
+        visibility: visible;
+        width: max-content;
+        pointer-events: auto;
+    }
     
-    /* top:-.25rem;
-    left: 50%; */
-    transform: translateX(-50%) translateY(var(--translate-y, 0)) scale(var(--scale));
-    transition: 150ms transform;
-    transform-origin:bottom center;
-}
+    .hasInfo:hover{
+        cursor: pointer;
+    }
+    .hasInfo{
+        position: relative;
+        display: inline-flex; 
+    }
 
-.tip:before{
-    --translate-y: calc(-100% - var(--arrow-size));
-    content: attr(data-tooltip);
-    color:white;
-    padding: .5rem;
-    border-radius: .3rem;
-    text-align: center;
-    width: max-content;
-    max-width: 100%;
-    background: var(--tool-tip-color); 
-    
-}
-
-.tip:after{
-    --translate-y: calc(-1 * var(--arrow-size)); 
-    content:'';
-    border:var(--arrow-size) solid transparent;
-    border-top-color: var(--tool-tip-color);
-    transform-origin:top center;
-    
-}
-
-.tip:hover::before,
-.tip:hover::after{
-    --scale: 1; 
-    
-}
-
-ul{
-    margin-bottom:10%;
-}
-
-ul li{
-    list-style: none;
-    cursor: pointer;
-    position:absolute;
-    z-index: 1;
-}
-
-ul li .userinfo{
-    visibility: hidden;
-    
-    background: #333;
-    color: white;
-    width: 400px;
-    bottom: 0;
-    padding: .5rem;
-    border-radius: .3rem;
-    text-align: left;
-    width: max-content;
-    max-width: 100%;
-    transition: 150ms transform;
-    transform-origin:bottom center;
-    scale: 0;
-    opacity: 0;
-    
-}
-ul li .userinfo::after{
-    --translate-y: calc(-1 * 10px); 
-    content:'';
-    border:var(--arrow-size) solid transparent;
-    border-top-color: var(--tool-tip-color);
-    transform-origin:top center;
-}
-ul li:hover .userinfo{
-    visibility: visible;
-    scale:1;
-    opacity: 1;
-    z-index: 1;
-    transform: translateX(25px) translateY(-75%);
-}

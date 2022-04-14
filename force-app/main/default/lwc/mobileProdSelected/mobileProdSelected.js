@@ -103,7 +103,7 @@ export default class MobileProdSelected extends LightningElement {
             
             
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
-            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes});
+            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes, opportunityId: this.oppId});
             
             let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
             
@@ -113,7 +113,7 @@ export default class MobileProdSelected extends LightningElement {
             let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid); 
             
             //merge last quote
-            mergedLastPaid = await mergeLastQuote(lastQuote, mergedInven); 
+            mergedLastPaid = await mergeLastQuote(mergedInven, lastQuote); 
             //MERGE the price levels and saved products
             let mergedLevels = await mergeInv(mergedLastPaid, priceLevels);
             
@@ -412,7 +412,7 @@ export default class MobileProdSelected extends LightningElement {
     
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode});
+        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId: this.oppId });
 
         if(newProd !=null){
             
@@ -445,8 +445,8 @@ export default class MobileProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c + ' '+ this.lastQuote.Quote_Date__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
@@ -482,8 +482,8 @@ export default class MobileProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c + ' '+ this.lastQuote.Quote_Date__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,

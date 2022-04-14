@@ -29,8 +29,8 @@
 
    //merge last quote amount
    const mergeLastQuote = (a1, a3) =>{
-     console.log(JSON.stringify(a1));
-     console.log(JSON.stringify(a3));
+    // console.log(JSON.stringify(a1))
+    // console.log(JSON.stringify(a3))
     let merge  
       if(a3){
         merge = a1.map(res =>({
@@ -38,6 +38,7 @@
             ...res
               })
                 )
+                //console.log(JSON.st(merge))
                 return merge; 
             }else{
               return a1;
@@ -111,7 +112,7 @@
     if(noIdProduct){
       for(let i=0; i<noIdProduct.length;i++){
         let find = returnedProducts.find(item=>item.PricebookEntryId === noIdProduct[i].PricebookEntryId);
-        console.log(find);
+        //console.log(find);
         
         noIdProduct[i].Id = find.Id;
         newProducts.push(noIdProduct[i]);

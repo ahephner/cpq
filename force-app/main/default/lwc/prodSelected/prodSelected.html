@@ -93,15 +93,14 @@
                             <lightning-icon icon-name="utility:close" name={sp.Id} size='small' class='hover'
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
                         </div> -->
-                        <div class="slds-col slds-size_2-of-12 slds-align_absolute-center slds-m-top_large">
-                            <lightning-icon icon-name="utility:close" name={sp.ProductCode} size='x-small' class='hover'
+                        <div class="slds-col slds-size_2-of-12  slds-m-top_large">
+                            <lightning-icon icon-name="utility:close" name={sp.ProductCode} size='x-small' class='hover '
                             alternative-text='remove' title="Remove" onclick={removeProd} ></lightning-icon>
-                            <p class='pName tooltip'>{sp.name}</p>
+                            <div class='pName  hasInfo'>{sp.name}
                                 <!-- <lightning-helptext content={sp.tips}></lightning-helptext> -->
-                                <ul>
-                                    <li class="bullet"><lightning-icon icon-name="utility:info" alternative-text="info" size="x-small"
-                                         data-tooltip={sp.tips}></lightning-icon>
-                                        <div class="userinfo">
+                                 
+                                    
+                                        <span class="innerInfo">
                                             <p>{sp.name}</p>
                                             <p>{sp.ProductCode}</p>
                                             <br/>
@@ -111,13 +110,11 @@
                                             <p>Last Quoted Price: ${sp.lastQuoteAmount}</p>
                                             <p>Last Quoted Margin: {sp.lastQuoteMargin}%</p>
                                             <p>Last Quoted Date: {sp.lastQuoteDate}</p>
-                                        </div>
-                                    </li>
-                                </ul>
-                                
+                                        </span>
+                                    </div>        
                         </div>
                         <!-- user qty -->
-                        <div class="slds-col slds-size_1-of-12 slds-align_absolute-center ">
+                        <div class="slds-col slds-size_1-of-12 qtyDiv">
                             <div>
                                 <lightning-input type="number" class='qtyMark' data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
                                 value={sp.Quantity} onchange={newQTY} step="0.01"></lightning-input>

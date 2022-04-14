@@ -166,8 +166,8 @@ export default class ProdSelected extends LightningElement {
         let totalQty; 
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
-        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode});
-        console.log('lq '+this.lastQuote)
+        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
+        console.log('lq '+JSON.stringify(this.lastQuote))
         if(this.newProd != null){
 
             this.selection = [
@@ -194,8 +194,8 @@ export default class ProdSelected extends LightningElement {
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
@@ -232,8 +232,8 @@ export default class ProdSelected extends LightningElement {
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
                     wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.CPQ_Unit_Price__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.CPQ_Margin__c,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
@@ -724,14 +724,16 @@ export default class ProdSelected extends LightningElement {
             
             //get last paid and last quote then merge together
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
-            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes});
+            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes, opportunityId: this.recordId});
 
             let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
             
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
-
-            mergedInven = await mergeLastQuote(lastQuote, mergedInven);
+            if(lastQuote.length>0){
+                console.log('running mergeLastQuote');
+                mergedInven = await mergeLastQuote(mergedInven, lastQuote);
+            }
             //merge last paid saved products
             let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
             //MERGE the price levels and saved products

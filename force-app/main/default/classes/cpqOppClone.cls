@@ -48,7 +48,7 @@ public class cpqOppClone {
             }
 //Look and see if there are any non active items from the old quote            
             List<Opportunitylineitem> nonActiveItems = [SELECT product2.name, unitprice, quantity, CPQ_Margin__c,
-                                                   		rate__c, listprice, Description, Per_1_000__c, Per_Acre__c
+                                                   		rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Account__c
                                                    		from opportunitylineitem where opportunityid = :opp.Id and PriceBookEntry.IsActive = false]; 
 //Turned the @mention to just show Sean due to his request. To turn to a rep see --> {'+opp.Sales_Rep__r.OwnerId+'}             
             if(nonactiveItems.size()>0){
@@ -73,7 +73,7 @@ public class cpqOppClone {
         List<opportunitylineitem> newLines = new List<opportunitylineitem>();
          //get opportunity line items that are still have active pricebook entries
             List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, 
-                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c
+                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c, Account__c
                                                    from opportunitylineitem where opportunityid = :OppId and PriceBookEntry.IsActive = true];
                
         for(OpportunityLineItem x:lineItems){
@@ -98,6 +98,7 @@ public class cpqOppClone {
                     unitprice = pbeMap.get(ol.Product2Id).UnitPrice,
                     CPQ_Unit_Price__c = pbeMap.get(ol.Product2Id).UnitPrice,
                     description = ol.description,
+                    Account__c = ol.Account__c,
                     OpportunityId  = newOpId));                
             }else{
                 decimal salesCal;
@@ -119,6 +120,7 @@ public class cpqOppClone {
                     description = ol.description,
                     Per_1_000__c = ol.Per_1_000__c,
                     Per_Acre__c = ol.Per_Acre__c,
+                    Account__c = ol.Account__c,
                     OpportunityId  = newOpId));                
             }
 

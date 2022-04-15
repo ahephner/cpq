@@ -58,7 +58,7 @@ export default class CloseWinDesktop extends LightningElement {
                 this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                 this.loaded = true; 
                 this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
-                console.log(this.shipReq);
+                console.log(this.shipType);
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)
@@ -72,6 +72,23 @@ get stageOptions() {
         { label: 'Quote', value: 'Quote' },
         { label: 'Closed Won', value: 'Closed Won' },
         { label: 'Closed Lost', value: 'Closed Lost' },
+    ];
+}
+
+//Stage Options
+get shipOptions() {
+    return [
+        { label: 'FG - FedEx Ground', value: 'FG' },
+        { label: 'Rep - Sales Rep Deliver', value: 'REP' },
+        { label: 'TR - Truck', value: 'TR' },
+        { label: 'WI - Walk-In/Will Call', value: 'WI' },
+        { label: 'DS-Direct Ship', value: 'DS' },
+        { label: 'PC', value: 'PC' },
+        { label: 'PSL', value: 'PSL' },
+        { label: 'PU', value: 'PU' },
+        { label: 'LT', value: 'LT' },
+        { label: 'UG', value: 'UG' },
+        { label: 'T4', value: 'T4' }
     ];
 }
     //get address stuff
@@ -116,6 +133,11 @@ selectChange(event){
     }
 }
 
+//Ship Change
+handleShipChange(event){
+    this.shipType = event.detail.value; 
+}
+
 //Stage Change
 handleStageChange(event) {
     this.stage = event.detail.value;
@@ -156,6 +178,7 @@ newDevDate2(e){
             fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
             fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
             fields[SHIPTO.fieldApiName] = this.shipTo;
+            fields[SHIPTYPE.fieldApiName] = this.shipType;
             fields[SALESPAD_READY.fieldApiName] = true; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}

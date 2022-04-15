@@ -28,26 +28,26 @@ public with sharing class cpqApex {
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
-          system.debug('1');
+          //system.debug('1');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm)';
-          system.debug('2');
+         /// system.debug('2');
       }else if (!searchterm.contains('null') && category != 'All' && pf == 'All'){
-          system.debug('3');
+          //system.debug('3');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.subcategory__c =:category';
       }else if(!searchterm.contains('null') && category == 'All' && pf != 'All'){
-          system.debug('4');
+          //system.debug('4');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf';
       }else if(!searchterm.contains('null') && category != 'All' && pf != 'All'){
-          system.debug('5');
+          //system.debug('5');
           query += ' (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf and Product2.subcategory__c =:category';
       }else if (searchterm.contains('null') && category != 'All' && pf == 'All'){
-          system.debug('6');
+          //system.debug('6');
           query += ' Product2.subcategory__c =:category';
       }else if(searchterm.contains('null')  && category == 'All' && pf != 'All'){
-          system.debug('7');
+          //system.debug('7');
           query += ' Product2.Product_Family__c =:pf';
       }else if(searchterm.contains('null') && category != 'All' && pf != 'All'){
-          system.debug('8');
+          //system.debug('8');
           query += ' Product2.Product_Family__c =:pf and Product2.subcategory__c =:category'; 
       }else{
  
@@ -73,26 +73,26 @@ public with sharing class cpqApex {
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass ' ;
                  
       if(searchterm != '%%' && category == 'All' && pf == 'All'){
-          system.debug('1');
+          //system.debug('1');
           query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm)';
-          system.debug('2');
+          //system.debug('2');
       }else if (searchterm != '%%' && category != 'All' && pf == 'All'){
-          system.debug('3');
+          //system.debug('3');
           query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.subcategory__c =:category';
       }else if(searchterm != '%%' && category == 'All' && pf != 'All'){
-          system.debug('4');
+         // system.debug('4');
           query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf';
       }else if(searchterm != '%%' && category != 'All' && pf != 'All'){
-          system.debug('5');
+          //system.debug('5');
           query += ' AND (Product2.ProductCode like :searchTerm or Product2.Name like :searchTerm) and Product2.Product_Family__c =:pf and Product2.subcategory__c =:category';
       }else if (searchterm == '%%' && category != 'All' && pf == 'All'){
-          system.debug('6');
+         // system.debug('6');
           query += ' AND Product2.subcategory__c =:category';
       }else if(searchterm == '%%'  && category == 'All' && pf != 'All'){
-          system.debug('7');
+          //system.debug('7');
           query += ' AND Product2.Product_Family__c =:pf';
       }else if(searchterm == '%%' && category != 'All' && pf != 'All'){
-          system.debug('8');
+          //system.debug('8');
           query += ' AND Product2.Product_Family__c =:pf and Product2.subcategory__c =:category'; 
       }else{
  			
@@ -179,12 +179,27 @@ public with sharing class cpqApex {
         return count;
     }
     
+      @AuraEnabled(cacheable=true)
+    public static OpportunityLineItem getLastQuote(string accountID, string Code, string opportunityId){
+        OpportunityLineItem quoteInfo;
+        
+        list<OpportunityLineItem> quoteList = [select Product2Id, Last_Quote_Price__c ,Last_Quote_Margin__c,Quote_Date__c, ProductCode
+                                               from OpportunityLineItem where ProductCode =: Code and Account__c =: accountID
+                                               and OpportunityId !=:opportunityId
+                				  	 			order by LastModifiedDate desc limit 1];
+        system.debug(quoteList);
+        if(!quoteList.isEmpty()){
+            quoteInfo = quoteList[0];
+        }
+        return quoteInfo;
+    }
+    
         //save products
     @AuraEnabled
-    public static list<OpportunityLineItem> createProducts(List<OpportunityLineItem> olList, string oppId){
+    public static list<OpportunityLineItem> createProducts(List<OpportunityLineItem> olList, string oppId, string accId){
         
-        system.debug(olList);
-        system.debug(oppId);
+        //system.debug(olList);
+        //system.debug(accId);
         list<OpportunityLineItem> toUpsert = new list<OpportunityLineItem>();
         list<opportunityLineItem> toReturn = new List<OpportunityLineItem>();
         list<id> newPricebookEntry = new list<id>();
@@ -193,7 +208,7 @@ public with sharing class cpqApex {
             OpportunityLineItem ol = new OpportunityLineItem();
             if(String.isBlank(x.Id)){
                 //ol.Id = x.Id;
-                system.debug(x.Ship_Weight__c); 
+                //system.debug(x.Ship_Weight__c); 
             ol.PricebookEntryId = x.PricebookEntryId;
             ol.Product2Id = x.Product2Id;
             ol.Quantity = x.Quantity;
@@ -205,9 +220,11 @@ public with sharing class cpqApex {
             ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             //ol.TotalPrice = x.TotalPrice; 
             ol.OpportunityId = x.OpportunityId;
+            ol.Account__c = accId; 
                 newPricebookEntry.add(x.PricebookEntryId);
         }else if(!String.isBlank(x.Id)){
-            system.debug(x.Ship_Weight__c);
+            system.debug(x.UnitPrice);
+            system.debug(x.Quantity);
             ol.Id = x.Id; 
             //ol.PricebookEntryId = x.PricebookEntryId;
             //ol.Product2Id = x.Product2Id;
@@ -218,6 +235,7 @@ public with sharing class cpqApex {
             ol.Cost__c = x.Cost__c;
             ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             ol.Description = x.Description;
+            ol.Account__c = accId;
             //ol.TotalPrice = x.TotalPrice; 
             //ol.OpportunityId = x.OpportunityId;
         }
@@ -247,7 +265,7 @@ public with sharing class cpqApex {
     @AuraEnabled
     public static list<OpportunityLineItem> getProducts(string oppId){
         list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode,Product2.Floor_Type__c, TotalPrice,product2.Ship_Weight__c,
-                                          product2.Agency_Pricing__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description, Product2.Last_Purchase_Price__c 
+                                          product2.Agency_Pricing__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description, Product2.Last_Purchase_Price__c
                                           from OpportunityLineItem where opportunityId =: oppId];
         
         return opLi; 
@@ -270,8 +288,7 @@ public with sharing class cpqApex {
     @AuraEnabled(cacheable=true)
     public static list<Sales_Doc_Detail__c> onLoadGetLastPaid(id accountId,list<string> productCodes){
         list<Sales_Doc_Detail__c> lastPaidList = new list<Sales_Doc_Detail__c>(); 
-		system.debug('pc '+ productCodes);
-        system.debug('accId '+ accountId);
+	
         try {
             Sales_Doc_Detail__c[] temp;
 			Map<String, Sales_Doc_Detail__c[]> sales = new map<String, Sales_Doc_Detail__c[]>();
@@ -281,6 +298,31 @@ public with sharing class cpqApex {
             	order by Sales_Document__r.doc_date__c desc]) {
     				if((temp = sales.get(record.Product_Code__c)) == null) {
         				sales.put(record.Product_Code__c, temp = new Sales_Doc_Detail__c[0]);
+                   		lastPaidList.add(record); 
+    				}
+    			temp.add(record);
+            }
+            
+            return lastPaidList;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+    //get last quoted 
+        @AuraEnabled(cacheable=true)
+    public static list<OpportunityLineItem> onLoadGetLastQuoted(id accountId,list<string> productCodes, string opportunityId){
+        list<OpportunityLineItem> lastPaidList = new list<OpportunityLineItem>(); 
+		system.debug('pc');
+        system.debug(productCodes);
+        try {
+            OpportunityLineItem[] temp;
+			Map<String, OpportunityLineItem[]> sales = new map<String, OpportunityLineItem[]>();
+                
+			for(OpportunityLineItem record: [select Product2Id, Last_Quote_Price__c ,Last_Quote_Margin__c,Quote_Date__c, ProductCode from OpportunityLineItem
+            	where ProductCode In: (productCodes) and Account__c =: accountId and OpportunityId !=:opportunityId
+            	order by LastModifiedDate  desc]) {
+    				if((temp = sales.get(record.ProductCode)) == null) {
+        				sales.put(record.ProductCode, temp = new OpportunityLineItem[0]);
                    		lastPaidList.add(record); 
     				}
     			temp.add(record);

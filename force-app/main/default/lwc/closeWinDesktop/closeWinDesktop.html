@@ -9,8 +9,17 @@
                 <lightning-input label="Quote Number - Read Only" value={quoteNumb} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small" readonly></lightning-input>
             </div>
             <div class="slds-grid">
-                <lightning-input label="Close Date" type='date' value={closeDate} onchange={newCloseDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 " readonly></lightning-input>
-                <!-- <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small"></lightning-input> -->
+                <lightning-combobox
+                name="ship"
+                label="Ship Type"
+                value={shipType}
+                placeholder="Ship Type"
+                options={shipOptions}
+                onchange={handleShipChange}
+                required
+                class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate"
+                ></lightning-combobox>
+
                 <lightning-combobox
                 name="stage"
                 label="Stage"

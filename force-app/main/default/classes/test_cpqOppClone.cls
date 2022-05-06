@@ -29,8 +29,20 @@ public class test_cpqOppClone {
         PricebookEntry widgetpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=widget.id,
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert widgetpbe; 
+ //normal product
+         product2 rake = new product2(name ='rake', IsActive= True, Agency_Pricing__c=false); 
+        insert rake; 
         
+        PricebookEntry rakepbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=rake.id,
+                                                 unitprice=4, IsActive = True, UseStandardPrice=False);
+        insert rakepbe;  
+ //zero margin
+        product2 shovel = new product2(name ='shovel', IsActive= True, Agency_Pricing__c=false); 
+        insert shovel; 
         
+        PricebookEntry shovelpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=shovel.id,
+                                                 unitprice=4, IsActive = True, UseStandardPrice=False);
+        insert shovelpbe; 
         //create test opportunity
         opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,
                                          stagename='Estimate(10%)', job_type__c = 'Construction', closedate = myDate);
@@ -40,13 +52,19 @@ public class test_cpqOppClone {
        
 //opportunitylineitem
         opportunitylineitem li = new opportunitylineitem(opportunityid = opp.id, product2id = prod.Id, PricebookEntryId=pbe.id,
-                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c= 4, CPQ_Margin__c=10); 
+                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c= 4, CPQ_Margin__c=100); 
         insert li; 
         opportunitylineitem widgetli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=widgetpbe.id,
-                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0); 
+                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0.00); 
         insert widgetli;
         
-
+        opportunitylineitem rakeli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=rakepbe.id,
+                                                          unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=10); 
+        insert rakeli; 
+        
+        opportunitylineitem shovelli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=shovelpbe.id,
+                                                          unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0.00); 
+        insert shovelli;  
         //construct standard controller
         ApexPages.StandardController con = new ApexPages.StandardController(opp);
         

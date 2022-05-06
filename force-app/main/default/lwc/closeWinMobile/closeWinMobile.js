@@ -96,7 +96,7 @@ get shipOptions() {
            .then((res)=>{
                this.options = res.map(item=>({
                                    ...item,
-                                   label: item.Street +' ('+item.Name+')',
+                                   label: item.Street +' ('+item.Name+') - '+item.City,
                                    value: item.Id
                }))
                // console.log('type of options '+typeof this.options);

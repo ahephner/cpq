@@ -1,5 +1,3 @@
-//Goes with prodSeach!!!!!
-//has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
@@ -29,7 +27,8 @@ import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
-export default class ProdSelected extends LightningElement {
+
+export default class ProdSelectFlexGrid extends LightningElement {
     @api recordId; 
     pbeId; 
     productId; 
@@ -422,24 +421,15 @@ export default class ProdSelected extends LightningElement {
     removeProd(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
         let id = this.selection[index].Id; 
-        let shipCode = this.selection[index].ProductCode
+        
         if(index >= 0){
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
                 this.selection.splice(index, 1);
-                if(id && !shipCode.includes('SHIPPING')){
+                if(id){
+                    console.log('deleting prod');
                     
-                    deleteRecord(id);
-        //check if the deleted line item is shipping. If so reset shipping to zero 
-                }else if(id && shipCode.includes('SHIPPING')){
-                    deleteRecord(id);
-                    console.log('resetting shipping cost ');
-                    
-                    const fields = {};
-                    fields[ID_FIELD.fieldApiName] = this.recordId;
-                    fields[SHIPCHARGE.fieldApiName] = 0;
-                    const shipRec = {fields}
-                    updateRecord(shipRec)
+                    deleteRecord(id); 
                 }
                 //update order totals
                 let totals =  getTotals(this.selection);
@@ -733,6 +723,7 @@ export default class ProdSelected extends LightningElement {
             
             //get last paid and last quote then merge together
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
+            
             let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes, opportunityId: this.recordId});
 
             let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
@@ -751,6 +742,7 @@ export default class ProdSelected extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLevels, this.recordId); 
+            console.log('prod '+JSON.stringify(this.selection)); 
             //get the order totals; 
             let totals = await getTotals(this.selection);
             //set the number of manual lines on the order

@@ -91,7 +91,7 @@
             OpportunityId: recordId
         }
       })
-      //console.log(JSON.stringify(prod))
+     // console.log(JSON.stringify(prod))
       return prod; 
   }
 
@@ -213,8 +213,9 @@
 
     const getShipping = (prod)=>{
       let total = prod.reduce((w, item)=>{
-        return w + item.UnitPrice;
+        return w + (item.UnitPrice * item.Quantity);
       }, 0)
+     
       return total; 
     }
 

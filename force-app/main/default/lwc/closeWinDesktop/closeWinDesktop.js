@@ -98,7 +98,7 @@ get shipOptions() {
            .then((res)=>{
                this.options = res.map(item=>({
                                    ...item,
-                                   label: item.Street +' ('+item.Name+')',
+                                   label: item.Street +' ('+item.Name+') - '+item.City,
                                    value: item.Id
                }))
                // console.log('type of options '+typeof this.options);
@@ -163,7 +163,6 @@ newDevDate2(e){
     this.deliverDate2 = e.detail.value; 
 }
 //Save Submit section!
-
     handleSave(){
         
         let ok = this.isInputValid();

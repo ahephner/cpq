@@ -110,10 +110,10 @@ export default class ProdSearch extends LightningElement {
            //will use map next to do math on floor type. 
             this.prod = result.map(item =>({
                                  ...item, 
-                                 rowVariant: 'brand',
-                                 rowName: 'action:new',
-                                 rowValue: 'Add',
-                                 Name: item.Product2.Name, 
+                                 rowVariant: item.Product2.Temp_Unavailable__c ? 'border-filled' : 'brand',
+                                 rowName: item.Product2.Temp_Unavailable__c ? 'action:freeze_user' : 'action:new',
+                                 rowValue: item.Product2.Temp_Unavailable__c ? 'unavailable' :'Add',
+                                 Name: item.Product2.Temp_Unavailable__c ? item.Product2.Name + ' - ' +item.Product2.Temp_Mess__c : item.Product2.Name,  
                                  ProductCode: item.Product2.ProductCode,
                                  Status: item.Product2.Product_Status__c,
                                  Floor: item.Product2.Floor_Type__c,
@@ -169,23 +169,24 @@ export default class ProdSearch extends LightningElement {
         //console.log('rowWeight '+rowWeight);
         
         
-        
-        if(rowAction ==='Add'){
-             const payload = {
-                 productCode: rowCode,
-                 productId: rowProductId,
-                 unitCost:rowFloorCost,  
-                 floorPrice: rowFloorPrice,
-                 levelOnePrice: rowLevelOne,
-                 levelOneMargin: rowLevel1Margin,
-                 levelTwoPrice: rowLevelTwo,
-                 levelTwoMargin: rowLevel2Margin, 
-                 productName: rowName,
-                 pbeId: rowId,
-                 agencyProduct: rowAg,
-                 prodWeight: rowWeight,
-                 lastPaid: rowLastPaid
-             }
+        if(rowAction === 'unavailable'){
+            alert('Sorry ' + index.Product2.Temp_Mess__c)    
+        }else if(rowAction ==='Add'){
+                const payload = {
+                    productCode: rowCode,
+                    productId: rowProductId,
+                    unitCost:rowFloorCost,  
+                    floorPrice: rowFloorPrice,
+                    levelOnePrice: rowLevelOne,
+                    levelOneMargin: rowLevel1Margin,
+                    levelTwoPrice: rowLevelTwo,
+                    levelTwoMargin: rowLevel2Margin, 
+                    productName: rowName,
+                    pbeId: rowId,
+                    agencyProduct: rowAg,
+                    prodWeight: rowWeight,
+                    lastPaid: rowLastPaid
+                }
                       
     //send it 
            publish(this.messageContext, Opportunity_Builder, payload); 

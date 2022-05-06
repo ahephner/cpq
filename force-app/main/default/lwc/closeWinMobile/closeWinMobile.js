@@ -73,6 +73,22 @@ get stageOptions() {
         { label: 'Closed Lost', value: 'Closed Lost' },
     ];
 }
+//get ship types
+get shipOptions() {
+    return [
+        { label: 'FG - FedEx Ground', value: 'FG' },
+        { label: 'Rep - Sales Rep Deliver', value: 'REP' },
+        { label: 'TR - Truck', value: 'TR' },
+        { label: 'WI - Walk-In/Will Call', value: 'WI' },
+        { label: 'DS-Direct Ship', value: 'DS' },
+        { label: 'PC', value: 'PC' },
+        { label: 'PSL', value: 'PSL' },
+        { label: 'PU', value: 'PU' },
+        { label: 'LT', value: 'LT' },
+        { label: 'UG', value: 'UG' },
+        { label: 'T4', value: 'T4' }
+    ];
+}
     //get address stuff
     //get the avaliable ship to options
     findAddress(rec){
@@ -80,7 +96,7 @@ get stageOptions() {
            .then((res)=>{
                this.options = res.map(item=>({
                                    ...item,
-                                   label: item.Street +' ('+item.Name+')',
+                                   label: item.Street +' ('+item.Name+') - '+item.City,
                                    value: item.Id
                }))
                // console.log('type of options '+typeof this.options);
@@ -136,6 +152,9 @@ updateAddress(event){
 handleStageChange(event) {
     this.stage = event.detail.value;
 }
+handleShipChange(event){
+    this.shipType = event.detail.value;
+}
 //New Name
 newName(e){
     this.name = e.detail.value; 
@@ -175,6 +194,7 @@ submit(event) {
         fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
         fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
         fields[SHIPTO.fieldApiName] = this.shipTo;
+        fields[SHIPTYPE.fieldApiName] = this.shipType; 
         fields[SALESPAD_READY.fieldApiName] = true; 
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}

@@ -1,4 +1,6 @@
 <template>
+<lightning-card title="Products" >
+
     <template if:true={addProducts}>
         <c-mobile-search
                         onnewprod={handleNewProduct}
@@ -24,8 +26,10 @@
                                     <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>{editAllText}</figcaption>
                     </figure>
                 </div>
-            </div>
-    <!-- Mobile Search Location -->
+         </div>   
+        <!-- Mobile Search Location -->
+<div class="slds-grid">
+    <div class="slds-col slds-size_1-of-1">
     <label for="ship-select">Inventory Reference:</label>
     <select name="Warehouse" class="slds-select valAdd"  onchange={selectChange}>
         <template if:true={selectedObj}> 
@@ -39,8 +43,12 @@
             <option key={x.value} value={x.value}>{x.label}</option>
         </template>
     </select>
+</div>
+</div>
+    <div class="slds-grid">
     <!--Product Cards!-->
-    <div class='slds-scrollable_y cardClass' style='height:40rem; width:100%'>
+    <div class='slds-col slds-size_1-of-1 outDiv'>
+    <div class='slds-scrollable_y cardClass'>   
     <lightning-layout multiple-rows="true">
     <template if:false={showSpinner} for:each={prod} for:item='item'>
         <lightning-layout-item size="12" key={item.Product2Id} class="slds-box slds-p-around_none 
@@ -106,13 +114,10 @@
         <template if:true={item.showInfo}>
             <div class='slds-col slds-size_1-of-2 slds-m-left_x-small'>
     <!-- Cost -->
-                <lightning-input value={item.displayCost} type='text'  label='Cost' 
+                <lightning-input value={item.Cost__c} type='text'  label='Cost' 
                                 name ={item.Product2Id} readonly></lightning-input>
     <!-- levels  -->
                 <lightning-input value={item.levels} type='text' formatter="text" label='Level Pricing' 
-                                name ={item.Product2Id} readonly></lightning-input>
-    <!-- Last Quote Amount -->
-                <lightning-input value={item.lastQuoteAmount} type='text'  label='Last Quote' 
                                 name ={item.Product2Id} readonly></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
@@ -123,9 +128,6 @@
     <!-- Floor Type -->
                 <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
                                 name ={item.Product2Id} readonly></lightning-input>
-    <!-- Last Quote Margin -->
-                <lightning-input value={item.lastQuoteMargin} type='number'  label='Last Quote Marg' 
-                            name ={item.Product2Id} readonly></lightning-input>
             </div>
 
             <div class='slds-col slds-size_1-of-1 slds-m-bottom_x-small'>
@@ -140,6 +142,8 @@
 <template if:true={showSpinner}>
     <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
 </template> 
+</div>
+</div>
 </div>
 <!-- save buttons -->
 <template if:false={submitted}>
@@ -173,4 +177,5 @@
 </template>
 
 </template>
+</lightning-card>
 </template>

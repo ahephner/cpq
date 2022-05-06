@@ -48,7 +48,7 @@ public class cpqOppClone {
             }
 //Look and see if there are any non active items from the old quote            
             List<Opportunitylineitem> nonActiveItems = [SELECT product2.name, unitprice, quantity, CPQ_Margin__c,
-                                                   		rate__c, listprice, Description, Per_1_000__c, Per_Acre__c
+                                                   		rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Account__c
                                                    		from opportunitylineitem where opportunityid = :opp.Id and PriceBookEntry.IsActive = false]; 
 //Turned the @mention to just show Sean due to his request. To turn to a rep see --> {'+opp.Sales_Rep__r.OwnerId+'}             
             if(nonactiveItems.size()>0){
@@ -73,14 +73,14 @@ public class cpqOppClone {
         List<opportunitylineitem> newLines = new List<opportunitylineitem>();
          //get opportunity line items that are still have active pricebook entries
             List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, 
-                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c
+                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c, Account__c
                                                    from opportunitylineitem where opportunityid = :OppId and PriceBookEntry.IsActive = true];
                
         for(OpportunityLineItem x:lineItems){
             prodMap.put(x.product2Id, x);
         }
         
-        List<PricebookEntry> pbe = [Select id, product2Id, UnitPrice,Product_Cost__c from pricebookentry where pricebook2id =: pbId and product2Id in: prodMap.keySet()];
+        List<PricebookEntry> pbe = [Select id, product2Id, UnitPrice,Product_Cost__c, Level_2_UserView__c from pricebookentry where pricebook2id =: pbId and product2Id in: prodMap.keySet()];
         for(pricebookentry x:pbe){
             pbeMap.put(x.product2Id, x);
         }
@@ -98,17 +98,22 @@ public class cpqOppClone {
                     unitprice = pbeMap.get(ol.Product2Id).UnitPrice,
                     CPQ_Unit_Price__c = pbeMap.get(ol.Product2Id).UnitPrice,
                     description = ol.description,
+                    Account__c = ol.Account__c,
                     OpportunityId  = newOpId));                
             }else{
                 decimal salesCal;
+                decimal salesPrice;
+                
                 if(ol.CPQ_Margin__c == 100){
                      salesCal = ( pbeMap.get(ol.Product2Id).Product_Cost__c / 1 );
+                	 salesPrice = salesCal.setScale(2, RoundingMode.HALF_UP);
+                }else if(ol.CPQ_Margin__c == 0.00){
+                	    salesPrice = pbeMap.get(ol.Product2Id).Level_2_UserView__c; 
                 }else{
                      salesCal = ( pbeMap.get(ol.Product2Id).Product_Cost__c / (1 - ol.CPQ_Margin__c/100));
+                	 salesPrice = salesCal.setScale(2, RoundingMode.HALF_UP);
                 }
                 
-                decimal salesPrice = salesCal.setScale(2, RoundingMode.HALF_UP); 
-          		system.debug('salesPrice '+salesPrice);
                 newLines.add(new OpportunityLineItem(					
                     PricebookEntryId = pbeMap.get(ol.Product2Id).id,
                     product2id = ol.product2id,
@@ -119,6 +124,7 @@ public class cpqOppClone {
                     description = ol.description,
                     Per_1_000__c = ol.Per_1_000__c,
                     Per_Acre__c = ol.Per_Acre__c,
+                    Account__c = ol.Account__c,
                     OpportunityId  = newOpId));                
             }
 

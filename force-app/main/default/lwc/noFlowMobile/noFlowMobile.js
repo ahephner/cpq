@@ -1,29 +1,26 @@
-import { LightningElement,api, track } from 'lwc';
+import { LightningElement,api, track, wire } from 'lwc';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
-import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
-import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
-import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
+import {updateRecord, deleteRecord, getRecord, getFieldValue } from 'lightning/uiRecordApi';
+import ACC from '@salesforce/schema/Opportunity.AccountId';
+import STAGE from '@salesforce/schema/Opportunity.StageName';
+import PRICE_BOOK from '@salesforce/schema/Opportunity.Pricebook2Id'; 
+import WAREHOUSE from '@salesforce/schema/Opportunity.Warehouse__c';
+import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
-import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
+import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
 
-
-
-export default class MobileProdSelected extends LightningElement {
-    @api oppId;
-    @api warehouse;
-    @api accountId; 
-    @api pbId;
-    @api shipType;  
-    @api stage; 
+export default class NoFlowMobile extends LightningElement {
+    @api recordId 
+    @api prop1;
     showDelete = false;  
     addProducts = false;
     shipAddress = false; 
@@ -47,9 +44,13 @@ export default class MobileProdSelected extends LightningElement {
     levelTwo;
     levelTwoMargin; 
     shipWeight;
-    total; 
-    lastQuote; 
-    
+    total;
+    deliveryDate;  
+    warehouse;
+    pbId;
+    accountId;
+    stage; 
+    shipType;
     hasRendered = true;
     dropShip;
     connectedCallback() {
@@ -66,8 +67,27 @@ export default class MobileProdSelected extends LightningElement {
         if(this.prod.length>0 && this.hasRendered){
             this.initPriceCheck();
         }
-
     }
+
+    //get record values
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, DELIVERYDATE, SHIPTYPE]})
+        loadFields({data, error}){
+            if(data){
+                this.accountId = getFieldValue(data, ACC);
+                this.stage = getFieldValue(data, STAGE);
+                this.pbId = getFieldValue(data, PRICE_BOOK); 
+                this.warehouse = getFieldValue(data, WAREHOUSE); 
+                console.log(1, this.warehouse)
+                this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
+                this.shipType = getFieldValue(data, SHIPTYPE);  
+                this.dropShip = this.shipType === 'DS' ? true : false; 
+                this.submitted = this.stage === 'Closed Won'? true : false;
+                //console.log('ship type '+this.shipType)
+            }else if(error){
+                console.log('error '+JSON.stringify(error));
+                
+            }
+        }
     //on load get products
     //get last paid next
     async loadProducts(){
@@ -77,9 +97,9 @@ export default class MobileProdSelected extends LightningElement {
         let inCode = new Set();
         let codes = [];
         try{
-            console.log(this.oppId);
             
-            let results = await getProducts({oppId: this.oppId})
+            
+            let results = await getProducts({oppId: this.recordId})
             console.log(1, results.length);
             
             if(results.length < 1){
@@ -97,23 +117,20 @@ export default class MobileProdSelected extends LightningElement {
                 codes = [...inCode]; 
             }
             //console.log('results '+JSON.stringify(results));
-            
+            console.log('warehoues ' +this.warehouse)
             let invenCheck = await onLoadGetInventory({locId: this.warehouse, pIds: prodIdInv});
-            //console.log('invCheck '+JSON.stringify(invenCheck));
+            console.log('invCheck '+JSON.stringify(invenCheck));
             
             
             let lastPaid = await onLoadGetLastPaid({accountId: this.accountId, productCodes:codes})
-            let lastQuote = await onLoadGetLastQuoted({accountId: this.accountId, productCodes: codes, opportunityId: this.oppId});
+            //console.log('lp '+JSON.stringify(lastPaid));
             
             let priceLevels = await onLoadGetLevels({priceBookId: this.pbId, productIds:prodIdInv})
             
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
             //merge last paid saved products
-            let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid); 
-            
-            //merge last quote
-            mergedLastPaid = await mergeLastQuote(mergedInven, lastQuote); 
+            let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
             //MERGE the price levels and saved products
             let mergedLevels = await mergeInv(mergedLastPaid, priceLevels);
             
@@ -286,7 +303,7 @@ export default class MobileProdSelected extends LightningElement {
 
         const newProduct = this.prod.filter(x=>x.Id === '') 
         const alreadyThere = this.prod.filter(y=>y.Id != '')
-        createProducts({olList: this.prod, oppId: this.oppId})
+        createProducts({olList: this.prod, oppId: this.recordId})
         .then(result => {
             let back = updateNewProducts(newProduct, result);
             this.prod =[...alreadyThere, ...back]; 
@@ -309,7 +326,7 @@ export default class MobileProdSelected extends LightningElement {
         const newProduct = this.prod.filter(x=>x.Id === '') 
         const alreadyThere = this.prod.filter(y=>y.Id != '')
         let shipTotal = this.prod.filter(y => y.ProductCode.includes('SHIPPING'));
-        createProducts({olList: this.prod, oppId: this.oppId})
+        createProducts({olList: this.prod, oppId: this.recordId})
         .then(result => {
             let back = updateNewProducts(newProduct, result);
             this.prod =[...alreadyThere, ...back]; 
@@ -323,7 +340,7 @@ export default class MobileProdSelected extends LightningElement {
                 let shipCharge = getShipping(shipTotal);
                 
                 const fields = {};
-                fields[ID_FIELD.fieldApiName] = this.oppId;
+                fields[ID_FIELD.fieldApiName] = this.recordId;
                 fields[SHIPCHARGE.fieldApiName] = shipCharge;
                 const shipRec = {fields}
                 updateRecord(shipRec)
@@ -337,7 +354,7 @@ export default class MobileProdSelected extends LightningElement {
 
     saveSubmit(){
         this.showSpinner = true;
-        createProducts({olList: this.prod, oppId:this.oppId})
+        createProducts({olList: this.prod, oppId:this.recordId})
         .then(result=>{
             this.stage = 'Closed Won';
             const stageChange = new FlowAttributeChangeEvent('stage', this.stage);
@@ -368,7 +385,6 @@ export default class MobileProdSelected extends LightningElement {
     handleCloseSearch(){    
         this.showProducts = true; 
         this.addProducts = false; 
-        this.prod = this.prod.reverse(); 
     }
     handleRemLast(y){
             let index = this.prod.findIndex(prod => prod.ProductCode === y.detail);  
@@ -413,8 +429,7 @@ export default class MobileProdSelected extends LightningElement {
     
         let newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode})
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId })
-        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId: this.oppId });
-
+        console.log(this.InvCount)
         if(newProd !=null){
             
             
@@ -433,7 +448,6 @@ export default class MobileProdSelected extends LightningElement {
                     lTwo: this.agProduct ? this.floorPrice : this.levelTwo,
                     CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
                     Cost__c: this.unitCost,
-                    displayCost: this.agProduct ? 'Agency' : this.unitCost,
                     prevPurchase: true,
                     lastPaid: newProd.Unit_Price__c,
                     lastMarg: this.agProduct ? '' : newProd.Margin__c,
@@ -446,12 +460,10 @@ export default class MobileProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
-                    levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
+                    levels:'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
                     goodPrice: true,
-                    OpportunityId: this.oppId
+                    OpportunityId: this.recordId
                 }
             ]
         }else{
@@ -474,7 +486,6 @@ export default class MobileProdSelected extends LightningElement {
                     lastMarg: this.agProduct ? 0: '', 
                     CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
                     Cost__c: this.agProduct ? '': this.unitCost,
-                    displayCost: this.agProduct ? 'Agency' : this.unitCost,
                     TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
@@ -483,12 +494,10 @@ export default class MobileProdSelected extends LightningElement {
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
                     editQTY: false,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
-                    levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
+                    levels: 'flr $'+this.floorPrice+ ' Lvl 1 $'+this.levelOne,
                     goodPrice: true,
-                    OpportunityId: this.oppId
+                    OpportunityId: this.recordId
                 }
             ]
         } //console.log('new product '+JSON.stringify(this.prod))

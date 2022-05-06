@@ -10,7 +10,16 @@
             </div>
             <div class="slds-grid">
                 <!-- Close Date -->
-                <lightning-input label="Close Date" type='date' value={closeDate} onchange={newCloseDate} class="slds-m-bottom_x-small slds-col slds-size_1-of-2" readonly></lightning-input>
+                <lightning-combobox
+                name="ship"
+                label="Ship Type"
+                value={shipType}
+                placeholder="Ship Type"
+                options={shipOptions}
+                onchange={handleShipChange}
+                required
+                class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate"
+                ></lightning-combobox>
                 <!-- Stage -->
                 <lightning-combobox
                 name="stage"

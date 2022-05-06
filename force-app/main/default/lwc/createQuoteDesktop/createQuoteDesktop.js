@@ -95,6 +95,21 @@ cancelNewAddress(){
     this.info = true; 
 }
 
+updateAddress(event){
+    let value = event.detail.value;
+    
+    let label = event.detail.label;
+    let x = {value, label}
+    this.options.push(x);
+    this.info = true;
+    const evt = new ShowToastEvent({
+        title: 'Address Added',
+        message: this.msg,
+        variant: 'success'
+    });
+    this.dispatchEvent(evt);  
+}
+
 handleSave(){ 
     this.loaded = false;
     console.log(this.stageFromRecord)

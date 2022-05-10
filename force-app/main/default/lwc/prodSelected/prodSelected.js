@@ -203,6 +203,7 @@ export default class ProdSelected extends LightningElement {
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
                 }
             ]
@@ -241,6 +242,7 @@ export default class ProdSelected extends LightningElement {
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
                 }
             ]
@@ -540,12 +542,12 @@ export default class ProdSelected extends LightningElement {
             
             this.dispatchEvent(
                 new ShowToastEvent({
-                    title: result,
+                    title: 'Success',
                     message: 'Products Saved',
                     variant: 'success',
                 }),
             );
-            getRecordNotifyChange({recordId: this.recordId})
+            getRecordNotifyChange([{recordId: this.recordId}])
         }).then(()=>{
             if(shipTotal.length>0){
                 console.log('saving shipping');
@@ -560,8 +562,8 @@ export default class ProdSelected extends LightningElement {
          
         }).catch(error=>{
             
-            let mess = JSON.stringify(error);;
-            
+            let mess = JSON.stringify(error);
+            console.log(JSON.stringify(error));
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Error Saving Products',

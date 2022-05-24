@@ -42,7 +42,8 @@ export default class ProdSelected extends LightningElement {
     levelOneMargin; 
     levelTwo;
     levelTwoMargin;
-    companyLastPaid;  
+    companyLastPaid;
+    palletConfig;  
     agency;
     sId; 
     productName; 
@@ -72,6 +73,7 @@ export default class ProdSelected extends LightningElement {
     //hide margin col if non rep is close!
     pryingEyes = false
     numbOfManLine = 0
+    eventListening = false; 
     @track selection = []
 //for message service
     subscritption = null;
@@ -105,7 +107,26 @@ export default class ProdSelected extends LightningElement {
             );
         }
     }
-    
+    watchKeyDown = (event) => {
+        if(event.key === '`'){
+            this.saveProducts();
+        }
+     };
+
+    startEventListener(){
+        if(!this.eventListening){
+            console.log('listening')
+            window.addEventListener('keydown', this.watchKeyDown,{
+                once:false,
+            }) 
+            this.eventListening = true; 
+        }
+
+    }
+    endEventListener(){
+        this.eventListening = false; 
+        window.removeEventListener('keydown', this.watchKeyDown);
+    }
     handleMessage(mess){
         if(mess.shipAddress){
             //console.log('shipping address');
@@ -131,6 +152,7 @@ export default class ProdSelected extends LightningElement {
                 this.levelTwo = mess.levelTwoPrice;  
                 this.levelTwoMargin = mess.levelTwoMargin; 
                 this.companyLastPaid = mess.lastPaid
+                this.palletConfig = mess.palletQty;
                 this.handleNewProd(); 
                 this.prodFound = true;
              }        
@@ -200,6 +222,7 @@ export default class ProdSelected extends LightningElement {
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne,
                     companyLastPaid: this.companyLastPaid,
+                    palletConfig: this.palletConfig,
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
@@ -239,6 +262,7 @@ export default class ProdSelected extends LightningElement {
                     flrText: 'flr price $'+ this.fPrice,
                     lOneText: 'lev 1 $'+this.levelOne, 
                     companyLastPaid: this.companyLastPaid,
+                    palletConfig: this.palletConfig,
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
@@ -257,6 +281,7 @@ export default class ProdSelected extends LightningElement {
                 this.tMargin = roundNum(margin, 2);
             }
             this.unsavedProducts = true; 
+            this.startEventListener()
     }
 
     addManualLine(){
@@ -345,6 +370,7 @@ export default class ProdSelected extends LightningElement {
 
         }, 1000)
         this.unsavedProducts = true;
+        this.startEventListener(); 
     }
     
 
@@ -381,7 +407,8 @@ export default class ProdSelected extends LightningElement {
                 this.tMargin = roundNum(margin, 2);
             }
     },1000)
-    this.unsavedProducts = true; 
+    this.unsavedProducts = true;
+    this.startEventListener(); 
     }
     
     newQTY(e){
@@ -408,7 +435,8 @@ export default class ProdSelected extends LightningElement {
         //this.shpWeight = totals.Ship_Weight__c;
         this.tQty = totals.Quantity;
         this.tCost = getCost(this.selection)
-        this.unsavedProducts = true; 
+        this.unsavedProducts = true;
+        this.startEventListener(); 
         if(!this.selection[index].agency){
             let margin = setMargin(this.tCost, this.tPrice)
             this.tMargin = roundNum(margin, 2);
@@ -418,7 +446,8 @@ export default class ProdSelected extends LightningElement {
     newComment(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
         this.selection[index].Description = x.detail.value; 
-        this.unsavedProducts = true;    
+        this.unsavedProducts = true;   
+        this.startEventListener();  
     }
     
     removeProd(x){
@@ -469,6 +498,7 @@ export default class ProdSelected extends LightningElement {
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
             {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
+            {label:'310 | ATS Tomball', value:'1312M000000PB6AQAW'},
             {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
             {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
             {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
@@ -482,9 +512,10 @@ export default class ProdSelected extends LightningElement {
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
+            {label:'790 | ATS - Springfield', value:'1312M0000004D7IQAU'},
             {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
-            {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
+            {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
             {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
 
@@ -526,7 +557,9 @@ export default class ProdSelected extends LightningElement {
     // Save Products Only Not Submit
     saveProducts(){
         this.loaded = false; 
+        
         const newProduct = this.selection.filter(x=>x.Id === '') 
+
         const alreadyThere = this.selection.filter(y=>y.Id != '')
         let shipTotal = this.selection.filter(y => y.ProductCode.includes('SHIPPING'));
         console.log('sending '+JSON.stringify(this.selection))
@@ -547,6 +580,7 @@ export default class ProdSelected extends LightningElement {
                     variant: 'success',
                 }),
             );
+            //this is throwing errors on save. Not letting the remove
             getRecordNotifyChange([{recordId: this.recordId}])
         }).then(()=>{
             if(shipTotal.length>0){
@@ -561,7 +595,7 @@ export default class ProdSelected extends LightningElement {
             } 
          
         }).catch(error=>{
-            
+            this.endEventListener(); 
             let mess = JSON.stringify(error);
             console.log(JSON.stringify(error));
             this.dispatchEvent(
@@ -574,6 +608,7 @@ export default class ProdSelected extends LightningElement {
         }).finally(()=>{
             this.unsavedProducts = false; 
             this.loaded = true; 
+            this.endEventListener(); 
         })
     }
 

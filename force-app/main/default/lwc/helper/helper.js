@@ -75,6 +75,7 @@
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
             companyLastPaid: x.Product2.Last_Purchase_Price__c,
+            palletConfig: x.Product2.Pallet_Qty__c,
             docDate: x.Doc_Date__c, 
             TotalPrice: x.TotalPrice,
             Description: x.Description,

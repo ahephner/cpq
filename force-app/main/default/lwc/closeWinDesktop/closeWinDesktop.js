@@ -65,15 +65,15 @@ export default class CloseWinDesktop extends LightningElement {
             }
         }
 //Stage Options
-get stageOptions() {
-    return [
-        { label: 'Pricing', value: 'Pricing' },
-        { label: 'Working', value: 'Working' },
-        { label: 'Quote', value: 'Quote' },
-        { label: 'Closed Won', value: 'Closed Won' },
-        { label: 'Closed Lost', value: 'Closed Lost' },
-    ];
-}
+// get stageOptions() {
+//     return [
+//         { label: 'Pricing', value: 'Pricing' },
+//         { label: 'Working', value: 'Working' },
+//         { label: 'Quote', value: 'Quote' },
+//         { label: 'Closed Won', value: 'Closed Won' },
+//         { label: 'Closed Lost', value: 'Closed Lost' },
+//     ];
+// }
 
 //Stage Options
 get shipOptions() {
@@ -139,9 +139,9 @@ handleShipChange(event){
 }
 
 //Stage Change
-handleStageChange(event) {
-    this.stage = event.detail.value;
-}
+// handleStageChange(event) {
+//     this.stage = event.detail.value;
+// }
 //New Name
 newName(e){
     this.name = e.detail.value; 
@@ -178,7 +178,7 @@ newDevDate2(e){
             fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
             fields[SHIPTO.fieldApiName] = this.shipTo;
             fields[SHIPTYPE.fieldApiName] = this.shipType;
-            fields[SALESPAD_READY.fieldApiName] = true; 
+            //fields[SALESPAD_READY.fieldApiName] = true; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
             console.log(JSON.stringify(opp))

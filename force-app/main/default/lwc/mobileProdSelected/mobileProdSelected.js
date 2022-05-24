@@ -46,6 +46,7 @@ export default class MobileProdSelected extends LightningElement {
     levelOne; 
     levelTwo;
     levelTwoMargin; 
+    palletConfig; 
     shipWeight;
     total; 
     lastQuote; 
@@ -396,6 +397,7 @@ export default class MobileProdSelected extends LightningElement {
         this.levelTwo = prodx.detail.Level_2_UserView__c;
         this.levelTwoMargin = prodx.detail.Level_2_Margin__c; 
         this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
+        this.palletConfig = prodx.detail.Product2.Pallet_Qty__c;
        // console.log('2 '+this.agProduct);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
@@ -442,6 +444,7 @@ export default class MobileProdSelected extends LightningElement {
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
+                    palletConfig: this.palletConfig, 
                     Description: '', 
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
@@ -479,6 +482,7 @@ export default class MobileProdSelected extends LightningElement {
                     Floor_Price__c: this.floorPrice,
                     Floor_Type__c: this.floorType,
                     Agency__c: this.agProduct,
+                    palletConfig: this.palletConfig,
                     Description: '',
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     readOnly: this.agProduct ? true : false,
@@ -581,6 +585,7 @@ allowSave(){
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
             {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
+            {label:'310 | ATS Tomball', value:'1312M000000PB6AQAW'},
             {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
             {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
             {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
@@ -594,9 +599,10 @@ allowSave(){
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
+            {label:'790 | ATS - Springfield', value:'1312M0000004D7IQAU'},
             {label:'820 | ATS - Wheeling', value:'13175000000L3CnAAK'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
-            {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
+            {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
             {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
 

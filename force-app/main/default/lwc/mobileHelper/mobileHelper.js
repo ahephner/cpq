@@ -33,7 +33,7 @@ const mobileLastPaid = (a1, a3) =>{
 const mobileLoad = (products) =>{
 
 
-  //console.log(JSON.stringify(products));
+  console.log(JSON.stringify(products));
   
   let prod = products.map(x=>{
     return {

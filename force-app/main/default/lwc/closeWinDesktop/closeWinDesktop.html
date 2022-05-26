@@ -19,8 +19,8 @@
                 required
                 class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate"
                 ></lightning-combobox>
-
-                <lightning-combobox
+                <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small readonly" readonly></lightning-input>
+                <!-- <lightning-combobox
                 name="stage"
                 label="Stage"
                 value={stage}
@@ -28,8 +28,8 @@
                 options={stageOptions}
                 onchange={handleStageChange}
                 required
-                class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate"
-                ></lightning-combobox>
+                class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate readonly"
+                ></lightning-combobox> -->
             </div>
             <div class="slds-grid">
                 <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2" required={reqPO} onchange={newPo}></lightning-input>
@@ -70,6 +70,11 @@
                     class="slds-m-left_x-small"
                     onclick={handleSave}
                 ></lightning-button>
+                <lightning-button
+                    variant="brand"
+                    label="keypress"
+                    class="slds-m-left_x-small"
+                    onclick={handleKeyPress}></lightning-button>
             </div>
             <template if:true={localError}>
                 <p style="color: red;">{errorMsg}</p>

@@ -100,6 +100,7 @@ export default class QuickPriceCheck extends LightningElement {
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
             {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
+            {label:'310 | ATS Tomball', value:'1312M000000PB6AQAW'},
             {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
             {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
             {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
@@ -113,9 +114,10 @@ export default class QuickPriceCheck extends LightningElement {
             {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
             {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
             {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
+            {label:'790 | ATS - Springfield', value:'1312M0000004D7IQAU'},
             {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
-            {label:'860 | ATS - East Peoria', value:'13175000000Q1FeAAK'},
+            {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
             {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
 

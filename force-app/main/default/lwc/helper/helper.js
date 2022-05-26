@@ -75,6 +75,7 @@
             lastPaid: x.Unit_Price__c ? '$'+x.Unit_Price__c : 0,
             lastMarg: x.Product2.Agency_Pricing__c ? '' : (x.Margin__c/100),
             companyLastPaid: x.Product2.Last_Purchase_Price__c,
+            palletConfig: x.Product2.Pallet_Qty__c,
             docDate: x.Doc_Date__c, 
             TotalPrice: x.TotalPrice,
             Description: x.Description,
@@ -88,10 +89,12 @@
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false, 
+            url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
             OpportunityId: recordId
         }
       })
-     // console.log(JSON.stringify(prod))
+     
+     //console.table(prod)
       return prod; 
   }
 

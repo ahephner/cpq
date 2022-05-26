@@ -64,15 +64,15 @@ export default class CloseWinMobile extends LightningElement {
             }
         }
 //Stage Options
-get stageOptions() {
-    return [
-        { label: 'Pricing', value: 'Pricing' },
-        { label: 'Working', value: 'Working' },
-        { label: 'Quote', value: 'Quote' },
-        { label: 'Closed Won', value: 'Closed Won' },
-        { label: 'Closed Lost', value: 'Closed Lost' },
-    ];
-}
+// get stageOptions() {
+//     return [
+//         { label: 'Pricing', value: 'Pricing' },
+//         { label: 'Working', value: 'Working' },
+//         { label: 'Quote', value: 'Quote' },
+//         { label: 'Closed Won', value: 'Closed Won' },
+//         { label: 'Closed Lost', value: 'Closed Lost' },
+//     ];
+// }
 //get ship types
 get shipOptions() {
     return [
@@ -149,9 +149,9 @@ updateAddress(event){
 }
 
 //Stage Change
-handleStageChange(event) {
-    this.stage = event.detail.value;
-}
+// handleStageChange(event) {
+//     this.stage = event.detail.value;
+// }
 handleShipChange(event){
     this.shipType = event.detail.value;
 }
@@ -195,7 +195,7 @@ submit(event) {
         fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
         fields[SHIPTO.fieldApiName] = this.shipTo;
         fields[SHIPTYPE.fieldApiName] = this.shipType; 
-        fields[SALESPAD_READY.fieldApiName] = true; 
+        //fields[SALESPAD_READY.fieldApiName] = true; 
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}
         //console.log(JSON.stringify(opp))

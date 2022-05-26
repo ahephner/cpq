@@ -103,6 +103,7 @@
                                         <span class="innerInfo">
                                             <p>{sp.name}</p>
                                             <p>{sp.ProductCode}</p>
+                                            <p>Pallet Qty: {sp.palletConfig}</p>
                                             <br/>
                                             <p>Cost: ${sp.displayCost}</p>
                                             <p>Company Last Paid: ${sp.companyLastPaid}</p>
@@ -197,11 +198,9 @@
                             </div>
                         </template>
 
-                        <!-- qty at this location -->
-                        <div class="slds-col slds-size_1-of-12 slds-m-right_large">
-                            <lightning-input class='liquid ro' type="number"  
-                                            label="" name={sp.ProductCode} 
-                                            value={sp.wInv} readonly></lightning-input>
+                        <!-- qty at this location links to related page -->
+                        <div class="slds-col slds-size_1-of-12 slds-m-right_large up">
+                            <a href={sp.url} target='_blank' class='liquid ro'>{sp.wInv}</a>
                         </div>
                         <!-- total price -->
                         <div class='slds-col slds-size_1-of-12'>

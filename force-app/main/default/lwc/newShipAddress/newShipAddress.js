@@ -64,6 +64,7 @@ export default class NewShipAddress extends LightningElement{
 //finally show toast its good. 
         handleNewAddress(){
             let valid = this.validInfo();
+            console.log('valid', valid)
             if(valid){
                 const fields = {};
 
@@ -76,8 +77,9 @@ export default class NewShipAddress extends LightningElement{
                 fields[PICKUP.fieldApiName] = true;
 
                 const recordInput = {apiName: OBJ.objectApiName, fields: fields}
-
+                console.log(JSON.stringify(recordInput)); 
                 createRecord(recordInput)
+                
                 .then((res)=>{
                     this.returnedId = res.id; 
                     //console.log(JSON.stringify(res))
@@ -107,6 +109,8 @@ export default class NewShipAddress extends LightningElement{
                     this.zip = ''; 
                 }).catch((err)=>{
                     let error = JSON.stringify(err)
+                    console.log('err');
+                    console.log(error); 
                     const evt = new ShowToastEvent({
                         title: 'Error',
                         message: error,
@@ -120,5 +124,13 @@ export default class NewShipAddress extends LightningElement{
             }
             
         }
+//was a quick test to see if we could add an address from a rep who does not own said account. 
+//goes with this apex class = '@salesforce/apex/contactPointAddressInternalUser.insertAddress' !Only in full SB
+        // withOutSharing(){
+        //     addAddress({name:this.name, accId: this.accId, street: this.street, city:this.city, zip: this.zip})
+        //     .then((x)=>{
+        //         console.log(x)
+        //     })
+        // }
 
 }

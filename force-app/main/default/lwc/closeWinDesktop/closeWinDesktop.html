@@ -70,6 +70,11 @@
                     class="slds-m-left_x-small"
                     onclick={handleSave}
                 ></lightning-button>
+                <lightning-button
+                    variant="brand"
+                    label="keypress"
+                    class="slds-m-left_x-small"
+                    onclick={handleKeyPress}></lightning-button>
             </div>
             <template if:true={localError}>
                 <p style="color: red;">{errorMsg}</p>

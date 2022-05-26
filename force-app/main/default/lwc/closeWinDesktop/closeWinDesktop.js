@@ -40,6 +40,12 @@ export default class CloseWinDesktop extends LightningElement {
     shipReq; 
     errorMsg = {};
     custPOLabel; 
+
+    connectedCallback(){
+        window.addEventListener('keydown', (e) => {
+            console.log(e.key)
+          })
+    }
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
@@ -250,5 +256,16 @@ newDevDate2(e){
                 variant: 'success'
             });
             this.dispatchEvent(evt);  
+        }
+
+        handleKeyPress(){
+            window.dispatchEvent(new KeyboardEvent('keydown',{
+                'key': '`'
+            }))
+
+            setTimeout(() => {
+                console.log('time out over');
+                
+            }, 5000);
         }
 }

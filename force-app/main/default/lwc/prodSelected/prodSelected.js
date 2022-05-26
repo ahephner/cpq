@@ -159,7 +159,7 @@ export default class ProdSelected extends LightningElement {
             }
         
     }
-    unsubscribeToMessageChannel() {
+    unsubscribeToMessageChannel() {   
         unsubscribe(this.subscription);
         this.subscription = null;
     }

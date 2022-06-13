@@ -22,10 +22,10 @@
                             <p>Level 1 Margin</p>
                         </div>
                         <div class='slds-col slds-size_1-of-8'>
-                            <p>Level 2</p>
+                            <p>Default</p>
                         </div>
                         <div class='slds-col slds-size_1-of-8'>
-                            <p>Level 2 Margin</p>
+                            <p>Default Margin</p>
                         </div>
                     </div>
             <!-- Table Cells Here -->
@@ -36,8 +36,13 @@
                                 <div key={item.Id} class='slds-m-horizontal_xx-small 
                                      slds-m-bottom_x-small slds-grid row'>
                                     <!-- Name -->
-                                     <div class="slds-col slds-size_2-of-8 slds-m-top_large">
-                                        <p class='pName'>{item.Name}</p>
+                                     <div class="slds-col slds-size_2-of-8 slds-m-top_large hasInfo">
+                                        <p class='pName '>{item.Name}</p>
+                                            <span class="innerInfo">
+                                                <p>Product Cost: {item.Product_Cost__c}</p>
+                                                <p>Floor Margin: {item.Floor_Margin__c}</p>
+                                            </span>
+                                        
                                     </div>
                                     <!-- Unit Price -->
                                     <!--If you want to give ability to edit in the future change readonly to read-only={item.Agency_Product__c} & onchange={newUnitPrice}-->
@@ -58,7 +63,7 @@
                                             <!-- margin -->
                                         <div class="slds-col slds-size_1-of-8">
                                             <lightning-input  type="number"  
-                                            label="" name={item.Id} value={item.levOneMar} onchange={changeMarOne} 
+                                            label="" name={item.Id} value={item.Level_1_Editable_Margin__c} onchange={changeMarOne} 
                                             step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
                                         </div>
                                     <!-- Level 2 -->
@@ -72,7 +77,7 @@
                                         <!-- margin -->
                                     <div class="slds-col slds-size_1-of-8">
                                         <lightning-input  type="number"  
-                                        label="" name={item.Id} value={item.levTwoMar} onchange={changeMarTwo} 
+                                        label="" name={item.Id} value={item.Level_2_Editable_Margin__c} onchange={changeMarTwo} 
                                         step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
                                     </div>
                                 </div>
@@ -101,10 +106,10 @@
                                     <lightning-input name={item.Id} value={item.UnitPrice} label='Unit Price' 
                                     type='number' formater='currency'  step="0.01" readonly></lightning-input>
                                     <lightning-input type="number"  label="Level 1 Margin" 
-                                    name={item.Id} value={item.levOneMar} onchange={changeMarOne} 
+                                    name={item.Id} value={item.Level_1_Editable_Margin__c} onchange={changeMarOne} 
                                     step="0.01" read-only={item.Agency_Product__c}></lightning-input>
                                     <lightning-input  label="Level 2 Margin" name={item.Id} 
-                                    value={item.levTwoMar} onchange={changeMarTwo} 
+                                    value={item.Level_2_Editable_Margin__c} onchange={changeMarTwo} 
                                     step="0.01" read-only={item.Agency_Product__c}></lightning-input>
                                 </div>   
                             </div>

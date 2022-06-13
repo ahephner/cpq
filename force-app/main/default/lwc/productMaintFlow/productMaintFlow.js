@@ -32,19 +32,27 @@ export default class ProductMaintFlow extends LightningElement{
         return screen === 'Large'? true : false
     }
 
+    setWindow(){
+        this.items = this.itemData.map(i=>{
+            i.Level_1_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_1_Editable_Margin__c;
+            return {...i}
+        }); 
+        console.log(JSON.stringify(this.items))
+        this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : '';
+    }
+
     setMargins(){
         
         let levOneMar;
         let levTwoMar;
-        
         this.items = this.itemData.map(i=>{
-            //console.log((i.Level_1_Price__c - i.Floor_Price__c)/i.Level_1_Price__c)
-            levOneMar = (((i.Level_1_Price__c - i.Product_Cost__c)/i.Level_1_Price__c)*100).toFixed(2);
-            levTwoMar = (((i.Level_2_Price__c - i.Product_Cost__c)/i.Level_2_Price__c)*100).toFixed(2);
-            
-            return {...i, levOneMar, levTwoMar};
+            x = {...i}
+            x.Level_1_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_1_Editable_Margin__c;
+            x.Level_2_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_2_Editable_Margin__c;
+            return {...x};
         }) 
         this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : ''; 
+        
         //console.log(this.twoItems);
                 
     }
@@ -71,7 +79,8 @@ export default class ProductMaintFlow extends LightningElement{
             this.items[index].Level_1_Price__c = Number(p.detail.value);
             
             if(this.items[index].Level_1_Price__c > 0){
-                this.items[index].levOneMar = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_1_Price__c))*100).toFixed(2);
+                this.items[index].Level_1_Editable_Margin__c = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_1_Price__c))*100).toFixed(2);
+                this.items[index].isChanged__c = true;
             }
 
         }, 500)         
@@ -82,7 +91,8 @@ export default class ProductMaintFlow extends LightningElement{
         this.delay = setTimeout(()=>{
             this.items[index].Level_2_Price__c = Number(p.detail.value);
             if(this.items[index].Level_2_Price__c > 0){
-                this.items[index].levTwoMar = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_2_Price__c))*100).toFixed(2);
+                this.items[index].Level_2_Editable_Margin__c = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_2_Price__c))*100).toFixed(2);
+                this.items[index].isChanged__c = true;
             }
 
         }, 500)  
@@ -91,11 +101,12 @@ export default class ProductMaintFlow extends LightningElement{
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === m.target.name);
         this.delay = setTimeout(()=>{
-            this.items[index].levOneMar = Number(m.detail.value);
+            this.items[index].Level_1_Editable_Margin__c = Number(m.detail.value);
             //console.log(this.items[index].levOneMar);
             
-            if(this.items[index].levOneMar > 0){
-                this.items[index].Level_1_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].levOneMar/100)).toFixed(2);
+            if(this.items[index].Level_1_Editable_Margin__c > 0){
+                this.items[index].Level_1_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].Level_1_Editable_Margin__c/100)).toFixed(2);
+                this.items[index].isChanged__c = true;
             }
 
         }, 500)
@@ -104,9 +115,10 @@ export default class ProductMaintFlow extends LightningElement{
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === m.target.name);
         this.delay = setTimeout(()=>{
-            this.items[index].levTwoMar = Number(m.detail.value);
-            if(this.items[index].levTwoMar > 0){
-                this.items[index].Level_2_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].levTwoMar/100)).toFixed(2);
+            this.items[index].Level_2_Editable_Margin__c = Number(m.detail.value);
+            if(this.items[index].Level_2_Editable_Margin__c > 0){
+                this.items[index].Level_2_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].Level_2_Editable_Margin__c/100)).toFixed(2);
+                this.items[index].isChanged__c = true;
             }
 
         }, 500)
@@ -119,8 +131,10 @@ export default class ProductMaintFlow extends LightningElement{
             let Id = draft.Id;
             let Level_1_Price__c = draft.Level_1_Price__c;
             let Level_2_Price__c = draft.Level_2_Price__c;
-        
-            const fields = {Id, Level_1_Price__c, Level_2_Price__c};
+            let Level_1_Editable_Margin__c = draft.Level_1_Editable_Margin__c
+            let Level_2_Editable_Margin__c = draft.Level_2_Editable_Margin__c
+            let isChanged__c = draft.isChanged__c; 
+            const fields = {Id, Level_1_Price__c, Level_2_Price__c, Level_1_Editable_Margin__c, Level_2_Editable_Margin__c,isChanged__c };
     
             return {fields};
         })

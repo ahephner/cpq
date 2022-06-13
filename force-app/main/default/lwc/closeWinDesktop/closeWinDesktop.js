@@ -18,6 +18,7 @@ import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
+import {unSavedChanges} from 'c/helper'
 const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE]
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
@@ -45,6 +46,9 @@ export default class CloseWinDesktop extends LightningElement {
         window.addEventListener('keydown', (e) => {
             console.log(e.key)
           })
+
+          let test = unSavedChanges(false);
+          console.log(test, 1)
     }
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){

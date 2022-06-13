@@ -227,6 +227,11 @@
       let margin = ((revenue - cost)/revenue) * 100;
       return margin; 
     }
+var unsaved; 
+    const unSavedChanges = (boo)=>{
+       unsaved = true; 
+    }
+
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
+export{unSavedChanges, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
 

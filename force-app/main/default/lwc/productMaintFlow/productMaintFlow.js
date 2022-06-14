@@ -2,6 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import { updateRecord } from 'lightning/uiRecordApi';
 import { FlowNavigationNextEvent, FlowNavigationBackEvent,FlowAttributeChangeEvent  } from 'lightning/flowSupport';
+import { checkPricing } from 'c/helper';
 export default class ProductMaintFlow extends LightningElement{
    @track items;  
    @track twoItems;
@@ -9,6 +10,7 @@ export default class ProductMaintFlow extends LightningElement{
     loaded = false;
     formSize;
     error;  
+    goodPricing; 
     @api flexipageRegionWidth;
     @api message; 
 
@@ -42,9 +44,6 @@ export default class ProductMaintFlow extends LightningElement{
     }
 
     setMargins(){
-        
-        let levOneMar;
-        let levTwoMar;
         this.items = this.itemData.map(i=>{
             let rowClass    
             x = {...i}
@@ -54,19 +53,13 @@ export default class ProductMaintFlow extends LightningElement{
             return {...x, rowClass};
         }) 
         this.flipBox(this.items[0].Id);
-        this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : ''; 
-        
-        //console.log(this.twoItems);
-                
+        this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : '';        
     }
 
     flipBox(firstItem){
         let index = this.items.findIndex(x => firstItem === x.Id)
         console.log({index})
         this.items[index].rowClass = 'first'
-        //this.template.querySelector(`.${firstItem}`);
-       
-        //this.template.querySelector(`[data-id="${firstItem}"]`).classList.add('first');
     }
 
     changeOne(p){
@@ -81,7 +74,7 @@ export default class ProductMaintFlow extends LightningElement{
                 this.items[index].Level_1_Editable_Margin__c = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_1_Price__c))*100).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-
+            this.handleWarningOne(targ, lev, flr, price, ind)
         }, 500)         
     }
     changeTwo(p){
@@ -93,7 +86,7 @@ export default class ProductMaintFlow extends LightningElement{
                 this.items[index].Level_2_Editable_Margin__c = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_2_Price__c))*100).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-
+            this.handleWarningTwo(targ, lev, flr, price, ind)
         }, 500)  
     }
     changeMarOne(m){
@@ -107,7 +100,7 @@ export default class ProductMaintFlow extends LightningElement{
                 this.items[index].Level_1_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].Level_1_Editable_Margin__c/100)).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-
+            this.handleWarningOne(targ, lev, flr, price, ind)
         }, 500)
     }
     changeMarTwo(m){
@@ -119,7 +112,7 @@ export default class ProductMaintFlow extends LightningElement{
                 this.items[index].Level_2_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].Level_2_Editable_Margin__c/100)).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-
+            this.handleWarningTwo(targ, lev, flr, price, ind)
         }, 500)
     }
 
@@ -202,5 +195,65 @@ export default class ProductMaintFlow extends LightningElement{
     goBack(){
         const moveBack = new FlowNavigationBackEvent();
         this.dispatchEvent(moveBack); 
+    }
+
+    handleWarningOne = (targ, lev, flr, price, ind)=>{
+        console.log(1,lev, 2, flr, 3, price);
+        
+        if(price > lev){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
+            //this.selection[ind].goodPrice = true; 
+            this.goodPricing = checkPricing(this.selection);
+           
+        }else if(price<lev && price>=flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
+            //this.selection[ind].goodPrice = true;
+            this.goodPricing = checkPricing(this.selection);
+            
+        }else if(price===lev && price>=flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
+            //this.selection[ind].goodPrice = true;
+            this.goodPricing = checkPricing(this.selection);
+            
+        }else if(price<flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
+            //this.selection[ind].goodPrice = false;
+            this.goodPricing = checkPricing(this.selection);
+             
+        }
+    }
+
+    handleWarningTwo = (targ, lev, flr, price, ind)=>{
+        console.log(1,lev, 2, flr, 3, price);
+        
+        if(price > lev){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
+            //this.selection[ind].goodPrice = true; 
+            this.goodPricing = checkPricing(this.selection);
+           
+        }else if(price<lev && price>=flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
+            //this.selection[ind].goodPrice = true;
+            this.goodPricing = checkPricing(this.selection);
+            
+        }else if(price===lev && price>=flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
+            //this.selection[ind].goodPrice = true;
+            this.goodPricing = checkPricing(this.selection);
+            
+        }else if(price<flr){
+            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
+            //this.selection[ind].goodPrice = false;
+            this.goodPricing = checkPricing(this.selection);
+             
+        }
     }
 }

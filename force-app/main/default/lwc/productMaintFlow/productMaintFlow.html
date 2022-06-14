@@ -32,16 +32,18 @@
                 <div class="slds-scrollable_y" style="height:40rem;width:100%">
                     <div class='slds-grid'>
                         <div class='slds-col slds-size_1-of-1'>
+                            <div class="slds-m-top_medium"></div>
                             <template for:each={items} for:item='item'>
                                 <div key={item.Id} class='slds-m-horizontal_xx-small 
                                      slds-m-bottom_x-small slds-grid row'>
                                     <!-- Name -->
                                      <div class="slds-col slds-size_2-of-8 slds-m-top_large hasInfo">
                                         <p class='pName '>{item.Name}</p>
-                                            <span class="innerInfo">
+                                            <div class={item.rowClass}>
+                                                <p>Code: {item.ProductCode}</p>
                                                 <p>Product Cost: {item.Product_Cost__c}</p>
                                                 <p>Floor Margin: {item.Floor_Margin__c}</p>
-                                            </span>
+                                            </div>
                                         
                                     </div>
                                     <!-- Unit Price -->

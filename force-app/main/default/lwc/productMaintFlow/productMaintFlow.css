@@ -28,6 +28,25 @@
       z-index: 55;
         
     }
+.first{
+          position: absolute;
+          font-size: 14px;
+          background:#333;
+          color: #ffffff;
+          padding: 5px 8px;
+          border-radius: 5px;
+          box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+          opacity: 0;
+          pointer-events: none;
+          transition: 150ms transform;
+          transform-origin:top center;
+          top: 100%;
+          left: 20%;
+          margin-left: -60px;
+          z-index: 55;
+            
+        
+}    
     .hasInfo .innerInfo::before {
       position: absolute;
       content: "";
@@ -55,3 +74,24 @@
         position: relative;
         display: inline-flex; 
     }
+
+    .hasInfo .first::before {
+        position: absolute;
+        content: "";
+        height: 8px;
+        width: 8px;
+        background: #333;
+        top: -3px;
+        left: 50%;
+        transform: translate(-50%) rotate(45deg);
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      }
+      .hasInfo:hover .first{
+          opacity:1;
+          /* transform: translateX(-120px) translateY(-30%); */
+          visibility: visible;
+          width: max-content;
+          pointer-events: auto;
+  
+      }
+

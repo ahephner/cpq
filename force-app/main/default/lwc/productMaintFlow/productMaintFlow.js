@@ -46,30 +46,29 @@ export default class ProductMaintFlow extends LightningElement{
         let levOneMar;
         let levTwoMar;
         this.items = this.itemData.map(i=>{
+            let rowClass    
             x = {...i}
             x.Level_1_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_1_Editable_Margin__c;
             x.Level_2_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_2_Editable_Margin__c;
-            return {...x};
+            rowClass = 'innerInfo';
+            return {...x, rowClass};
         }) 
+        this.flipBox(this.items[0].Id);
         this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : ''; 
         
         //console.log(this.twoItems);
                 
     }
 
+    flipBox(firstItem){
+        let index = this.items.findIndex(x => firstItem === x.Id)
+        console.log({index})
+        this.items[index].rowClass = 'first'
+        //this.template.querySelector(`.${firstItem}`);
+       
+        //this.template.querySelector(`[data-id="${firstItem}"]`).classList.add('first');
+    }
 
-
-    //handle pricing changes
-    // newUnitPrice(p){
-    //     window.clearTimeout(this.delay);
-    //     let index = this.items.findIndex(prod => prod.Id === p.target.name); 
-    //     this.delay = setTimeout(()=>{
-    //         this.items[index].Floor_Price__c = Number(p.detail.value);
-    //         // if(this.itemData[index].Floor_Price__c > 0){
-    //         //     this.itemData[index].CPQ_Margin__c = Number((1 - (this.selection[index].Cost__c /this.selection[index].Floor_Price__c))*100).toFixed(2);
-    //         // }
-    //     }, 500)       
-    // }
     changeOne(p){
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === p.target.name);

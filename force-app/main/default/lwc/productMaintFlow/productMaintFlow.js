@@ -10,7 +10,7 @@ export default class ProductMaintFlow extends LightningElement{
     loaded = false;
     formSize;
     error;  
-    goodPricing; 
+    goodPricing = true;  
     @api flexipageRegionWidth;
     @api message; 
 
@@ -45,12 +45,14 @@ export default class ProductMaintFlow extends LightningElement{
 
     setMargins(){
         this.items = this.itemData.map(i=>{
-            let rowClass    
+            let rowClass;  
+            let goodPrice;   
             x = {...i}
             x.Level_1_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_1_Editable_Margin__c;
             x.Level_2_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_2_Editable_Margin__c;
             rowClass = 'innerInfo';
-            return {...x, rowClass};
+            goodPrice = true; 
+            return {...x, rowClass, goodPrice};
         }) 
         this.flipBox(this.items[0].Id);
         this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : '';        
@@ -58,7 +60,6 @@ export default class ProductMaintFlow extends LightningElement{
 
     flipBox(firstItem){
         let index = this.items.findIndex(x => firstItem === x.Id)
-        console.log({index})
         this.items[index].rowClass = 'first'
     }
 
@@ -66,7 +67,7 @@ export default class ProductMaintFlow extends LightningElement{
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === p.target.name);
         //console.log('index '+index);
-        
+        let targetName = p.target.name; 
         this.delay = setTimeout(()=>{
             this.items[index].Level_1_Price__c = Number(p.detail.value);
             
@@ -74,19 +75,23 @@ export default class ProductMaintFlow extends LightningElement{
                 this.items[index].Level_1_Editable_Margin__c = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_1_Price__c))*100).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-            this.handleWarningOne(targ, lev, flr, price, ind)
+            //this.handleWarningOne(targetName, lev, flr, price, ind)
         }, 500)         
     }
     changeTwo(p){
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === p.target.name);
+        
+        let targetName = p.target.name; 
         this.delay = setTimeout(()=>{
             this.items[index].Level_2_Price__c = Number(p.detail.value);
             if(this.items[index].Level_2_Price__c > 0){
                 this.items[index].Level_2_Editable_Margin__c = Number((1 - (this.items[index].Product_Cost__c /this.items[index].Level_2_Price__c))*100).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-            this.handleWarningTwo(targ, lev, flr, price, ind)
+            let levelTwo = this.items[index].Level_2_Price__c;
+            let floor = this.items[index].Floor_Price__c;
+            this.handleWarningTwo(targetName, levelTwo, floor, index)
         }, 500)  
     }
     changeMarOne(m){
@@ -100,19 +105,25 @@ export default class ProductMaintFlow extends LightningElement{
                 this.items[index].Level_1_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].Level_1_Editable_Margin__c/100)).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-            this.handleWarningOne(targ, lev, flr, price, ind)
+            //this.handleWarningOne(targ, lev, flr, price, ind)
         }, 500)
     }
     changeMarTwo(m){
         window.clearTimeout(this.delay);
         let index = this.items.findIndex(prod => prod.Id === m.target.name);
+        console.log({index})
+        let targetName = m.target.name; 
         this.delay = setTimeout(()=>{
             this.items[index].Level_2_Editable_Margin__c = Number(m.detail.value);
+           // console.log(1, this.items[index].Level_2_Editable_Margin__c )
+            //console.log(2, this.items[index].Product_Cost__c)
             if(this.items[index].Level_2_Editable_Margin__c > 0){
                 this.items[index].Level_2_Price__c = Number(this.items[index].Product_Cost__c /(1- this.items[index].Level_2_Editable_Margin__c/100)).toFixed(2);
                 this.items[index].isChanged__c = true;
             }
-            this.handleWarningTwo(targ, lev, flr, price, ind)
+            let levelTwo = this.items[index].Level_2_Price__c;
+            let floor = this.items[index].Floor_Price__c;
+            this.handleWarningTwo(targetName, levelTwo, floor, index)
         }, 500)
     }
 
@@ -226,33 +237,29 @@ export default class ProductMaintFlow extends LightningElement{
              
         }
     }
-
-    handleWarningTwo = (targ, lev, flr, price, ind)=>{
-        console.log(1,lev, 2, flr, 3, price);
+    //this.handleWarningTwo(targetName, levelTwo, floor, index)
+    handleWarningTwo = (targ, lev, flr, ind)=>{
+        //console.log(1,lev, 2, flr, 3, ind);
         
-        if(price > lev){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
-            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
-            //this.selection[ind].goodPrice = true; 
-            this.goodPricing = checkPricing(this.selection);
+        if(lev > flr){
+            this.template.querySelector(`[data-twoprice="${targ}"]`).style.color ="black";
+            this.template.querySelector(`[data-twomargin="${targ}"]`).style.color ="black";
+            this.items[ind].goodPrice = true; 
+            this.goodPricing = checkPricing(this.items);
            
-        }else if(price<lev && price>=flr){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="orange";
-            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="orange";
-            //this.selection[ind].goodPrice = true;
-            this.goodPricing = checkPricing(this.selection);
+        }else if(lev === flr){
+            this.template.querySelector(`[data-twoprice="${targ}"]`).style.color ="orange";
+            this.template.querySelector(`[data-twomargin="${targ}"]`).style.color ="orange";
+            console.log(1,this.items[ind].goodPrice)
+            this.items[ind].goodPrice = true;
+            console.log(2,this.items[ind].goodPrice)
+            this.goodPricing = checkPricing(this.items);
             
-        }else if(price===lev && price>=flr){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="black";
-            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="black";
-            //this.selection[ind].goodPrice = true;
-            this.goodPricing = checkPricing(this.selection);
-            
-        }else if(price<flr){
-            this.template.querySelector(`[data-id="${targ}"]`).style.color ="red";
-            this.template.querySelector(`[data-margin="${targ}"]`).style.color ="red";
-            //this.selection[ind].goodPrice = false;
-            this.goodPricing = checkPricing(this.selection);
+        }else if(lev<flr){
+            this.template.querySelector(`[data-twoprice="${targ}"]`).style.color ="red";
+            this.template.querySelector(`[data-twomargin="${targ}"]`).style.color ="red";
+            this.items[ind].goodPrice = false;
+            this.goodPricing = checkPricing(this.items);
              
         }
     }

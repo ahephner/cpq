@@ -204,9 +204,11 @@
     }
   //check if all the products on the order price is above floor
     const checkPricing = (prods) =>{
+      
       let check = true; 
       for(let i=0; i<prods.length; i++){
           if(!prods[i].goodPrice){
+            console.log(prods[i].Name, prods[i].goodPrice)
             check = false;
             return check;
           }

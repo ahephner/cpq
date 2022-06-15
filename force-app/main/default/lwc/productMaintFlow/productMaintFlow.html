@@ -57,16 +57,16 @@
                                     <!-- Level 1 -->
                                         <!-- price -->
                                         <div class="slds-col slds-size_1-of-8">
-                                                <div data-oneprice={item.ProductCode}>
+                                                <div data-oneprice={item.Id}>
                                                 <lightning-input  type="number"
                                                 label="" name={item.Id} 
                                                 value={item.Level_1_Price__c} onchange={changeOne} step="0.01" 
                                                 read-only={item.Agency_Product__c} ></lightning-input>
-                                            </div>
+                                           </div>
                                         </div>
                                             <!-- margin -->
                                         <div class="slds-col slds-size_1-of-8">
-                                            <div data-onemargin={item.ProductCode}>
+                                            <div data-onemargin={item.Id}>
                                                 <lightning-input  type="number"  
                                                 label="" name={item.Id} value={item.Level_1_Editable_Margin__c} onchange={changeMarOne} 
                                                 step="0.01" read-only={item.Agency_Product__c} ></lightning-input>

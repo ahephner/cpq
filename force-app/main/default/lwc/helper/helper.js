@@ -1,5 +1,6 @@
   //used to merge inventory and selected products on load
    const mergeInv = (a1, a2) =>{
+    
     let merge
     if(a2){
         merge = a1.map(itm => ({

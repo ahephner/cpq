@@ -9,6 +9,7 @@ import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c'
 export default class OppDetailsHeader extends LightningElement{
     @api recordId;
     @api objectApiName;
+    @api prop1;
     fields = [EOP_PAYTYPE, FIRST_DATE, NUM_PAYMENTS ]
     handleSuccess(){
         console.log('good save!');

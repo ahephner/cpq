@@ -1,7 +1,23 @@
 <template>
     <template if:true={loaded}>
         
-    
+        <template if:false={passVal}>
+            <lightning-quick-action-panel header="Missing Info">
+                <template if:true={valErrs} for:each={valErrs} for:item="err" for:index="index">
+                <li key={err}>
+                        {err}
+                </li>
+                </template>
+                <div slot="footer">
+                    <lightning-button
+                        variant="neutral"
+                        label="Cancel"
+                        onclick={handleCancel}
+                    ></lightning-button>
+                </div>
+            </lightning-quick-action-panel>
+        </template>
+<template if:true={passVal}>
     <template if:true={info}>
         <lightning-quick-action-panel header="Make Order">
             <div class="slds-grid">
@@ -70,16 +86,12 @@
                     class="slds-m-left_x-small"
                     onclick={handleSave}
                 ></lightning-button>
-                <lightning-button
-                    variant="brand"
-                    label="keypress"
-                    class="slds-m-left_x-small"
-                    onclick={handleKeyPress}></lightning-button>
             </div>
             <template if:true={localError}>
                 <p style="color: red;">{errorMsg}</p>
             </template>
         </lightning-quick-action-panel>
+<!-- end info template -->
     </template>
     <template if:false={info}>
         
@@ -90,6 +102,9 @@
             </c-close-win-ship-add>
             
     </template>
+<!-- NO account template close -->
+    </template>
+<!-- loaded template close -->
   </template>
   <template if:false={loaded}>
     <lightning-spinner alternative-text="Loading"></lightning-spinner>

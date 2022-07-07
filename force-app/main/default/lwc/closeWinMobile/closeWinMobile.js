@@ -14,8 +14,16 @@ import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import getAddress from '@salesforce/apex/cpqApex.getAddress'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE]
+import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
+import getAddress from '@salesforce/apex/cpqApex.getAddress';
+import {validate} from 'c/helper'
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS]
+const rules =[
+    {test: (o) => o.accId.length === 18,
+     message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
+    {test: (o) => o.hasItems === true,
+     message: 'No Products found. Close this screen and hit save on the products section'}
+]
 export default class CloseWinMobile extends LightningElement {
     
     @api recordId; 
@@ -37,27 +45,39 @@ export default class CloseWinMobile extends LightningElement {
     shipReq; 
     errorMsg = {};
     custPOLabel; 
+    hasItems; 
+    passVal = true; 
+    valErrs;
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
                 
-                        this.noProducts = false; 
-                        this.name = getFieldValue(data, NAME);
-                        this.quoteNumb = getFieldValue(data, QUOTENUM);
-                        this.closeDate = getFieldValue(data, CLOSEDATE);
-                        //this.stage = getFieldValue(data, STAGE);
-                        this.po = getFieldValue(data, PO);
-                        this.deliveryDate = getFieldValue(data, DELIVERYDATE);
-                        this.deliverDate2 = getFieldValue(data, DELIVERDATE2);
-                        this.accountId = getFieldValue(data, ACCID);
-                        this.shipTo = getFieldValue(data, SHIPTO); 
-                        this.shipType = getFieldValue(data, SHIPTYPE);
-                        this.reqPO = getFieldValue(data, REQPO);
-                        this.findAddress(this.accountId);
-                        this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
-                        this.loaded = true; 
-                        this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true; 
-                    
+                        
+                        this.accountId = getFieldValue(data, ACCID) ? getFieldValue(data, ACCID) : '';
+                        this.hasItems = getFieldValue(data, HASITEMS);
+                        let check = {accId: this.accountId, hasItems: this.hasItems}
+                        let loadMore = validate(check, rules)
+                        
+                        if(loadMore.isValid){
+                            this.name = getFieldValue(data, NAME);
+                            this.quoteNumb = getFieldValue(data, QUOTENUM);
+                            this.closeDate = getFieldValue(data, CLOSEDATE);
+                            //this.stage = getFieldValue(data, STAGE);
+                            this.po = getFieldValue(data, PO);
+                            this.deliveryDate = getFieldValue(data, DELIVERYDATE);
+                            this.deliverDate2 = getFieldValue(data, DELIVERDATE2);
+                            this.shipTo = getFieldValue(data, SHIPTO); 
+                            this.shipType = getFieldValue(data, SHIPTYPE);
+                            this.reqPO = getFieldValue(data, REQPO);
+                            this.findAddress(this.accountId);
+                            this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
+                            this.loaded = true; 
+                            this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true; 
+                        }else{
+                            this.passVal = loadMore.isValid; 
+                            this.valErrs = loadMore.errors;
+                            this.loaded = true; 
+                       }
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)

@@ -1,5 +1,6 @@
   //used to merge inventory and selected products on load
    const mergeInv = (a1, a2) =>{
+    
     let merge
     if(a2){
         merge = a1.map(itm => ({
@@ -204,9 +205,11 @@
     }
   //check if all the products on the order price is above floor
     const checkPricing = (prods) =>{
+      
       let check = true; 
       for(let i=0; i<prods.length; i++){
           if(!prods[i].goodPrice){
+            console.log(prods[i].Name, prods[i].goodPrice)
             check = false;
             return check;
           }
@@ -227,6 +230,23 @@
       let margin = ((revenue - cost)/revenue) * 100;
       return margin; 
     }
+    // Validation function
+    const validate = (obj, rules) => {
+      const errors = rules.reduce((errs, rule) => {
+        console.log(obj)
+        const result = rule.test(obj);
+        if (result === false) {
+          errs.push(rule.message);
+        }
+        return errs;
+      }, []);
+
+      return {
+        errors,
+        isValid: errors.length === 0,
+      };
+    };
+
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
+export{validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
 

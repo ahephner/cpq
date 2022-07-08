@@ -43,4 +43,8 @@
         <fieldName>shipToAddress</fieldName>
         <description>shipping address</description>
     </lightningMessageFields>
+    <lightningMessageFields>
+        <fieldName>unSavedChange</fieldName>
+        <description>boolean to notify there are unsaved work</description>
+    </lightningMessageFields>
 </LightingMessageChannel>

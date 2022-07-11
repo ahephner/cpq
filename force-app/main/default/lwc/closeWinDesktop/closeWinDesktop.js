@@ -18,9 +18,15 @@ import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
+//EOP FIELDS
+import EOP_ORDER from '@salesforce/schema/Opportunity.EOP_Order__c';
+import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
+import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
+import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
+
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE]
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -48,7 +54,12 @@ export default class CloseWinDesktop extends LightningElement {
     shipReq; 
     errorMsg = {};
     custPOLabel; 
-    hasItems; 
+    hasItems;
+    eopOrder;
+    eopPayType;
+    numPayments;
+    firstPayDate; 
+    showEOPInfo = false;
     passVal = true; 
     connectedCallback(){
     }
@@ -57,10 +68,10 @@ export default class CloseWinDesktop extends LightningElement {
             if(data){
                     this.accountId = getFieldValue(data, ACCID)?getFieldValue(data, ACCID): '';
                     this.hasItems = getFieldValue(data, HASITEMS); 
-                    console.log(1, this.accountId, 2, this.hasItems)
+                    //console.log(1, this.accountId, 2, this.hasItems)
                     let check = {accId: this.accountId, hasItems: this.hasItems}
                     let loadMore = validate(check, rules);
-                    console.log(loadMore)
+                   //console.log(loadMore)
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
                     this.quoteNumb = getFieldValue(data, QUOTENUM);
@@ -72,6 +83,11 @@ export default class CloseWinDesktop extends LightningElement {
                     this.shipTo = getFieldValue(data, SHIPTO); 
                     this.reqPO = getFieldValue(data, REQPO);
                     this.shipType = getFieldValue(data, SHIPTYPE);
+                    this.eopOrder = getFieldValue(data, EOP_ORDER) ? getFieldValue(data, EOP_ORDER): '';
+                    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
+                    this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
+                    this.numPayments = getFieldValue(data, NUM_PAYMENTS);
+                    this.firstPayDate = getFieldValue(data, FIRST_DATE);
                     this.findAddress(this.accountId);
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
@@ -81,6 +97,8 @@ export default class CloseWinDesktop extends LightningElement {
                     this.valErrs = loadMore.errors;
                     this.loaded = true; 
                }
+               
+               
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)
@@ -96,7 +114,31 @@ export default class CloseWinDesktop extends LightningElement {
 //         { label: 'Closed Lost', value: 'Closed Lost' },
 //     ];
 // }
+//EOP Order Option
+get EOPOptions(){
+    return [
+        {label: 'Yes', value: 'Yes'},
+        {label: 'No', value:'No'}
+    ]
+}
 
+get payOptions(){
+    return [
+        {label:'Set Due Date',value:'Set Due Date'},
+        {label:'See Split Terms', value:'See Split Terms'}
+    ]
+}
+
+get numOptions(){
+    return [
+        {label:'1', value:'1'},
+        {label:'2', value:'2'},
+        {label:'3', value:'3'},
+        {label:'4', value:'4'},
+        {label:'5', value:'5'},
+        {label:'6', value:'6'},
+    ]
+}
 //Stage Options
 get shipOptions() {
     return [
@@ -159,7 +201,21 @@ selectChange(event){
 handleShipChange(event){
     this.shipType = event.detail.value; 
 }
-
+handleEOP(event){
+    this.eopOrder = event.detail.value; 
+    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
+}
+handlePay(event){
+    this.eopPayType = event.detail.value;
+}
+handleNumbOpts(event){
+    this.numPayments = event.detail.value; 
+}
+handleDate(event){
+    this.firstPayDate = event.detail.value;
+    console.log(this.firstPayDate);
+    
+}
 //Stage Change
 // handleStageChange(event) {
 //     this.stage = event.detail.value;
@@ -200,6 +256,11 @@ newDevDate2(e){
             fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
             fields[SHIPTO.fieldApiName] = this.shipTo;
             fields[SHIPTYPE.fieldApiName] = this.shipType;
+            //EOP INFO COMMENT OUT WHEN NOT USING
+            fields[EOP_ORDER.fieldApiName] = this.eopOrder;
+            fields[EOP_PAYTYPE.fieldApiName] = this.eopPayType;
+            fields[NUM_PAYMENTS.fieldApiName] = this.numPayments;
+            fields[FIRST_DATE.fieldApiName] = this.firstPayDate;
             //fields[SALESPAD_READY.fieldApiName] = true; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
@@ -242,6 +303,8 @@ newDevDate2(e){
         let isValid = true;
         let inputFields = this.template.querySelectorAll('lightning-input');
         const ship = this.template.querySelector('.valAdd');
+        const eopField = this.template.querySelector('.eopInput')
+        let eopFields = this.template.querySelectorAll('.eopInputs')
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
                 inputField.reportValidity();
@@ -249,10 +312,22 @@ newDevDate2(e){
             }else if(!ship.checkValidity()){
                 ship.reportValidity(); 
                 isValid = false; 
+            }else if(eopField.value ===''){
+                console.log(1,eopField)
+                eopField.reportValidity();
+                isValid = false;
+            }else if(eopField.value === 'Yes'){
+                console.log(2, eopFields)
             }
             this.errorMsg[inputField.name] = inputField.value;
         });
         return isValid;
+    }
+    test(){
+        const eopField = this.template.querySelector('.eopInput');
+        console.log(eopField.value);
+        eopField.reportValidity();
+        
     }
 //New Address info
         cancelNewAddress(){

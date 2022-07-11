@@ -74,7 +74,49 @@
                 </div>
                 <lightning-input label="To" type='date' value={deliverDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
             </div>
+            <!-- EOP Section. Can comment out after -->
+            <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                    <lightning-combobox
+                        name="eopBox"
+                        label="EOP Order"
+                        value={eopOrder}
+                        options={EOPOptions}
+                        onchange={handleEOP}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate eopInput"
+                ></lightning-combobox>
+                </div>
+                <template if:true={showEOPInfo}>
+                    <div class="slds-col slds-size_1-of-2 slds-m-left_small">
+                        <lightning-combobox
+                        name="eopPayType"
+                        label="EOP Pay Type"
+                        value={eopPayType}
+                        options={payOptions}
+                        onchange={handlePay}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                ></lightning-combobox>
+                        <lightning-combobox
+                        name="eopNumPay"
+                        label="Number of Payments"
+                        value={numPayments}
+                        options={numOptions}
+                        onchange={handleNumbOpts}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                ></lightning-combobox>
+                        <lightning-input class='eopInputs' type="date" name="dateInput" label="Due Date" value={firstPayDate} onchange={handleDate}></lightning-input>
+                    </div>
+                </template>
+                
+            </div>
+            <div class="slds-grid">
+                <br/><br/><br/>
+            </div>
             <div slot="footer">
+                <h1>WARNING SUBMIT IS BEING REWORKED MAY THROW ERRORS</h1>
                 <lightning-button
                     variant="neutral"
                     label="Cancel"

@@ -233,7 +233,7 @@
     // Validation function
     const validate = (obj, rules) => {
       const errors = rules.reduce((errs, rule) => {
-        console.log(obj)
+        
         const result = rule.test(obj);
         if (result === false) {
           errs.push(rule.message);

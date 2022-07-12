@@ -33,6 +33,16 @@ const rules =[
     {test: (o) => o.hasItems === true,
      message: 'No Products found. Close this screen and hit save on the products section'}
 ]
+const eopRules = [
+    {test: (o)=> o.eopOrder != '',
+        field: 'eopOrder'},
+    {test: (o)=>o.payType != '',
+        field: 'eopPayType'}, 
+    {test: (o)=>o.numPat != '',
+        field: 'numPayments'},
+    {test: (o) => o.dueDate != '',
+        field: 'firstPayDate'}
+]
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
@@ -56,9 +66,9 @@ export default class CloseWinDesktop extends LightningElement {
     custPOLabel; 
     hasItems;
     eopOrder;
-    eopPayType;
-    numPayments;
-    firstPayDate; 
+    eopPayType = '';
+    numPayments = '';
+    firstPayDate = ''; 
     showEOPInfo = false;
     passVal = true; 
     connectedCallback(){
@@ -203,7 +213,8 @@ handleShipChange(event){
 }
 handleEOP(event){
     this.eopOrder = event.detail.value; 
-    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
+    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false;
+    console.log(this.eopOrder)
 }
 handlePay(event){
     this.eopPayType = event.detail.value;
@@ -244,7 +255,8 @@ newDevDate2(e){
     handleSave(){
         
         let ok = this.isInputValid();
-        if(ok){
+        let eopOK = this.eopValid(); 
+        if(ok && eopOK){
             this.loaded = false; 
             const fields = {}
             fields[NAME.fieldApiName] = this.name;
@@ -303,8 +315,6 @@ newDevDate2(e){
         let isValid = true;
         let inputFields = this.template.querySelectorAll('lightning-input');
         const ship = this.template.querySelector('.valAdd');
-        const eopField = this.template.querySelector('.eopInput')
-        let eopFields = this.template.querySelectorAll('.eopInputs')
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
                 inputField.reportValidity();
@@ -312,22 +322,30 @@ newDevDate2(e){
             }else if(!ship.checkValidity()){
                 ship.reportValidity(); 
                 isValid = false; 
-            }else if(eopField.value ===''){
-                console.log(1,eopField)
-                eopField.reportValidity();
-                isValid = false;
-            }else if(eopField.value === 'Yes'){
-                console.log(2, eopFields)
             }
             this.errorMsg[inputField.name] = inputField.value;
         });
         return isValid;
     }
-    test(){
-        const eopField = this.template.querySelector('.eopInput');
-        console.log(eopField.value);
-        eopField.reportValidity();
-        
+//check eop fields
+    eopValid(){
+    let isValid = true; 
+    let inputFields = this.template.querySelectorAll('.eopInputs')
+    const orderType = this.template.querySelector('.eopInput');
+    
+    if(this.eopOrder === ''){
+        orderType.reportValidity();
+        isValid = false
+    }else if(this.eopOrder === 'Yes'){
+        inputFields.forEach(x=>{
+            if(!x.checkValidity()){
+                x.reportValidity();
+                isValid = false;
+            }
+        })
+    }
+
+    return isValid; 
     }
 //New Address info
         cancelNewAddress(){

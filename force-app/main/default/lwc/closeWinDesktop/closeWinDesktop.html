@@ -107,7 +107,7 @@
                         required
                         class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                 ></lightning-combobox>
-                        <lightning-input class='eopInputs' type="date" name="dateInput" label="Due Date" value={firstPayDate} onchange={handleDate}></lightning-input>
+                        <lightning-input class="eopInputs" type="date" name="dateInput" label="Due Date" value={firstPayDate} onchange={handleDate} required></lightning-input>
                     </div>
                 </template>
                 
@@ -116,7 +116,6 @@
                 <br/><br/><br/>
             </div>
             <div slot="footer">
-                <h1>WARNING SUBMIT IS BEING REWORKED MAY THROW ERRORS</h1>
                 <lightning-button
                     variant="neutral"
                     label="Cancel"

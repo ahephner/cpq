@@ -209,7 +209,7 @@
       let check = true; 
       for(let i=0; i<prods.length; i++){
           if(!prods[i].goodPrice){
-            console.log(prods[i].Name, prods[i].goodPrice)
+            //console.log(prods[i].Name, prods[i].goodPrice)
             check = false;
             return check;
           }
@@ -247,6 +247,8 @@
       };
     };
 
+
+
 // make it so functions can be used other pages
-export{validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
+export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
 

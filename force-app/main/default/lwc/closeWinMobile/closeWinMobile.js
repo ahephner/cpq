@@ -260,42 +260,42 @@ submit(event) {
     event.preventDefault();      
     const ok = this.isInputValid();
     const eopOk = this.eopValid();
-    console.log(eopOk)
-    // if(ok.isValid && ok.validShip && eopOk){
-    //     this.loaded = false; 
-    //     const fields = {}
-    //     fields[NAME.fieldApiName] = this.name;
-    //     fields[QUOTENUM.fieldApiName] = this.quoteNumb;
-    //     fields[CLOSEDATE.fieldApiName] = this.closeDate;
-    //     fields[STAGE.fieldApiName] = this.stage;
-    //     fields[PO.fieldApiName] = this.po;
-    //     fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
-    //     fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
-    //     fields[SHIPTO.fieldApiName] = this.shipTo;
-    //     fields[SHIPTYPE.fieldApiName] = this.shipType; 
-    //     //fields[SALESPAD_READY.fieldApiName] = true; 
-    //     fields[ID_Field.fieldApiName] = this.recordId; 
-    //     const opp = {fields}
-    //     //console.log(JSON.stringify(opp))
-    //     updateRecord(opp)
-    //         .then(()=>{
-    //             alert('New Order Submitted!');
-    //         })
-    //         .then(()=>{
-    //             this.loaded = true; 
-    //             this.dispatchEvent(new CustomEvent('close'));
-    //         })
-    //         .catch(error=>{ 
-    //             console.log(JSON.stringify(error));
-    //             alert(error.body.output.errors[0].message)
-    //             this.loaded = true; 
-    //         })
+    
+    if(ok.isValid && ok.validShip && eopOk){
+        this.loaded = false; 
+        const fields = {}
+        fields[NAME.fieldApiName] = this.name;
+        fields[QUOTENUM.fieldApiName] = this.quoteNumb;
+        fields[CLOSEDATE.fieldApiName] = this.closeDate;
+        fields[STAGE.fieldApiName] = this.stage;
+        fields[PO.fieldApiName] = this.po;
+        fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
+        fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
+        fields[SHIPTO.fieldApiName] = this.shipTo;
+        fields[SHIPTYPE.fieldApiName] = this.shipType; 
+        //fields[SALESPAD_READY.fieldApiName] = true; 
+        fields[ID_Field.fieldApiName] = this.recordId; 
+        const opp = {fields}
+        //console.log(JSON.stringify(opp))
+        updateRecord(opp)
+            .then(()=>{
+                alert('New Order Submitted!');
+            })
+            .then(()=>{
+                this.loaded = true; 
+                this.dispatchEvent(new CustomEvent('close'));
+            })
+            .catch(error=>{ 
+                console.log(JSON.stringify(error));
+                alert(error.body.output.errors[0].message)
+                this.loaded = true; 
+            })
         
-    // }else if(ok.isValid && !ok.validShip){
-    //     console.log('in here')
-    //   alert('Missing Ship Address')
-    // }
-    //this.dispatchEvent(new CustomEvent('close'));
+    }else if(ok.isValid && !ok.validShip){
+        console.log('in here')
+      alert('Missing Ship Address')
+    }
+    this.dispatchEvent(new CustomEvent('close'));
   }
   cancel() {
     this.dispatchEvent(new CustomEvent('close'));

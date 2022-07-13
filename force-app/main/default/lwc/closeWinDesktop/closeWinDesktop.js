@@ -33,16 +33,7 @@ const rules =[
     {test: (o) => o.hasItems === true,
      message: 'No Products found. Close this screen and hit save on the products section'}
 ]
-const eopRules = [
-    {test: (o)=> o.eopOrder != '',
-        field: 'eopOrder'},
-    {test: (o)=>o.payType != '',
-        field: 'eopPayType'}, 
-    {test: (o)=>o.numPat != '',
-        field: 'numPayments'},
-    {test: (o) => o.dueDate != '',
-        field: 'firstPayDate'}
-]
+
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
@@ -223,9 +214,7 @@ handleNumbOpts(event){
     this.numPayments = event.detail.value; 
 }
 handleDate(event){
-    this.firstPayDate = event.detail.value;
-    console.log(this.firstPayDate);
-    
+    this.firstPayDate = event.detail.value; 
 }
 //Stage Change
 // handleStageChange(event) {

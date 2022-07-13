@@ -15,6 +15,12 @@ import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
+//EOP FIELDS
+import EOP_ORDER from '@salesforce/schema/Opportunity.EOP_Order__c';
+import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
+import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
+import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
+
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import {validate} from 'c/helper'
 const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS]
@@ -48,6 +54,11 @@ export default class CloseWinMobile extends LightningElement {
     hasItems; 
     passVal = true; 
     valErrs;
+    //EOP INFO
+    eopOrder
+    eopPayType
+    numPayments
+    showEOPInfo = false;
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
@@ -69,6 +80,11 @@ export default class CloseWinMobile extends LightningElement {
                             this.shipTo = getFieldValue(data, SHIPTO); 
                             this.shipType = getFieldValue(data, SHIPTYPE);
                             this.reqPO = getFieldValue(data, REQPO);
+                            this.eopOrder = getFieldValue(data, EOP_ORDER) ? getFieldValue(data, EOP_ORDER): '';
+                            this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
+                            this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
+                            this.numPayments = getFieldValue(data, NUM_PAYMENTS);
+                            this.firstPayDate = getFieldValue(data, FIRST_DATE);
                             this.findAddress(this.accountId);
                             this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                             this.loaded = true; 
@@ -93,6 +109,32 @@ export default class CloseWinMobile extends LightningElement {
 //         { label: 'Closed Lost', value: 'Closed Lost' },
 //     ];
 // }
+//EOP Order Option
+get EOPOptions(){
+    return [
+        {label: 'Yes', value: 'Yes'},
+        {label: 'No', value:'No'}
+    ]
+}
+
+get payOptions(){
+    return [
+        {label:'Set Due Date',value:'Set Due Date'},
+        {label:'See Split Terms', value:'See Split Terms'}
+    ]
+}
+
+get numOptions(){
+    return [
+        {label:'1', value:'1'},
+        {label:'2', value:'2'},
+        {label:'3', value:'3'},
+        {label:'4', value:'4'},
+        {label:'5', value:'5'},
+        {label:'6', value:'6'},
+    ]
+}
+
 //get ship types
 get shipOptions() {
     return [
@@ -199,44 +241,60 @@ newDevDate2(e){
 cancelNewAddress(){
     this.info = true; 
 }
+//EOP FUNCTIONS
+handleEOP(event){
+    this.eopOrder = event.detail.value; 
+    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false;
+    
+}
+handlePay(event){
+    this.eopPayType = event.detail.value;
+}
+handleNumbOpts(event){
+    this.numPayments = event.detail.value; 
+}
+handleDate(event){
+    this.firstPayDate = event.detail.value; 
+}
 submit(event) {
     event.preventDefault();      
     const ok = this.isInputValid();
-    console.log(ok)
-    if(ok.isValid && ok.validShip){
-        this.loaded = false; 
-        const fields = {}
-        fields[NAME.fieldApiName] = this.name;
-        fields[QUOTENUM.fieldApiName] = this.quoteNumb;
-        fields[CLOSEDATE.fieldApiName] = this.closeDate;
-        fields[STAGE.fieldApiName] = this.stage;
-        fields[PO.fieldApiName] = this.po;
-        fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
-        fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
-        fields[SHIPTO.fieldApiName] = this.shipTo;
-        fields[SHIPTYPE.fieldApiName] = this.shipType; 
-        //fields[SALESPAD_READY.fieldApiName] = true; 
-        fields[ID_Field.fieldApiName] = this.recordId; 
-        const opp = {fields}
-        //console.log(JSON.stringify(opp))
-        updateRecord(opp)
-            .then(()=>{
-                alert('New Order Submitted!');
-            })
-            .then(()=>{
-                this.loaded = true; 
-                this.dispatchEvent(new CustomEvent('close'));
-            })
-            .catch(error=>{ 
-                console.log(JSON.stringify(error));
-                alert(error.body.output.errors[0].message)
-                this.loaded = true; 
-            })
+    const eopOk = this.eopValid();
+    console.log(eopOk)
+    // if(ok.isValid && ok.validShip && eopOk){
+    //     this.loaded = false; 
+    //     const fields = {}
+    //     fields[NAME.fieldApiName] = this.name;
+    //     fields[QUOTENUM.fieldApiName] = this.quoteNumb;
+    //     fields[CLOSEDATE.fieldApiName] = this.closeDate;
+    //     fields[STAGE.fieldApiName] = this.stage;
+    //     fields[PO.fieldApiName] = this.po;
+    //     fields[DELIVERYDATE.fieldApiName] = this.deliveryDate;
+    //     fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
+    //     fields[SHIPTO.fieldApiName] = this.shipTo;
+    //     fields[SHIPTYPE.fieldApiName] = this.shipType; 
+    //     //fields[SALESPAD_READY.fieldApiName] = true; 
+    //     fields[ID_Field.fieldApiName] = this.recordId; 
+    //     const opp = {fields}
+    //     //console.log(JSON.stringify(opp))
+    //     updateRecord(opp)
+    //         .then(()=>{
+    //             alert('New Order Submitted!');
+    //         })
+    //         .then(()=>{
+    //             this.loaded = true; 
+    //             this.dispatchEvent(new CustomEvent('close'));
+    //         })
+    //         .catch(error=>{ 
+    //             console.log(JSON.stringify(error));
+    //             alert(error.body.output.errors[0].message)
+    //             this.loaded = true; 
+    //         })
         
-    }else if(ok.isValid && !ok.validShip){
-        console.log('in here')
-      alert('Missing Ship Address')
-    }
+    // }else if(ok.isValid && !ok.validShip){
+    //     console.log('in here')
+    //   alert('Missing Ship Address')
+    // }
     //this.dispatchEvent(new CustomEvent('close'));
   }
   cancel() {
@@ -262,4 +320,25 @@ submit(event) {
     });
     return {isValid, validShip};
 }
+
+//check eop fields
+eopValid(){
+    let isValid = true; 
+    let inputFields = this.template.querySelectorAll('.eopInputs')
+    const orderType = this.template.querySelector('.eopInput');
+    
+    if(this.eopOrder === ''){
+        orderType.reportValidity();
+        isValid = false
+    }else if(this.eopOrder === 'Yes'){
+        inputFields.forEach(x=>{
+            if(!x.checkValidity()){
+                x.reportValidity();
+                isValid = false;
+            }
+        })
+    }
+
+    return isValid; 
+    }
 }

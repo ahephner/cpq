@@ -35,7 +35,7 @@ public class cpqOppClone {
             newOp.StageName = 'Working';
             newOp.CloseDate = cd;
             //newOp.Warehouse__c = opp.Warehouse__c;
-         //   newOp.CloseDate = cd;  
+           //newOp.CloseDate = cd;  
             insert newOp; 
             system.debug('here new opp -> ' +newOp);
            //test new data
@@ -115,10 +115,12 @@ public class cpqOppClone {
             }
             
         }catch(exception i){
+            system.debug('excep '+ i);
             Database.rollback(sp);
             ApexPages.addMessages(i); 
             return null; 
         }
+        //system.debug('newOp.Id ----> '+newOp.Id);
         return newOp.Id; 
     }
     public static list<OpportunityLineItem> cpqCloneHelper(id OppId, id newOpId, id pbId){
@@ -126,8 +128,8 @@ public class cpqOppClone {
         Map<Id, pricebookentry> pbeMap = new Map<Id, pricebookentry>();
         List<opportunitylineitem> newLines = new List<opportunitylineitem>();
          //get opportunity line items that are still have active pricebook entries
-            List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, 
-                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c, Account__c
+            List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, Product_Name__c, 
+                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c, Account__c, Product2.Name
                                                    from opportunitylineitem where opportunityid = :OppId and PriceBookEntry.IsActive = true];
                
         for(OpportunityLineItem x:lineItems){
@@ -138,12 +140,13 @@ public class cpqOppClone {
         for(pricebookentry x:pbe){
             pbeMap.put(x.product2Id, x);
         }
-        system.debug('map line items');
-        system.debug(pbeMap);
+        //system.debug('map line items');
+        //system.debug(pbeMap);
         for(opportunitylineitem ol: lineItems){
-            system.debug('ol '+ol);
+            //system.debug('ol '+ol);
            // decimal marg = (ol.UnitPrice/pbeMap.get(ol.Product2Id).UnitPrice)*100;
             //decimal roundMarg = marg.setScale(2, RoundingMode.HALF_UP);
+            system.debug(ol.Product2.Name); 
             if(ol.Agency__c == true){
 				newLines.add(new OpportunityLineItem(					
                     PricebookEntryId = pbeMap.get(ol.Product2Id).id,
@@ -154,6 +157,16 @@ public class cpqOppClone {
                     description = ol.description,
                     Account__c = ol.Account__c,
                     OpportunityId  = newOpId));                
+            }else if(ol.Product2.Name.contains('ATS SHIPPING')){
+      			newLines.add(new OpportunityLineItem(					
+                    PricebookEntryId = pbeMap.get(ol.Product2Id).id,
+                    product2id = ol.product2id,
+                    quantity = ol.quantity,
+                    unitprice = pbeMap.get(ol.Product2Id).UnitPrice,
+                    CPQ_Unit_Price__c = pbeMap.get(ol.Product2Id).UnitPrice,
+                    description = ol.description,
+                    Account__c = ol.Account__c,
+                    OpportunityId  = newOpId));
             }else{
                 decimal salesCal;
                 decimal salesPrice;

@@ -34,7 +34,7 @@
                 options={shipOptions}
                 onchange={handleShipChange}
                 required
-                class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate"
+                class="slds-col slds-size_1-of-2 slds-m-bottom_x-small shipTo"
                 ></lightning-combobox>
                 <!-- Stage -->
                 <lightning-input label="Stage" value={stage} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small" readonly></lightning-input>
@@ -51,7 +51,7 @@
             </div>
             <div class="slds-grid">
                 <!-- PO Is dynamic if requried depends on account -->
-                <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 " required={reqPO} onchange={newPo}></lightning-input>
+                <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" required={reqPO} onchange={newPo}></lightning-input>
                 <!-- SHIPPING ADDRESS -->
                 <div class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate">
                     <label for="ship-select">Shipping Address:</label>
@@ -90,18 +90,21 @@
                                     required
                                     class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate eopInput"
                             ></lightning-combobox>
+                            <template if:true={showEOPInfo}>
+                                <lightning-combobox
+                                name="eopPayType"
+                                label="EOP Pay Type"
+                                value={eopPayType}
+                                options={payOptions}
+                                onchange={handlePay}
+                                required
+                                class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                                ></lightning-combobox>
+                            </template>
                             </div>
                             <template if:true={showEOPInfo}>
                                 <div class="slds-col slds-size_1-of-2 slds-m-left_small">
-                                    <lightning-combobox
-                                    name="eopPayType"
-                                    label="EOP Pay Type"
-                                    value={eopPayType}
-                                    options={payOptions}
-                                    onchange={handlePay}
-                                    required
-                                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
-                            ></lightning-combobox>
+
                                     <lightning-combobox
                                     name="eopNumPay"
                                     label="Number of Payments"
@@ -112,6 +115,15 @@
                                     class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                             ></lightning-combobox>
                                     <lightning-input class="eopInputs" type="date" name="dateInput" label="Due Date" value={firstPayDate} onchange={handleDate} required></lightning-input>
+                                    <lightning-combobox
+                                    name="eopBox"
+                                    label="Bill and Hold?"
+                                    value={billHold}
+                                    options={EOPOptions}
+                                    onchange={handleBillHold}
+                                    required
+                                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                            ></lightning-combobox>
                                 </div>
                             </template>
                             

@@ -15,7 +15,7 @@ import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
-import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
+//import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 //EOP FIELDS
@@ -23,10 +23,11 @@ import EOP_ORDER from '@salesforce/schema/Opportunity.EOP_Order__c';
 import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
 import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
+import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD]
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -60,6 +61,7 @@ export default class CloseWinDesktop extends LightningElement {
     eopPayType = '';
     numPayments = '';
     firstPayDate = ''; 
+    billHold;
     showEOPInfo = false;
     passVal = true; 
     connectedCallback(){
@@ -89,6 +91,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
                     this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                     this.firstPayDate = getFieldValue(data, FIRST_DATE);
+                    this.billHold = getFieldValue(data, BILL_HOLD); 
                     this.findAddress(this.accountId);
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
@@ -216,6 +219,10 @@ handleNumbOpts(event){
 handleDate(event){
     this.firstPayDate = event.detail.value; 
 }
+//checkbox check against checked not value
+handleBillHold(event){
+    this.billHold = event.detail.value
+}
 //Stage Change
 // handleStageChange(event) {
 //     this.stage = event.detail.value;
@@ -240,6 +247,13 @@ newDeliveryDate(e){
 newDevDate2(e){
     this.deliverDate2 = e.detail.value; 
 }
+// submitTest(event){
+//     event.preventDefault();
+//     const ok = this.isInputValid();
+//     const eopOk = this.eopValid(); 
+//     console.log(1, ok, 2,eopOk);
+    
+// }
 //Save Submit section!
     handleSave(){
         
@@ -262,7 +276,7 @@ newDevDate2(e){
             fields[EOP_PAYTYPE.fieldApiName] = this.eopPayType;
             fields[NUM_PAYMENTS.fieldApiName] = this.numPayments;
             fields[FIRST_DATE.fieldApiName] = this.firstPayDate;
-            //fields[SALESPAD_READY.fieldApiName] = true; 
+            fields[BILL_HOLD.fieldApiName] = this.billHold; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
             console.log(JSON.stringify(opp))
@@ -302,7 +316,7 @@ newDevDate2(e){
     }
     isInputValid() {
         let isValid = true;
-        let inputFields = this.template.querySelectorAll('lightning-input');
+        let inputFields = this.template.querySelectorAll('.validate');
         const ship = this.template.querySelector('.valAdd');
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
@@ -312,6 +326,7 @@ newDevDate2(e){
                 ship.reportValidity(); 
                 isValid = false; 
             }
+            console.log(this.billHold)
             this.errorMsg[inputField.name] = inputField.value;
         });
         return isValid;

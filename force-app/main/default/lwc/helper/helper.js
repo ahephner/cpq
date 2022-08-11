@@ -247,8 +247,10 @@
       };
     };
 
-
+const roundRate = (numb, places) =>{
+  return +(Math.round(numb + `e+${places}`) + `e-${places}`)
+}
 
 // make it so functions can be used other pages
-export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote}
+export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote, roundRate}
 

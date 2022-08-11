@@ -26,7 +26,7 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, unSavedChanges} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, unSavedChanges, roundRate} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -74,6 +74,8 @@ export default class ProdSelected extends LightningElement {
     pryingEyes = false
     numbOfManLine = 0
     eventListening = false; 
+    //used for EOP when ship type is double adds 2 predefined ship lines. Set this true so function wont run twice.
+    doubleShip = false; 
     @track selection = []
 //for message service
     subscritption = null;
@@ -176,7 +178,11 @@ export default class ProdSelected extends LightningElement {
                 this.shipType = getFieldValue(data, SHIPTYPE);  
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                //console.log('ship type '+this.shipType)
+                console.log('ship type '+this.shipType);
+                if(this.shipType === 'TR'){
+                    this.shipType === 'TR' ? this.addShips() : console.log('');
+                }
+                
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -273,7 +279,7 @@ export default class ProdSelected extends LightningElement {
         }    
             //console.log(JSON.stringify(this.selection));
             let totals =  getTotals(this.selection);
-            this.tPrice = totals.TotalPrice;
+            this.tPrice = roundNum(totals.TotalPrice, 2);
             this.tQty = totals.Quantity;
             this.tCost = getCost(this.selection) 
             if(!this.agency){
@@ -282,6 +288,90 @@ export default class ProdSelected extends LightningElement {
             }
             this.unsavedProducts = true; 
             this.startEventListener()
+    }
+//need to add 2 shipping line items
+//need to see if the array already has objects. 
+    addShips(){
+        //empty array
+        if(this.doubleShip === false){
+            console.log('add ships')
+            this.selection = [
+                ...this.selection, {
+                    sObjectType: 'OpportunityLineItem',
+                    Id: '',
+                    PricebookEntryId: '01u2M00000ZBLn5QAH',
+                    Product2Id: '01t2M0000062XwhQAE',
+                    agency: false,
+                    name: 'ATS SHIPPING',
+                    ProductCode: 'ATS SHIPPING',
+                    Ship_Weight__c: 0,
+                    Quantity: 1,
+                    UnitPrice: 1.00,
+                    floorPrice: 0.00,
+                    lOne: 0.00,
+                    lTwo: 0.00, 
+                    CPQ_Margin__c: 0.00,
+                    Cost__c: 0.00,
+                    displayCost: 0.00,
+                    lastPaid: 'use report',
+                    lastMarg: 'use report',
+                    docDate: '',
+                    TotalPrice: 1.00,
+                    wInv:  0.00,
+                    showLastPaid: true,
+                    lastQuoteAmount: 0.00,
+                    lastQuoteMargin: 0.00,
+                    lastQuoteDate: 0.00,
+                    flrText: 'flr price $',
+                    lOneText: 'lev 1 $',
+                    companyLastPaid: 0.00,
+                    palletConfig: 0.00,
+                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+                    goodPrice: true,
+                    manLine: false,
+                    url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+                    OpportunityId: this.recordId
+                },{
+                    sObjectType: 'OpportunityLineItem',
+                    Id: '',
+                    PricebookEntryId: '01u2M00000ZBLmsQAH',
+                    Product2Id: '01t2M0000062XwUQAU',
+                    agency: false,
+                    name: 'ATS SHIPPING-NO TAX',
+                    ProductCode: 'ATS SHIPPING-NT',
+                    Ship_Weight__c: 0,
+                    Quantity: 1,
+                    UnitPrice: 1.00,
+                    floorPrice: 0.00,
+                    lOne: 0.00,
+                    lTwo: 0.00, 
+                    CPQ_Margin__c: 0.00,
+                    Cost__c: 0.00,
+                    displayCost: 0.00,
+                    lastPaid: 'use report',
+                    lastMarg: 'use report',
+                    docDate: '',
+                    TotalPrice: 1.00,
+                    wInv:  0.00,
+                    showLastPaid: true,
+                    lastQuoteAmount: 0.00,
+                    lastQuoteMargin: 0.00,
+                    lastQuoteDate: 0.00,
+                    flrText: 'flr price $',
+                    lOneText: 'lev 1 $',
+                    companyLastPaid: 0.00,
+                    palletConfig: 0.00,
+                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+                    goodPrice: true,
+                    manLine: false,
+                    url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+                    OpportunityId: this.recordId
+                } 
+            ]
+        }
+        this.doubleShip = true; 
+        console.log(JSON.stringify(this.selection));
+        
     }
 
     addManualLine(){
@@ -778,7 +868,7 @@ export default class ProdSelected extends LightningElement {
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
             if(lastQuote.length>0){
-                console.log('running mergeLastQuote');
+                //console.log('running mergeLastQuote');
                 mergedInven = await mergeLastQuote(mergedInven, lastQuote);
             }
             //merge last paid saved products

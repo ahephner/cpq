@@ -54,7 +54,7 @@ export default class MobileProdSelected extends LightningElement {
     hasRendered = true;
     dropShip;
     connectedCallback() {
-        console.log(this.shipType);
+        console.log(1, this.shipType);
         if(this.stage ==='Closed Won'|| this.stage === 'Closed Lost'){
             this.submitted = true; 
         }
@@ -64,6 +64,8 @@ export default class MobileProdSelected extends LightningElement {
         
     }
     renderedCallback(){
+        console.log(2, this.shipType);
+        
         if(this.prod.length>0 && this.hasRendered){
             this.initPriceCheck();
         }
@@ -78,7 +80,7 @@ export default class MobileProdSelected extends LightningElement {
         let inCode = new Set();
         let codes = [];
         try{
-            console.log(this.oppId);
+            //console.log(this.oppId);
             
             let results = await getProducts({oppId: this.oppId})
             console.log(1, results.length);

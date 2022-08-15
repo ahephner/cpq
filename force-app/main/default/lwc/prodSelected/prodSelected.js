@@ -74,8 +74,6 @@ export default class ProdSelected extends LightningElement {
     pryingEyes = false
     numbOfManLine = 0
     eventListening = false; 
-    //used for EOP when ship type is double adds 2 predefined ship lines. Set this true so function wont run twice.
-    doubleShip = false; 
     @track selection = []
 //for message service
     subscritption = null;
@@ -90,6 +88,7 @@ export default class ProdSelected extends LightningElement {
     }
     renderedCallback(){
         if(this.selection.length>0 && this.hasRendered){
+            
             this.initPriceCheck();
         }
         
@@ -141,7 +140,9 @@ export default class ProdSelected extends LightningElement {
             let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
             
             //check if the product is already on the bill. Can't have duplicates
-            if(alreadyThere<0){
+            if(this.productCode === 'ATS SHIPPING-SPLIT'){
+                this.addShips(); 
+            }else if(alreadyThere<0){
                 this.productName = mess.productName;
                 this.productId = mess.productId 
                 this.pbeId = mess.pbeId;
@@ -178,11 +179,6 @@ export default class ProdSelected extends LightningElement {
                 this.shipType = getFieldValue(data, SHIPTYPE);  
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                console.log('ship type '+this.shipType);
-                if(this.shipType === 'TR'){
-                    this.shipType === 'TR' ? this.addShips() : console.log('');
-                }
-                
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -292,85 +288,92 @@ export default class ProdSelected extends LightningElement {
 //need to add 2 shipping line items
 //need to see if the array already has objects. 
     addShips(){
-        //empty array
-        if(this.doubleShip === false){
-            console.log('add ships')
-            this.selection = [
-                ...this.selection, {
-                    sObjectType: 'OpportunityLineItem',
-                    Id: '',
-                    PricebookEntryId: '01u2M00000ZBLn5QAH',
-                    Product2Id: '01t2M0000062XwhQAE',
-                    agency: false,
-                    name: 'ATS SHIPPING',
-                    ProductCode: 'ATS SHIPPING',
-                    Ship_Weight__c: 0,
-                    Quantity: 1,
-                    UnitPrice: 1.00,
-                    floorPrice: 0.00,
-                    lOne: 0.00,
-                    lTwo: 0.00, 
-                    CPQ_Margin__c: 0.00,
-                    Cost__c: 0.00,
-                    displayCost: 0.00,
-                    lastPaid: 'use report',
-                    lastMarg: 'use report',
-                    docDate: '',
-                    TotalPrice: 1.00,
-                    wInv:  0.00,
-                    showLastPaid: true,
-                    lastQuoteAmount: 0.00,
-                    lastQuoteMargin: 0.00,
-                    lastQuoteDate: 0.00,
-                    flrText: 'flr price $',
-                    lOneText: 'lev 1 $',
-                    companyLastPaid: 0.00,
-                    palletConfig: 0.00,
-                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
-                    goodPrice: true,
-                    manLine: false,
-                    url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
-                    OpportunityId: this.recordId
-                },{
-                    sObjectType: 'OpportunityLineItem',
-                    Id: '',
-                    PricebookEntryId: '01u2M00000ZBLmsQAH',
-                    Product2Id: '01t2M0000062XwUQAU',
-                    agency: false,
-                    name: 'ATS SHIPPING-NO TAX',
-                    ProductCode: 'ATS SHIPPING-NT',
-                    Ship_Weight__c: 0,
-                    Quantity: 1,
-                    UnitPrice: 1.00,
-                    floorPrice: 0.00,
-                    lOne: 0.00,
-                    lTwo: 0.00, 
-                    CPQ_Margin__c: 0.00,
-                    Cost__c: 0.00,
-                    displayCost: 0.00,
-                    lastPaid: 'use report',
-                    lastMarg: 'use report',
-                    docDate: '',
-                    TotalPrice: 1.00,
-                    wInv:  0.00,
-                    showLastPaid: true,
-                    lastQuoteAmount: 0.00,
-                    lastQuoteMargin: 0.00,
-                    lastQuoteDate: 0.00,
-                    flrText: 'flr price $',
-                    lOneText: 'lev 1 $',
-                    companyLastPaid: 0.00,
-                    palletConfig: 0.00,
-                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
-                    goodPrice: true,
-                    manLine: false,
-                    url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
-                    OpportunityId: this.recordId
-                } 
-            ]
+        const atsShip = {
+            sObjectType: 'OpportunityLineItem',
+            Id: '',
+            PricebookEntryId: '01u2M00000ZBLn5QAH',
+            Product2Id: '01t2M0000062XwhQAE',
+            agency: false,
+            name: 'ATS SHIPPING',
+            ProductCode: 'ATS SHIPPING',
+            Ship_Weight__c: 0,
+            Quantity: 1,
+            UnitPrice: 1.00,
+            floorPrice: 0.00,
+            lOne: 0.00,
+            lTwo: 0.00, 
+            CPQ_Margin__c: 0.00,
+            Cost__c: 0.00,
+            displayCost: 0.00,
+            lastPaid: 'use report',
+            lastMarg: 'use report',
+            docDate: '',
+            TotalPrice: 1.00,
+            wInv:  0.00,
+            showLastPaid: true,
+            lastQuoteAmount: 0.00,
+            lastQuoteMargin: 0.00,
+            lastQuoteDate: 0.00,
+            flrText: 'flr price $',
+            lOneText: 'lev 1 $',
+            companyLastPaid: 0.00,
+            palletConfig: 0.00,
+            //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+            goodPrice: true,
+            manLine: false,
+            url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            OpportunityId: this.recordId
         }
-        this.doubleShip = true; 
-        console.log(JSON.stringify(this.selection));
+        const atsShipNT = {
+            sObjectType: 'OpportunityLineItem',
+            Id: '',
+            PricebookEntryId: '01u7500000BY6SaAAL',
+            Product2Id: '01t75000000rTHPAA2',
+            agency: false,
+            name: 'ATS SHIPPING - SPLIT SHIPMENTS',
+            ProductCode: 'ATS SHIPPING-SPLIT',
+            Ship_Weight__c: 0,
+            Quantity: 1,
+            UnitPrice: 1.00,
+            floorPrice: 0.00,
+            lOne: 0.00,
+            lTwo: 0.00, 
+            CPQ_Margin__c: 0.00,
+            Cost__c: 0.00,
+            displayCost: 0.00,
+            lastPaid: 'use report',
+            lastMarg: 'use report',
+            docDate: '',
+            TotalPrice: 1.00,
+            wInv:  0.00,
+            showLastPaid: true,
+            lastQuoteAmount: 0.00,
+            lastQuoteMargin: 0.00,
+            lastQuoteDate: 0.00,
+            flrText: 'flr price $',
+            lOneText: 'lev 1 $',
+            companyLastPaid: 0.00,
+            palletConfig: 0.00,
+            //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+            goodPrice: true,
+            manLine: false,
+            url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            OpportunityId: this.recordId
+        }
+        const checkShip = this.selection.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
+        const checkNT = this.selection.findIndex(x => x.Product2Id === '01t75000000rTHPAA2')
+        console.log(1, checkShip, 2, checkNT)
+        if(checkShip >= 0 && checkNT >=0 ){
+            return; 
+        }else if(checkShip < 0 && checkNT < 0){
+            this.selection = [...this.selection, atsShip, atsShipNT]; 
+        }else if(checkShip < 0 && checkNT >=0){
+            this.selection = [...this.selection, atsShip ];
+        }else if(checkShip >= 0 && checkNT < 0){
+            this.selection = [...this.selection, atsShipNT ];
+        }else{
+            return; 
+        }
         
     }
 
@@ -962,6 +965,7 @@ export default class ProdSelected extends LightningElement {
         
         
             for(let i=0; i<this.selection.length; i++){
+                console.log(this.selection[i])
                 let target = this.selection[i].ProductCode
                 let level = Number(this.selection[i].lOne);
                 let floor = Number(this.selection[i].floorPrice);

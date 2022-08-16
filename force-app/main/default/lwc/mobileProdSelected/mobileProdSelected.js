@@ -54,7 +54,7 @@ export default class MobileProdSelected extends LightningElement {
     hasRendered = true;
     dropShip;
     connectedCallback() {
-        console.log(1, this.shipType);
+        //console.log(1, this.shipType);
         if(this.stage ==='Closed Won'|| this.stage === 'Closed Lost'){
             this.submitted = true; 
         }
@@ -64,7 +64,7 @@ export default class MobileProdSelected extends LightningElement {
         
     }
     renderedCallback(){
-        console.log(2, this.shipType);
+       //console.log(2, this.shipType);
         
         if(this.prod.length>0 && this.hasRendered){
             this.initPriceCheck();
@@ -267,14 +267,15 @@ export default class MobileProdSelected extends LightningElement {
 //delete individual line items. 
     handleDelete(index){
         let id = this.prod[index].Id;
-        if(index>-1){
+
+        if(index >= 0 ){
             let cf = confirm('Do you want to delete this line item')
             if(cf === true){
                 this.prod.splice(index, 1);
-                deleteRecord(id);
+                if(id){
+                    deleteRecord(id);
+                }
             }
-            
-            
             this.goodPricing = checkPricing(this.prod);
         }
     }
@@ -408,6 +409,95 @@ export default class MobileProdSelected extends LightningElement {
         if(alreadyThere < 0){
             this.getPrevSale();
             this.wasEdited = true; 
+        }else{
+            return; 
+        }
+    }
+
+    addShip(){
+        const atsShip = {
+            sObjectType: 'OpportunityLineItem',
+            Id: '',
+            PricebookEntryId: '01u2M00000ZBLn5QAH',
+            Product2Id: '01t2M0000062XwhQAE',
+            agency: false,
+            name: 'ATS SHIPPING',
+            ProductCode: 'ATS SHIPPING',
+            Ship_Weight__c: 0,
+            Quantity: 1,
+            UnitPrice: 1.00,
+            floorPrice: 0.00,
+            lOne: 0.00,
+            lTwo: 0.00, 
+            CPQ_Margin__c: 0.00,
+            Cost__c: 0.00,
+            displayCost: 0.00,
+            lastPaid: 'use report',
+            lastMarg: 'use report',
+            docDate: '',
+            TotalPrice: 1.00,
+            wInv:  0.00,
+            showLastPaid: true,
+            lastQuoteAmount: 0.00,
+            lastQuoteMargin: 0.00,
+            lastQuoteDate: 0.00,
+            flrText: 'flr price $',
+            lOneText: 'lev 1 $',
+            companyLastPaid: 0.00,
+            palletConfig: 0.00,
+            //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+            goodPrice: true,
+            manLine: false,
+            url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            OpportunityId: this.oppId
+        }
+        const atsShipNT = {
+            sObjectType: 'OpportunityLineItem',
+            Id: '',
+            PricebookEntryId: '01u7500000BY6SaAAL',
+            Product2Id: '01t75000000rTHPAA2',
+            agency: false,
+            name: 'ATS SHIPPING - SPLIT SHIPMENTS',
+            ProductCode: 'ATS SHIPPING-SPLIT',
+            Ship_Weight__c: 0,
+            Quantity: 1,
+            UnitPrice: 1.00,
+            floorPrice: 0.00,
+            lOne: 0.00,
+            lTwo: 0.00, 
+            CPQ_Margin__c: 0.00,
+            Cost__c: 0.00,
+            displayCost: 0.00,
+            lastPaid: 'use report',
+            lastMarg: 'use report',
+            docDate: '',
+            TotalPrice: 1.00,
+            wInv:  0.00,
+            showLastPaid: true,
+            lastQuoteAmount: 0.00,
+            lastQuoteMargin: 0.00,
+            lastQuoteDate: 0.00,
+            flrText: 'flr price $',
+            lOneText: 'lev 1 $',
+            companyLastPaid: 0.00,
+            palletConfig: 0.00,
+            //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+            goodPrice: true,
+            manLine: false,
+            url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            OpportunityId: this.oppId
+        }
+        const checkShip = this.prod.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
+        const checkNT = this.prod.findIndex(x => x.Product2Id === '01t75000000rTHPAA2')
+        console.log(1, checkShip, 2, checkNT)
+        if(checkShip >= 0 && checkNT >=0 ){
+            return; 
+        }else if(checkShip < 0 && checkNT < 0){
+            this.prod = [...this.prod, atsShip, atsShipNT]; 
+        }else if(checkShip < 0 && checkNT >=0){
+            this.prod = [...this.prod, atsShip ];
+        }else if(checkShip >= 0 && checkNT < 0){
+            this.prod = [...this.prod, atsShipNT ];
         }else{
             return; 
         }

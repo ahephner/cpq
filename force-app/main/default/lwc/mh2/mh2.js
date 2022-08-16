@@ -102,8 +102,8 @@
 
   const updateNewProducts = (noIdProduct, returnedProducts)=>{
     const newProducts=[];
-    //console.log(JSON.stringify(noIdProduct))
-    //console.log(JSON.stringify(returnedProducts))
+    console.log(JSON.stringify(noIdProduct))
+    console.log(JSON.stringify(returnedProducts))
     if(noIdProduct){
       for(let i=0; i<noIdProduct.length;i++){
         let find = returnedProducts.find(item=>item.PricebookEntryId === noIdProduct[i].PricebookEntryId);

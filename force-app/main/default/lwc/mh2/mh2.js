@@ -88,6 +88,7 @@
             Ship_Weight__c: x.Product2.Ship_Weight__c,
             lastPaidDate: x.Unit_Price__c ? '$'+x.Unit_Price__c +' '+x.Doc_Date__c : '', 
             showLastPaid: true,
+            sgn: x.Product2.SGN__c, 
             lastQuoteAmount: '$'+x.Last_Quote_Price__c + ' '+ x.Quote_Date__c,
             lastQuoteMargin: x.Last_Quote_Margin__c,
             levels:'Lvl 1 $'+x.Level_1_UserView__c + ' Lvl 2 $'+x.Level_2_UserView__c,

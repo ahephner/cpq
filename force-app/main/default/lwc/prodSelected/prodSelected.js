@@ -43,7 +43,8 @@ export default class ProdSelected extends LightningElement {
     levelTwo;
     levelTwoMargin;
     companyLastPaid;
-    palletConfig;  
+    palletConfig;
+    sgn;   
     agency;
     sId; 
     productName; 
@@ -139,10 +140,7 @@ export default class ProdSelected extends LightningElement {
             this.productCode = mess.productCode;
             let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
             
-            //check if the product is already on the bill. Can't have duplicates
-            if(this.productCode === 'ATS SHIPPING-SPLIT'){
-                this.addShips(); 
-            }else if(alreadyThere<0){
+            if(alreadyThere<0){
                 this.productName = mess.productName;
                 this.productId = mess.productId 
                 this.pbeId = mess.pbeId;
@@ -156,6 +154,7 @@ export default class ProdSelected extends LightningElement {
                 this.levelTwoMargin = mess.levelTwoMargin; 
                 this.companyLastPaid = mess.lastPaid
                 this.palletConfig = mess.palletQty;
+                this.sgn = mess.size; 
                 this.handleNewProd(); 
                 this.prodFound = true;
              }        
@@ -225,6 +224,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne,
                     companyLastPaid: this.companyLastPaid,
                     palletConfig: this.palletConfig,
+                    sgn: this.sgn, 
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
@@ -265,6 +265,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne, 
                     companyLastPaid: this.companyLastPaid,
                     palletConfig: this.palletConfig,
+                    sgn: this.sgn,
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,

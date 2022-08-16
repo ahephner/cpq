@@ -50,6 +50,7 @@ export default class MobileProdSelected extends LightningElement {
     shipWeight;
     total; 
     lastQuote; 
+    sgn; 
     
     hasRendered = true;
     dropShip;
@@ -83,10 +84,10 @@ export default class MobileProdSelected extends LightningElement {
             //console.log(this.oppId);
             
             let results = await getProducts({oppId: this.oppId})
-            console.log(1, results.length);
+            //console.log(1, results.length);
             
             if(results.length < 1){
-                console.log('should stop')
+                //console.log('should stop')
                 this.showSpinner = false;
                 return; 
             }else if(results.length>0){
@@ -401,6 +402,7 @@ export default class MobileProdSelected extends LightningElement {
         this.levelTwoMargin = prodx.detail.Level_2_Margin__c; 
         this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
         this.palletConfig = prodx.detail.Product2.Pallet_Qty__c;
+        this.sgn = prodx.detail.Product2.SGN__c; 
        // console.log('2 '+this.agProduct);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
@@ -544,6 +546,7 @@ export default class MobileProdSelected extends LightningElement {
                     lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
                     lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
+                    sgn: this.sgn,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
                     OpportunityId: this.oppId
@@ -582,6 +585,7 @@ export default class MobileProdSelected extends LightningElement {
                     lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
                     lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
+                    sgn: this.sgn,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
                     OpportunityId: this.oppId

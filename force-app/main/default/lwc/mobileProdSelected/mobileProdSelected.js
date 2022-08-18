@@ -456,8 +456,8 @@ export default class MobileProdSelected extends LightningElement {
         const atsShipNT = {
             sObjectType: 'OpportunityLineItem',
             Id: '',
-            PricebookEntryId: '01u7500000BY6SaAAL',
-            Product2Id: '01t75000000rTHPAA2',
+            PricebookEntryId: '01u6T00000H6GNQQA3',
+            Product2Id: '01t6T000006OzAyQAK',
             agency: false,
             name: 'ATS SHIPPING - SPLIT SHIPMENTS',
             ProductCode: 'ATS SHIPPING-SPLIT',

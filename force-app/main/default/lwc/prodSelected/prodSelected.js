@@ -288,6 +288,7 @@ export default class ProdSelected extends LightningElement {
     }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 
+//Make Sure ID's are correct
     addShips(){
         const atsShip = {
             sObjectType: 'OpportunityLineItem',
@@ -328,8 +329,8 @@ export default class ProdSelected extends LightningElement {
         const atsShipNT = {
             sObjectType: 'OpportunityLineItem',
             Id: '',
-            PricebookEntryId: '01u7500000BY6SaAAL',
-            Product2Id: '01t75000000rTHPAA2',
+            PricebookEntryId: '01u6T00000H6GNQQA3',
+            Product2Id: '01t6T000006OzAyQAK',
             agency: false,
             name: 'ATS SHIPPING - SPLIT SHIPMENTS',
             ProductCode: 'ATS SHIPPING-SPLIT',
@@ -362,7 +363,7 @@ export default class ProdSelected extends LightningElement {
             OpportunityId: this.recordId
         }
         const checkShip = this.selection.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
-        const checkNT = this.selection.findIndex(x => x.Product2Id === '01t75000000rTHPAA2')
+        const checkNT = this.selection.findIndex(x => x.Product2Id === '01t6T000006OzAyQAK')
         console.log(1, checkShip, 2, checkNT)
         if(checkShip >= 0 && checkNT >=0 ){
             return; 

@@ -20,6 +20,7 @@
     
     <template if:true={passVal}>
         <lightning-quick-action-panel header="Make Order">
+        <div class="slds-scrollable_y">
             <div class="slds-grid">
                 <lightning-input label="Name" value={name} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" onchange={newName} required></lightning-input>
                 <lightning-input label="Quote Number - Read Only" value={quoteNumb} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small" readonly></lightning-input>
@@ -128,9 +129,12 @@
                             </template>
                             
                         </div>
+                    
                         <div class="slds-grid">
-                            <br/><br/><br/>
+                            <br/><br/><br/><br/>
                         </div>
+            <!-- end of scroll -->
+                    </div>
             <div slot="footer">
                 <lightning-button
                     variant="neutral"

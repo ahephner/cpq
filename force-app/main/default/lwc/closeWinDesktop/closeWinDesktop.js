@@ -24,10 +24,10 @@ import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
 import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
-
+import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT]
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -91,6 +91,9 @@ export default class CloseWinDesktop extends LightningElement {
                     this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
                     this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                     this.firstPayDate = getFieldValue(data, FIRST_DATE);
+                    console.log(this.firstPayDate, 2);
+                    
+                    //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
                     this.billHold = getFieldValue(data, BILL_HOLD); 
                     this.findAddress(this.accountId);
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
@@ -129,7 +132,10 @@ get EOPOptions(){
 get payOptions(){
     return [
         {label:'Set Due Date',value:'Set Due Date'},
-        {label:'See Split Terms', value:'See Split Terms'}
+        {label:'See Split Terms', value:'See Split Terms'},
+        {label:'BASF', value:'BASF'},
+        {label:'Bayer', value:'Bayer'},
+        {label:'FMC', value:'FMC'}
     ]
 }
 
@@ -208,10 +214,19 @@ handleShipChange(event){
 handleEOP(event){
     this.eopOrder = event.detail.value; 
     this.showEOPInfo = this.eopOrder === 'Yes' ? true : false;
-    console.log(this.eopOrder)
+    //console.log(this.eopOrder)
 }
 handlePay(event){
+    //BASF 2023-06-07
+    //Bayer 2023-06-02
+    //FMC 2023-07-02
     this.eopPayType = event.detail.value;
+    this.firstPayDate = this.handleSetPayDate(this.eopPayType); 
+}
+handleSetPayDate(payType){
+    return payType === 'BASF' ? '2023-06-07' :
+    payType === 'Bayer' ? '2023-06-02' :
+    payType === 'FMC' ? '2023-07-02' : ''; 
 }
 handleNumbOpts(event){
     this.numPayments = event.detail.value; 

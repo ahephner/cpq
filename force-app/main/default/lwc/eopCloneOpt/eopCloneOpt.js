@@ -32,17 +32,22 @@ export default class EopCloneOpt extends NavigationMixin(LightningElement) {
         let valid = this.isValid();
         this.loaded = false;  
         if(valid){
+            window.clearTimeout(this.delay);
+            this.delay = setTimeout(() => {
+                console.log('waiting');
+                
+            }, 2000);
             eopClone({recId: this.recordId, EOP: this.value})
                 .then((res)=>{
-                    
-                        this[NavigationMixin.Navigate]({
-                            type: 'standard__recordPage',
-                            attributes: {
-                                recordId: res,
-                                objectApiName: 'Opportunity',
-                                actionName: 'view'
-                            }
-                        });
+
+                    this[NavigationMixin.Navigate]({
+                        type: 'standard__recordPage',
+                        attributes: {
+                            recordId: res,
+                            objectApiName: 'Opportunity',
+                            actionName: 'view'
+                        }
+                    });
                     this.loaded = true;
                 }).catch((error)=>{
                     this.loaded  = true;

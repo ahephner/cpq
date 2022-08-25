@@ -26,7 +26,7 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, unSavedChanges, roundRate} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -532,7 +532,7 @@ export default class ProdSelected extends LightningElement {
         this.tCost = getCost(this.selection)
         this.unsavedProducts = true;
         this.startEventListener();
-        unSavedChanges(true); 
+        this.unsavedProducts = true;
         if(!this.selection[index].agency){
             let margin = setMargin(this.tCost, this.tPrice)
             this.tMargin = roundNum(margin, 2);
@@ -967,7 +967,7 @@ export default class ProdSelected extends LightningElement {
         
         
             for(let i=0; i<this.selection.length; i++){
-                console.log(this.selection[i])
+                //console.log(this.selection[i])
                 let target = this.selection[i].ProductCode
                 let level = Number(this.selection[i].lOne);
                 let floor = Number(this.selection[i].floorPrice);

@@ -1,7 +1,7 @@
 @isTest
-public class test_cpqOppClone {
-    @isTest()
-    static void test_cpqOppClone(){
+public class test_cpqEOPClone {
+@isTest
+    static void Test_quickpriceSearch(){
         PageReference pref = Page.oppCloneWithProducts;
         Test.setCurrentPage(pref);
         //date for opp
@@ -14,75 +14,122 @@ public class test_cpqOppClone {
         insert cust;
         //product creation
         Id pricebookId = Test.getStandardPricebookId();
-
-        //create product2 that is active
-        product2 prod = new product2(name ='product', IsActive= True); 
-        insert prod; 
         
-        PricebookEntry pbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=prod.id,
-                                                 unitprice=4, IsActive = True, UseStandardPrice=False);
-        insert pbe; 
-//create product2 that will be deactivated
-        product2 widget = new product2(name ='widget', IsActive= True, Agency_Pricing__c=true); 
-        insert widget; 
+        		//Insert ATS Products To Put into Opportunity we are cloning        
+         Product__c r1 = new Product__c();
+  		 Product__c r2 = new Product__c();
+		 Product__c r3 = new Product__c();
+         //Product__c r4 = new Product__c();
         
-        PricebookEntry widgetpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=widget.id,
-                                                 unitprice=4, IsActive = True, UseStandardPrice=False);
-        insert widgetpbe; 
- //normal product
-         product2 rake = new product2(name ='rake', IsActive= True, Agency_Pricing__c=false); 
+		 r1.Product_Name__c='rake';
+         r1.Name = 'rake';
+     	 r1.Primary_Category__c = 'Chemicals';
+     	 r1.Subcategory__c ='Chemicals-Herbicide';
+     	 r1.Include_in_Programs__c = True;
+     	 r1.Size__c = 1; 
+     
+     	 r2.Product_Name__c='shovel';
+         r2.Name = 'shovel'; 
+     	 r2.Primary_Category__c = 'Chemicals';
+     	 r2.Subcategory__c = 'Chemicals-Fungicide';
+     	 r2.Include_in_Programs__c = True;   
+     	 r2.Size__c = 2; 
+     	 
+         r3.Product_Name__c='sprayer';
+         r3.Name = 'sprayer'; 
+     	 r3.Primary_Category__c = 'Chemicals';
+     	 r3.Subcategory__c = 'Chemicals-Fungicide';
+     	 r3.Include_in_Programs__c = True;   
+     	 r3.Size__c = 2;
+         
+        insert r1; 
+     	insert r2;
+		insert r3; 
+                //create EOP opportunity
+        opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,
+                                         stagename='Closed Won', job_type__c = 'Construction', closedate = myDate);
+       //opportunity from the website
+        opportunity webopp = new opportunity(name = 'test name2', accountID= cust.id, pricebook2id = pricebookId,
+                                         stagename='Quote(75%)', job_type__c = 'Construction', closedate = myDate,
+                                            Description='will be name');
+        //insert w/o synced quote
+        insert opp;
+        insert webopp; 
+        
+        Opportunity_Product__c prod1 = new Opportunity_Product__c(ATS_Product__c= r1.Id, Opportunity__c=opp.Id,Order_Qty__c=1, Line_Comment__c= 'Comment');
+        Opportunity_Product__c prod2 = new Opportunity_Product__c(ATS_Product__c= r2.Id, Opportunity__c=opp.Id,Order_Qty__c=2, Line_Comment__c= 'Comment');
+		Opportunity_Product__c prod3 = new Opportunity_Product__c(ATS_Product__c= r3.Id, Opportunity__c=opp.Id,Order_Qty__c=2, Line_Comment__c= 'Comment');
+        
+        insert prod1;
+        insert prod2;
+        insert prod3;
+         
+  //Products that will be added to the cloned opportunity
+ //product item
+         product2 rake = new product2(name ='rake', IsActive= True, Agency_Pricing__c=false, Floor_Price__c = 100); 
         insert rake; 
         
         PricebookEntry rakepbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=rake.id,
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert rakepbe;  
- //zero margin
-        product2 shovel = new product2(name ='shovel', IsActive= True, Agency_Pricing__c=false); 
+ //product item
+        product2 shovel = new product2(name ='shovel', IsActive= True, Agency_Pricing__c=true, Floor_Price__c=140); 
         insert shovel; 
         
         PricebookEntry shovelpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=shovel.id,
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert shovelpbe; 
+//non active product
+		product2 sprayer = new product2(name='sprayer', IsActive = False, Agency_Pricing__c =false, Floor_Price__c = 125);
+        insert sprayer;
         
-        //create test opportunity
-        opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,
-                                         stagename='Estimate(10%)', job_type__c = 'Construction', closedate = myDate);
-       
-        //insert w/o synced quote
-        insert opp; 
-       
-//opportunitylineitem
-        opportunitylineitem li = new opportunitylineitem(opportunityid = opp.id, product2id = prod.Id, PricebookEntryId=pbe.id,
-                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c= 4, CPQ_Margin__c=100); 
-        insert li; 
-        opportunitylineitem widgetli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=widgetpbe.id,
-                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0.00); 
-        insert widgetli;
-        
-        opportunitylineitem rakeli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=rakepbe.id,
-                                                          unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=10); 
-        insert rakeli; 
-        
-        opportunitylineitem shovelli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=shovelpbe.id,
+        PricebookEntry sprayerpbed = new PricebookEntry(Pricebook2Id = pricebookId, Product2id = sprayer.id,
+                                                       unitprice = 125, IsActive = false, UseStandardPrice = false);
+
+        opportunitylineitem web1 = new opportunitylineitem(opportunityid = webopp.id, product2id = rake.Id, PricebookEntryId=rakepbe.id,
                                                           unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0.00); 
-        insert shovelli;  
+        insert web1;
         //construct standard controller
         ApexPages.StandardController con = new ApexPages.StandardController(opp);
+        ApexPages.StandardController webcon = new ApexPages.StandardController(webopp);
         
         //create the controller
-        cpqOppClone clone = new cpqOppClone(con);
-        
+        cpqEOPClone clone = new cpqEOPClone(con);
+        cpqEOPClone webclone = new cpqEOPClone(webcon);
         Test.startTest();
             //call the clonemethod
-            PageReference method = clone.cloneOpp();
-            widget.IsActive = false; 
-            update widget;
-        	string eopClone = cpqOppClone.cloneOppEOP(opp.id, 'Yes'); 
-        
-            opportunity clonedOp = [select id from opportunity where id =: clone.newOppID];
-			system.debug('eopClone ===> '+eopClone); 
-            system.assertNotEquals(clonedOp, null); 
-
+            PageReference method = clone.cloneEOP();
+			PageReference webmethod = webclone.cloneEOP();
          test.stopTest();        
+		opportunity clonedOp = [select id from opportunity where id =:clone.newOppID];
+        system.assertNotEquals(null, clonedOp); 
+    }
+    
+    @isTest
+    static void testWhiteBoard(){
+        Map<String, Decimal> prodMap = new Map<String, Decimal>();
+        Id pricebookId = Test.getStandardPricebookId();
+        string fakeId = string.valueOf(pricebookId);
+        string newOp = '01s410000077vSKAAY';
+        
+        prodMap.put('PL1085-20GL', 1);
+        prodMap.put('PL1085-2.5GL', 1);
+        prodMap.put('PL1082-20GL', 1);
+        prodMap.put('PL1082-2.5GL', 1);
+        prodMap.put('PL1000-55DR', 1);
+        prodMap.put('PL1000-2.5GL', 1);
+        prodMap.put('PL1081-2.5GL', 1);
+        prodMap.put('PL1023-DR', 1);
+        
+        product2 shovel = new product2(name ='shovel', IsActive= True, Agency_Pricing__c=false, Floor_Price__c=140, ProductCode='PL1085-2.5GL'); 
+        insert shovel; 
+        
+        PricebookEntry shovelpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=shovel.id,
+                                                 unitprice=4, IsActive = True, UseStandardPrice=False);
+        insert shovelpbe;         
+        Test.startTest();
+        system.debug('shovel -->'+fakeId + ' 2 ' +pricebookId);
+        	list<OpportunityLineItem> back = whiteBoard.precisionLines(prodMap, fakeId, newOp); 
+        Test.stopTest();
     }
 }

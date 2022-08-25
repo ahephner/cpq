@@ -123,7 +123,10 @@ get EOPOptions(){
 get payOptions(){
     return [
         {label:'Set Due Date',value:'Set Due Date'},
-        {label:'See Split Terms', value:'See Split Terms'}
+        {label:'See Split Terms', value:'See Split Terms'},
+        {label:'BASF', value:'BASF'},
+        {label:'Bayer', value:'Bayer'},
+        {label:'FMC', value:'FMC'}
     ]
 }
 
@@ -252,6 +255,12 @@ handleEOP(event){
 }
 handlePay(event){
     this.eopPayType = event.detail.value;
+    this.firstPayDate = this.handleSetPayDate(this.eopPayType); 
+}
+handleSetPayDate(payType){
+    return payType === 'BASF' ? '2023-06-07' :
+    payType === 'Bayer' ? '2023-06-02' :
+    payType === 'FMC' ? '2023-07-02' : ''; 
 }
 handleNumbOpts(event){
     this.numPayments = event.detail.value; 

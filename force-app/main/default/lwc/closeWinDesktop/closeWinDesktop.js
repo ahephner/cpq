@@ -25,9 +25,10 @@ import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
-import getAddress from '@salesforce/apex/cpqApex.getAddress'
+import getAddress from '@salesforce/apex/cpqApex.getAddress';
+import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -62,6 +63,7 @@ export default class CloseWinDesktop extends LightningElement {
     numPayments = '';
     firstPayDate = ''; 
     billHold;
+    earlyPay;
     showEOPInfo = false;
     passVal = true; 
     connectedCallback(){
@@ -91,7 +93,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
                     this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                     this.firstPayDate = getFieldValue(data, FIRST_DATE);
-                    console.log(this.firstPayDate, 2);
+                    this.earlyPay = getFieldValue(data, EARLY_PAY);
                     
                     //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
                     this.billHold = getFieldValue(data, BILL_HOLD); 
@@ -228,6 +230,9 @@ handleSetPayDate(payType){
     payType === 'Bayer' ? '2023-06-02' :
     payType === 'FMC' ? '2023-07-02' : ''; 
 }
+handleEarlyPay(event){
+    this.earlyPay = event.detail.value; 
+}
 handleNumbOpts(event){
     this.numPayments = event.detail.value; 
 }
@@ -292,6 +297,7 @@ newDevDate2(e){
             fields[NUM_PAYMENTS.fieldApiName] = this.numPayments;
             fields[FIRST_DATE.fieldApiName] = this.firstPayDate;
             fields[BILL_HOLD.fieldApiName] = this.billHold; 
+            fields[EARLY_PAY.fieldApiName] = this.earlyPay; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
             console.log(JSON.stringify(opp))

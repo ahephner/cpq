@@ -96,6 +96,15 @@
                     required
                     class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                     ></lightning-combobox>
+                    <lightning-combobox
+                    name="earlyPay"
+                    label="Early Pay?"
+                    value={earlyPay}
+                    options={EOPOptions}
+                    onchange={handleEarlyPay}
+                    required
+                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                    ></lightning-combobox>
                     <!-- discount -->
                     <!-- <lightning-input type="number" name="input6" 
                     label="Discount %" value="0.5" formatter="percent" step="0.01"></lightning-input> -->

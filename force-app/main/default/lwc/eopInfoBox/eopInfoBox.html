@@ -1,14 +1,53 @@
 <template>
     <lightning-card title="EOP Details" icon-name="standard:opportunity">
-        <div class="slds-var-m-around_medium">
-            <!-- <lightning-combobox
-                                    name="Pay Type"
-                                    label="Pay Type"
-                                    value={pt}
-                                    options={payType.picklistFieldValues}
-                                    onchange={payTypeChange} ></lightning-combobox> -->
-                                    <p>{pt}</p>
+        <div class="slds-grid">
+            <div class="slds-col slds-size_1-of-2">
+                <div class="slds-var-m-around_medium">
+                <!--Pay Type  -->
+                    <lightning-combobox
+                        name="Pay Type"
+                        label="Pay Type"
+                        value={pt}
+                        options={payOptions}
+                        onchange={payTypeChange} ></lightning-combobox>
+                <!--Number of Payments  -->
+                    <lightning-combobox
+                        name="Number of Payments"
+                        label="Number of Payments"
+                        value={payNumb}
+                        options={numbOptions}
+                        onchange={payChange}></lightning-combobox>
+                <!--Discount %  -->
+                    <lightning-input type="number"  name="discount" 
+                        label="Discount %"
+                        value={discount}
+                        onchange={discountChange}></lightning-input>    
+                </div>
+            </div>
+            <div class="slds-col slds-size_1-of-2">
+                <div class="slds-var-m-around_medium">
+                <!-- Due Date -->
+                    <lightning-input label="Due Date" type='date' 
+                                 value={dueDate} 
+                                 onchange={newDeliveryDate}></lightning-input>
+                <!-- Bill and hold -->
+                <lightning-combobox
+                        name="Bill and Hold"
+                        label="Bill and Hold?"
+                        value={bh}
+                        options={bhOptions}
+                        onchange={bhChange}></lightning-combobox>
+                <!-- Customer PO -->
+                <lightning-combobox
+                        name="Early Pay"
+                        label="Early Pay?"
+                        value={earlyPay}
+                        options={bhOptions}
+                        onchange={earlyPayChange}></lightning-combobox>
+                </div>
+            </div>
         </div>
     </lightning-card>
 
 </template>
+

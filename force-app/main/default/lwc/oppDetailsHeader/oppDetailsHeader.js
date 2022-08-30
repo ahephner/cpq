@@ -9,13 +9,13 @@ import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c'
 //import INV_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c'
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import DISCOUNT_PERCENT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
-import PO from '@salesforce/schema/Opportunity.Customer_PO__c';
+import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 
 export default class OppDetailsHeader extends LightningElement{
     @api recordId;
     @api objectApiName;
     @api prop1;
-    fields = [EOP_PAYTYPE, FIRST_DATE, NUM_PAYMENTS, BILL_HOLD, DISCOUNT_PERCENT, PO ]
+    fields = [EOP_PAYTYPE, FIRST_DATE, NUM_PAYMENTS, BILL_HOLD, DISCOUNT_PERCENT, EARLY_PAY ];
     handleSuccess(){
         console.log('good save!');
         

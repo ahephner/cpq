@@ -21,10 +21,11 @@ import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
 import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
+import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import {validate} from 'c/helper'
-const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS]
+const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -60,6 +61,7 @@ export default class CloseWinMobile extends LightningElement {
     eopPayType
     numPayments;
     billHold; 
+    earlyPay;
     showEOPInfo = false;
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
@@ -88,6 +90,7 @@ export default class CloseWinMobile extends LightningElement {
                             this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                             this.firstPayDate = getFieldValue(data, FIRST_DATE);
                             this.billHold = getFieldValue(data, BILL_HOLD); 
+                            this.earlyPay = getFieldValue(data, EARLY_PAY)
                             this.findAddress(this.accountId);
                             this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                             this.loaded = true; 
@@ -257,6 +260,10 @@ handlePay(event){
     this.eopPayType = event.detail.value;
     this.firstPayDate = this.handleSetPayDate(this.eopPayType); 
 }
+handleEarlyPay(event){
+    this.earlyPay = event.detail.value; 
+}
+
 handleSetPayDate(payType){
     return payType === 'BASF' ? '2023-06-07' :
     payType === 'Bayer' ? '2023-06-02' :
@@ -296,6 +303,7 @@ submit(event) {
         fields[SHIPTO.fieldApiName] = this.shipTo;
         fields[SHIPTYPE.fieldApiName] = this.shipType; 
         fields[BILL_HOLD.fieldApiName] = this.billHold; 
+        fields[EARLY_PAY.fieldApiName] = this.earlyPay; 
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}
         console.log(JSON.stringify(opp))

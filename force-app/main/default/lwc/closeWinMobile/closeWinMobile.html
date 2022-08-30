@@ -101,6 +101,16 @@
                                 required
                                 class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                                 ></lightning-combobox>
+                    <!-- Early Pay -->
+                                <lightning-combobox
+                                name="earlyPay"
+                                label="Early Pay?"
+                                value={earlyPay}
+                                options={EOPOptions}
+                                onchange={handleEarlyPay}
+                                required
+                                class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                                ></lightning-combobox>
                             </template>
                             </div>
                             <template if:true={showEOPInfo}>

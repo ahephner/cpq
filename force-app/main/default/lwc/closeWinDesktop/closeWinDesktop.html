@@ -88,23 +88,33 @@
                 ></lightning-combobox>
                 <template if:true={showEOPInfo}>
                     <lightning-combobox
-                    name="eopPayType"
-                    label="EOP Pay Type"
-                    value={eopPayType}
-                    options={payOptions}
-                    onchange={handlePay}
-                    required
-                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                        name="eopPayType"
+                        label="EOP Pay Type"
+                        value={eopPayType}
+                        options={payOptions}
+                        onchange={handlePay}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                     ></lightning-combobox>
                     <lightning-combobox
-                    name="earlyPay"
-                    label="Early Pay?"
-                    value={earlyPay}
-                    options={EOPOptions}
-                    onchange={handleEarlyPay}
-                    required
-                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                        name="earlyPay"
+                        label="Early Pay?"
+                        value={earlyPay}
+                        options={EOPOptions}
+                        onchange={handleEarlyPay}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                     ></lightning-combobox>
+                    
+                    <lightning-combobox
+                        name="eopBox"
+                        label="Bill and Hold?"
+                        value={billHold}
+                        options={EOPOptions}
+                        onchange={handleBillHold}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                ></lightning-combobox> 
                     <!-- discount -->
                     <!-- <lightning-input type="number" name="input6" 
                     label="Discount %" value="0.5" formatter="percent" step="0.01"></lightning-input> -->
@@ -122,16 +132,14 @@
                         required
                         class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                 ></lightning-combobox>
-                        <lightning-input class="eopInputs" type="date" name="dateInput" label="Due Date" value={firstPayDate} onchange={handleDate} required></lightning-input>
-                        <lightning-combobox
-                        name="eopBox"
-                        label="Bill and Hold?"
-                        value={billHold}
-                        options={EOPOptions}
-                        onchange={handleBillHold}
-                        required
-                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
-                ></lightning-combobox>
+        <!--Due Date and Invoice Date-->
+                        <lightning-input class="eopInputs" type="date" 
+                                         name="dateInput" label="Due Date" 
+                                         value={firstPayDate} onchange={handleDate} required></lightning-input>
+
+                        <lightning-input class="eopInputs" type="date" 
+                                         name="dateInput" label="Invoice Date" 
+                                         value={invoiceDate} onchange={handleInvoiceDate} required></lightning-input>
                     </div>
                 </template>
                 

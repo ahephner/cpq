@@ -1,0 +1,51 @@
+<template>
+    <div class={flexipageRegionWidth}>
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
+        <thead>
+            <tr class="slds-line-height_reset headerTable">
+                <th><div class="slds-truncate" title="Product Name">Product Name</div></th>
+                <th><div class="slds-truncate" title="Product Name">New Floor Price</div></th>
+                <th><div class="slds-truncate" title="Product Name">Prev Floor</div></th>
+                <th><div class="slds-truncate" title="Product Name">Change</div></th>
+            </tr>
+        </thead>
+        <tbody>
+            <template for:each={itemsList} for:item="x">
+                <tr class="slds-hint-parent" key={x.Id}>
+                    <td data-label="Product Name">
+                        <div class="slds-truncate">{x.Name}</div>
+                      </td>
+                      <td data-lable="Floor Name">
+                        <div class="slds-truncate">${x.Floor_Price__c}</div>
+                    </td>
+                    <td data-label="Prev Floor">
+                        <div class="slds-truncate">${x.prevFloor}</div>
+                    </td>
+                    <td data-label="Diff">
+                        <div class="slds-truncate"><span class={x.color}>{x.valChanged}</span></div>
+                    </td>
+                    <td data-label="delete">
+                        <div class="slds-truncate">
+                          <lightning-button-icon icon-name="utility:close" name={x.Id}
+                                                 onclick={removeRow}></lightning-button-icon>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+    <div slot="footer">
+        <lightning-button
+            variant="neutral"
+            label="Back"
+            onclick={handleCancel}
+        ></lightning-button>
+        <lightning-button
+            variant="brand"
+            label="Submit"
+            class="slds-m-left_x-small"
+            onclick={handleSave}
+        ></lightning-button>
+    </div>
+</div> 
+</template>

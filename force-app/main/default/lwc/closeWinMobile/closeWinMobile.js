@@ -22,10 +22,10 @@ import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
-
+import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import {validate} from 'c/helper'
-const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY];
+const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY, FIRST_DATE, BILL_HOLD,NUM_PAYMENTS, EOP_PAYTYPE, INVOICE_DATE];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -61,6 +61,7 @@ export default class CloseWinMobile extends LightningElement {
     eopPayType
     numPayments;
     billHold; 
+    invoiceDate;
     earlyPay;
     showEOPInfo = false;
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
@@ -90,7 +91,8 @@ export default class CloseWinMobile extends LightningElement {
                             this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                             this.firstPayDate = getFieldValue(data, FIRST_DATE);
                             this.billHold = getFieldValue(data, BILL_HOLD); 
-                            this.earlyPay = getFieldValue(data, EARLY_PAY)
+                            this.earlyPay = getFieldValue(data, EARLY_PAY);
+                            this.invoiceDate = getFieldValue(data, INVOICE_DATE);
                             this.findAddress(this.accountId);
                             this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                             this.loaded = true; 
@@ -278,6 +280,9 @@ handleDate(event){
 handleBillHold(event){
     this.billHold = event.detail.value;  
 }
+handleInvoiceDate(event){
+    this.invoiceDate = event.detail.value; 
+}
 submitTest(event){
     event.preventDefault();
     const ok = this.isInputValid();
@@ -303,7 +308,12 @@ submit(event) {
         fields[SHIPTO.fieldApiName] = this.shipTo;
         fields[SHIPTYPE.fieldApiName] = this.shipType; 
         fields[BILL_HOLD.fieldApiName] = this.billHold; 
-        fields[EARLY_PAY.fieldApiName] = this.earlyPay; 
+        fields[EARLY_PAY.fieldApiName] = this.earlyPay;
+        fields[FIRST_DATE.fieldApiName] = this.firstPayDate;
+        fields[NUM_PAYMENTS.fieldApiName] = this.numPayments;
+        fields[EOP_PAYTYPE.fieldApiName] = this.eopPayType;
+        fields[EOP_ORDER.fieldApiName] = this.eopOrder;
+        fields[INVOICE_DATE.fieldApiName] = this.invoiceDate;  
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}
         console.log(JSON.stringify(opp))

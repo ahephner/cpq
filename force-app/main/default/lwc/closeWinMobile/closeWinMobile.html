@@ -111,6 +111,16 @@
                                 required
                                 class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                                 ></lightning-combobox>
+                    <!-- Invoice Date -->
+                                <lightning-combobox
+                                    name="eopBox"
+                                    label="Bill and Hold?"
+                                    value={billHold}
+                                    options={EOPOptions}
+                                    onchange={handleBillHold}
+                                    required
+                                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                            ></lightning-combobox>
                             </template>
                             </div>
                             <template if:true={showEOPInfo}>
@@ -125,16 +135,15 @@
                                     required
                                     class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
                             ></lightning-combobox>
-                                    <lightning-input class="eopInputs" type="date" name="dateInput" label="Due Date" value={firstPayDate} onchange={handleDate} required></lightning-input>
-                                    <lightning-combobox
-                                    name="eopBox"
-                                    label="Bill and Hold?"
-                                    value={billHold}
-                                    options={EOPOptions}
-                                    onchange={handleBillHold}
-                                    required
-                                    class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
-                            ></lightning-combobox>
+                        <!-- Due Date and Invoice Date -->
+                                    <lightning-input class="eopInputs" type="date" 
+                                                     name="dateInput" label="Due Date" 
+                                                     value={firstPayDate} onchange={handleDate} required></lightning-input>
+                                                     
+                                    <lightning-input class="eopInputs" type="date" 
+                                                     name="dateInput" label="Invoice Date" 
+                                                     value={invoiceDate} onchange={handleInvoiceDate} required></lightning-input>                                    
+ 
                                 </div>
                             </template>
                             

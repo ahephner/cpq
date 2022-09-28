@@ -27,8 +27,9 @@ import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
+import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY];
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -64,6 +65,7 @@ export default class CloseWinDesktop extends LightningElement {
     firstPayDate = ''; 
     billHold;
     earlyPay;
+    invoiceDate; 
     showEOPInfo = false;
     passVal = true; 
     connectedCallback(){
@@ -94,7 +96,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                     this.firstPayDate = getFieldValue(data, FIRST_DATE);
                     this.earlyPay = getFieldValue(data, EARLY_PAY);
-                    
+                    this.invoiceDate = getFieldValue(data, INVOICE_DATE); 
                     //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
                     this.billHold = getFieldValue(data, BILL_HOLD); 
                     this.findAddress(this.accountId);
@@ -243,6 +245,9 @@ handleDate(event){
 handleBillHold(event){
     this.billHold = event.detail.value
 }
+handleInvoiceDate(event){
+    this.invoiceDate = event.detail.value; 
+}
 //Stage Change
 // handleStageChange(event) {
 //     this.stage = event.detail.value;
@@ -298,6 +303,7 @@ newDevDate2(e){
             fields[FIRST_DATE.fieldApiName] = this.firstPayDate;
             fields[BILL_HOLD.fieldApiName] = this.billHold; 
             fields[EARLY_PAY.fieldApiName] = this.earlyPay; 
+            fields[INVOICE_DATE.fieldApiName] = this.invoiceDate; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
             console.log(JSON.stringify(opp))

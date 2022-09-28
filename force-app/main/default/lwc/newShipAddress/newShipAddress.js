@@ -64,7 +64,7 @@ export default class NewShipAddress extends LightningElement{
 //finally show toast its good. 
         handleNewAddress(){
             let valid = this.validInfo();
-            console.log('valid', valid)
+            //console.log('valid', valid)
             if(valid){
                 const fields = {};
 
@@ -77,7 +77,7 @@ export default class NewShipAddress extends LightningElement{
                 fields[PICKUP.fieldApiName] = true;
 
                 const recordInput = {apiName: OBJ.objectApiName, fields: fields}
-                console.log(JSON.stringify(recordInput)); 
+                //console.log(JSON.stringify(recordInput)); 
                 createRecord(recordInput)
                 
                 .then((res)=>{

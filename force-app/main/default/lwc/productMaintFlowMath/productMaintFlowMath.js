@@ -105,8 +105,8 @@ export default class ProductMaintFlowMath extends LightningElement {
             let Id = draft.Id
             let Level_1_Price__c = draft.Level_1_Price__c
             let Level_2_Price__c = draft.Level_2_Price__c
-
-            const fields = {Id, Level_1_Price__c, Level_2_Price__c}
+            let isChanged__c = true; 
+            const fields = {Id, Level_1_Price__c, Level_2_Price__c, isChanged__c}
             return {fields}
         })
         console.log(inputs);

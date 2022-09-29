@@ -42,11 +42,6 @@ export default class ProductMaintFlowFloor extends LightningElement{
         return screen === 'Large'? true:false;
     }
 
-    removeRow(e){
-        alert(e.target.name)
-    }
-
-
     //set the new floor here. 
     setFloor(numb){
         let lowFloor = [];
@@ -78,14 +73,14 @@ export default class ProductMaintFlowFloor extends LightningElement{
         return {backList:updateList, floorsLow: lowFloor, count: lowFloorCount}; 
     }
 
-    //Delete from list 
-    removeLineItem(e){
-        let index = this.items.findIndex(i => i.Id === e.target.id);
-        if(index<0){
-            this.items.splice(index, 1); 
+    //Delete from list
+    removeRow(e){
+        let index = this.itemsList.findIndex(i => i.Id === e.target.name);
+        if(index <= 0){
+            this.itemsList.splice(index, 1); 
         }
-    }
-
+    
+    } 
     //returns a round number for later math functions
     roundNum = (value, dec)=>{
         //console.log('v '+value+' dec '+dec)
@@ -96,15 +91,16 @@ export default class ProductMaintFlowFloor extends LightningElement{
     handleSave(){
         this.loading = true; 
         const inputs = this.itemsList.slice().map(draft=>{
+            
             let Id = draft.Id;
             let Min_Margin__c = draft.Min_Margin__c;
-            
-            const fields = {Id, Min_Margin__c}
+            let isChanged__c = true; 
+            const fields = {Id, Min_Margin__c, isChanged__c}
             return {fields}
         })
-        console.log(inputs)
         const promises = inputs.map(rec => updateRecord(rec));
-        PromiseRejectionEvent.all(promises).then(x=>{
+        console.log(inputs)
+        Promise.all(promises).then(x=>{
             let mess = 'success';
             const attributeChange = new FlowAttributeChangeEvent('label', mess);
             this.dispatchEvent(attributeChange);

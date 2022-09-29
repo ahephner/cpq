@@ -1,0 +1,21 @@
+.prodCode{
+    font-weight: 700;
+    color: black;
+}
+
+.pcCard{
+    /* background-color: #eeeeeecc;   */
+}
+
+.leftSide{
+    color: #404e44cb;
+}
+
+.rightSide{
+    color: black;
+    margin-left: 10px;
+}
+
+.list{
+    list-style-type: none;
+}

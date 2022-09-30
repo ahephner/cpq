@@ -39,7 +39,7 @@ export default class ProductMaintFlow extends LightningElement{
             i.Level_1_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_1_Editable_Margin__c;
             return {...i}
         }); 
-        console.log(JSON.stringify(this.items))
+        
         this.twoItems = this.screenSize(FORM_FACTOR) ? this.items : '';
     }
 

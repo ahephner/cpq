@@ -11,9 +11,10 @@ export default class ProductMaintFlowFloor extends LightningElement{
     lowRecords; 
     items;
     error; 
+    count = 0; 
     @api flexipageRegionWidth;
-    @track final
-    @track itemsList;
+    
+    @track itemsList = [];
     @api label; 
     @api defaultMargin; 
     @api 
@@ -31,6 +32,7 @@ export default class ProductMaintFlowFloor extends LightningElement{
         this.formSize = await this.screenSize(FORM_FACTOR);
         this.items = await this.setFloor(this.defaultMargin);
         this.itemsList = [...this.items.backList];
+        this.flipBox(this.itemsList[0].Id);
         // this.lowRecords = [...results.floorsLow]; 
         // this.lowRecordsCount = results.count; 
         this.loading = false; 
@@ -50,11 +52,13 @@ export default class ProductMaintFlowFloor extends LightningElement{
         let prevFloor; 
         let valChanged; 
         let color; 
+        let rowClass; 
         let updateList = this.items.map(x=>{ 
                 prevFloor = x.Floor_Price__c;
                 valChanged;
-                color;  
-                return {...x, prevFloor, valChanged, color}
+                color;
+                rowClass = 'innerInfo';  
+                return {...x, prevFloor, valChanged, color, rowClass}
             })
 
         for(let i = 0; i< updateList.length; i ++){
@@ -62,7 +66,8 @@ export default class ProductMaintFlowFloor extends LightningElement{
                 updateList[i].Floor_Price__c = this.roundNum(updateList[i].Product_Cost__c / divider, 2); 
                 updateList[i].Min_Margin__c  = this.defaultMargin; 
                 updateList[i].valChanged = this.roundNum(updateList[i].Floor_Price__c - updateList[i].prevFloor, 2);
-                updateList[i].color = updateList[i].valChanged >= 0 ? 'slds-text-color_success' : 'slds-text-color_error';  
+                updateList[i].color = updateList[i].valChanged >= 0 ? 'slds-text-color_success' : 'slds-text-color_error';
+                this.count ++;   
                     if(updateList[i].Level_1_Price__c < updateList[i].Floor_Price__c){
     //I want to set some sort of class here that we can use then to add color to the row. 
                         lowFloor.push(updateList[i]);
@@ -73,14 +78,19 @@ export default class ProductMaintFlowFloor extends LightningElement{
         return {backList:updateList, floorsLow: lowFloor, count: lowFloorCount}; 
     }
 
+    flipBox(firstItem){
+        let index = this.itemsList.findIndex(x => firstItem === x.Id)
+        this.items[index].rowClass = 'first'
+    }
     //Delete from list
     removeRow(e){
         let index = this.itemsList.findIndex(i => i.Id === e.target.name);
-        if(index <= 0){
+
+        if(index >= 0){
             this.itemsList.splice(index, 1); 
         }
-    
     } 
+
     //returns a round number for later math functions
     roundNum = (value, dec)=>{
         //console.log('v '+value+' dec '+dec)

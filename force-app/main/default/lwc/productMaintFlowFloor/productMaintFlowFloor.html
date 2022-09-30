@@ -1,7 +1,12 @@
 <template>
     <div class={flexipageRegionWidth}>
     <!-- desktop version -->
-    <template if:false={formSize}>
+    <template if:true={formSize}>
+    <div class="headerInfo">
+        <p>Number of records: {count} </p>
+        <p class="slds-m-left_small">New Floor Margin: {defaultMargin}</p>
+    </div>
+
     <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
         <thead>
             <tr class="slds-line-height_reset headerTable">
@@ -15,7 +20,17 @@
             <template for:each={itemsList} for:item="x">
                 <tr class="slds-hint-parent" key={x.Id}>
                     <td data-label="Product Name">
+                        <div class="slds-m-top_large hasInfo">
                         <div class="slds-truncate">{x.Name}</div>
+            
+                                <div class={x.rowClass}>
+                                    <p>Code: {x.ProductCode}</p>
+                                    <p>Product Cost: {x.Product_Cost__c}</p>
+                                    <p>Prev Flr Margin: {x.Floor_Margin__c}</p>
+
+                                </div>
+                            
+                        </div>
                       </td>
                       <td data-lable="Floor Name">
                         <div class="slds-truncate">${x.Floor_Price__c}</div>
@@ -38,7 +53,7 @@
     </table>
 </template>
     <!-- mobile -->
-    <template if:true={formSize}>
+    <template if:false={formSize}>
         <div class='slds-scrollable_y cardClass' style='height:40rem; width:100%'>
             <lightning-layout multiple-rows="true">
                 <span class="slds-m-bottom_medium"></span>
@@ -47,8 +62,8 @@
                                             slds-m-horizontal_none pcCard" 
                                             name={item.Name}>
 
-                        <div class='slds-grid slds-wrap'>
-                            <div class='slds-col slds-size_1-of-1 slds-m-left_x-small slds-m-top_small'>
+                        <div class='slds-grid'>
+                            <div class='slds-col slds-size_1-of-2 slds-m-left_x-small slds-m-top_small'>
                                 <!-- <h2 class="slds-text-heading_medium slds-m-bottom_medium"></h2> -->
                                 <p class="prodCode slds-p-top_xxx-small">{item.ProductCode}</p>
                                     <p>{item.Name}</p> 
@@ -58,29 +73,34 @@
                                             <li><span class="leftSide">Change:</span> <span class="rightSide"><span class={item.color}>${item.valChanged}</span></span></li>
                                         </ul>      
                             </div>
+                            <div class="slds-col slds-size_1-of-2">
+                                <div class="slds-align_absolute-center removeBtn">
+                                    <lightning-button-icon icon-name="action:close" variant="border-filled"
+                                    name={item.Id} onclick={removeRow}></lightning-button-icon>
+                                </div>
+                            </div>
                         </div> 
         </lightning-layout-item>
                 </template>
             </lightning-layout>
         </div>
     </template>
-    <div slot="footer">
-        <div class="slds-grid">
-            <div class="slds-col slds-size_1-of-2"></div>
-            <div class="slds-col slds-size_1-of-2">
-                <lightning-button
-                variant="neutral"
-                label="Back"
-                onclick={handleCancel}
-            ></lightning-button>
+    <footer class="'slds-card__footer slds-grid slds-grid_align-spread slds-p-horizontal_small actionButtonBar">
+        <div class="actionsLeft slds-grid slds-m-right_xx-small"></div>
+        <div class="actionsRight">
             <lightning-button
-                variant="brand"
-                label="Submit"
-                class="slds-m-left_x-small"
-                onclick={handleSave}
-            ></lightning-button>
-            </div>
+            variant="neutral"
+            label="Back"
+            onclick={handleCancel}
+        ></lightning-button>
+        <lightning-button
+            variant="brand"
+            label="Submit"
+            class="slds-m-left_x-small"
+            onclick={handleSave}
+        ></lightning-button>
         </div>
-    </div>
+
+    </footer>
 </div> 
 </template>

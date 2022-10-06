@@ -32,7 +32,7 @@ export default class ProductMaintFlowFloor extends LightningElement{
         this.formSize = await this.screenSize(FORM_FACTOR);
         this.items = await this.setFloor(this.defaultMargin);
         this.itemsList = [...this.items.backList];
-        this.flipBox(this.itemsList[0].Id);
+        //this.flipBox(this.itemsList[0].Id);
         // this.lowRecords = [...results.floorsLow]; 
         // this.lowRecordsCount = results.count; 
         this.loading = false; 

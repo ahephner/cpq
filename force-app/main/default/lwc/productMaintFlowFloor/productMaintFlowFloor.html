@@ -4,7 +4,7 @@
     <template if:true={formSize}>
     <div class="headerInfo">
         <p>Number of records: {count} </p>
-        <p class="slds-m-left_small">New Floor Margin: {defaultMargin}</p>
+        <p class="slds-m-left_small">New Floor Margin: {defaultMargin}%</p>
     </div>
 
     <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-labelledby="element-with-table-label other-element-with-table-label">
@@ -26,7 +26,7 @@
                                 <div class={x.rowClass}>
                                     <p>Code: {x.ProductCode}</p>
                                     <p>Product Cost: {x.Product_Cost__c}</p>
-                                    <p>Prev Flr Margin: {x.Floor_Margin__c}</p>
+                                    <p>Prev Flr Margin: {x.Floor_Margin__c}%</p>
 
                                 </div>
                             
@@ -71,6 +71,8 @@
                                             <li><span class="leftSide">New Floor:</span> <span class="rightSide">${item.Floor_Price__c}</span></li>
                                             <li><span class="leftSide">Prev Floor:</span><span class="rightSide">${item.prevFloor}</span></li>
                                             <li><span class="leftSide">Change:</span> <span class="rightSide"><span class={item.color}>${item.valChanged}</span></span></li>
+                                            <li><span class="leftSide">Cost:</span><span class="rightSide">${item.Product_Cost__c}</span></li>
+                                            <li><span class="leftSide">Floor Margin:</span><span class="rightSide">{item.Floor_Margin__c}%</span></li>
                                         </ul>      
                             </div>
                             <div class="slds-col slds-size_1-of-2">

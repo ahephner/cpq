@@ -26,6 +26,7 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
+import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
@@ -52,7 +53,8 @@ export default class ProdSelected extends LightningElement {
     accountId;
     deliveryDate; 
     shipType;
-    dropShip;  
+    dropShip;
+    lineDiscount;  
     stage;
     warehouse;
     shippingAddress;
@@ -166,7 +168,7 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE, DISCOUNT]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
@@ -175,7 +177,8 @@ export default class ProdSelected extends LightningElement {
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
                 this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
-                this.shipType = getFieldValue(data, SHIPTYPE);  
+                this.shipType = getFieldValue(data, SHIPTYPE);
+                this.lineDiscount = getFieldValue(data, DISCOUNT)  
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
             }else if(error){
@@ -215,6 +218,7 @@ export default class ProdSelected extends LightningElement {
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                    Discount: this.lineDiscount ? this.lineDiscount : '',
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
@@ -256,6 +260,7 @@ export default class ProdSelected extends LightningElement {
                     Cost__c: this.unitCost,
                     displayCost: this.agency ? 'Agency' : this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                    Discount: this.lineDiscount ? this.lineDiscount : '',
                     wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
@@ -1023,4 +1028,26 @@ export default class ProdSelected extends LightningElement {
     openProdSearch(){
         this.template.querySelector('c-prod-search').openPriceScreen(); 
     }
+
+    // congaTest(){
+    //    // https://advancedturf--c.vf.force.com/services/Soap/u/37.0/00D41000002Fly1
+    //     let url ="https://advancedturf.lightning.force.com/apex/APXTConga4__Conga_Composer?ServerURL=/Soap/u/37.0/00D41000002Fly1&solmgr=1" +
+    //     "&id=0014100001vPUVrAAO" +
+    //     "&templateid=a2O2M000009948kUAA" +
+    //     "&ac0=1" +
+    //     "&ac1=EOP Storage Agreement Sent via CongaSign" +
+    //     "&csvisible=1" +
+    //     "&csroutingtype=PARALLEL" +
+    //     "&uf0=1" +
+    //     "&mfts0=EOP_Storage_Agreement__c" +  
+    //     "&mftsvalue0=True" +
+    //     "&ds7=1142" +
+    //     "&csrecipient1=0034100002QhPfEAAV" +
+    //     "&csrecipient2=00541000006o7BzAAI"  +
+    //     "&csrole2=cc" +
+    //     "&ReturnPath=0014100001vPUVrAAO";
+    //     let target = '_self'; 
+    //     let features = ''
+    //     window.open( url, target, features );
+    // }
 }

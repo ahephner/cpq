@@ -220,7 +220,7 @@ public with sharing class cpqApex {
             ol.Cost__c = x.Cost__c;
             ol.Description = x.Description;
             ol.Single_Product_Weight__c  = x.Ship_Weight__c;
-            //ol.TotalPrice = x.TotalPrice; 
+            ol.Discount = x.Discount; 
             ol.OpportunityId = x.OpportunityId;
             ol.Account__c = accId; 
                 newPricebookEntry.add(x.PricebookEntryId);
@@ -238,7 +238,7 @@ public with sharing class cpqApex {
             ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             ol.Description = x.Description;
             ol.Account__c = accId;
-            //ol.TotalPrice = x.TotalPrice; 
+            ol.Discount = x.Discount;  
             //ol.OpportunityId = x.OpportunityId;
         }
             

@@ -26,7 +26,8 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, unSavedChanges} from 'c/helper'
+import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -43,7 +44,8 @@ export default class ProdSelected extends LightningElement {
     levelTwo;
     levelTwoMargin;
     companyLastPaid;
-    palletConfig;  
+    palletConfig;
+    sgn;   
     agency;
     sId; 
     productName; 
@@ -51,7 +53,8 @@ export default class ProdSelected extends LightningElement {
     accountId;
     deliveryDate; 
     shipType;
-    dropShip;  
+    dropShip;
+    lineDiscount;  
     stage;
     warehouse;
     shippingAddress;
@@ -88,6 +91,7 @@ export default class ProdSelected extends LightningElement {
     }
     renderedCallback(){
         if(this.selection.length>0 && this.hasRendered){
+            
             this.initPriceCheck();
         }
         
@@ -138,7 +142,6 @@ export default class ProdSelected extends LightningElement {
             this.productCode = mess.productCode;
             let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
             
-            //check if the product is already on the bill. Can't have duplicates
             if(alreadyThere<0){
                 this.productName = mess.productName;
                 this.productId = mess.productId 
@@ -153,6 +156,7 @@ export default class ProdSelected extends LightningElement {
                 this.levelTwoMargin = mess.levelTwoMargin; 
                 this.companyLastPaid = mess.lastPaid
                 this.palletConfig = mess.palletQty;
+                this.sgn = mess.size; 
                 this.handleNewProd(); 
                 this.prodFound = true;
              }        
@@ -164,7 +168,7 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE, DISCOUNT]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
@@ -173,10 +177,10 @@ export default class ProdSelected extends LightningElement {
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
                 this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
-                this.shipType = getFieldValue(data, SHIPTYPE);  
+                this.shipType = getFieldValue(data, SHIPTYPE);
+                this.lineDiscount = getFieldValue(data, DISCOUNT)  
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
-                //console.log('ship type '+this.shipType)
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 
@@ -214,6 +218,7 @@ export default class ProdSelected extends LightningElement {
                     lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
                     docDate: this.newProd.Doc_Date__c,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                    Discount: this.lineDiscount ? this.lineDiscount : '',
                     wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
@@ -223,6 +228,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne,
                     companyLastPaid: this.companyLastPaid,
                     palletConfig: this.palletConfig,
+                    sgn: this.sgn, 
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
@@ -254,6 +260,7 @@ export default class ProdSelected extends LightningElement {
                     Cost__c: this.unitCost,
                     displayCost: this.agency ? 'Agency' : this.unitCost,
                     TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                    Discount: this.lineDiscount ? this.lineDiscount : '',
                     wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
                     showLastPaid: true,
                     lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
@@ -263,6 +270,7 @@ export default class ProdSelected extends LightningElement {
                     lOneText: 'lev 1 $'+this.levelOne, 
                     companyLastPaid: this.companyLastPaid,
                     palletConfig: this.palletConfig,
+                    sgn: this.sgn,
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
@@ -273,7 +281,7 @@ export default class ProdSelected extends LightningElement {
         }    
             //console.log(JSON.stringify(this.selection));
             let totals =  getTotals(this.selection);
-            this.tPrice = totals.TotalPrice;
+            this.tPrice = roundNum(totals.TotalPrice, 2);
             this.tQty = totals.Quantity;
             this.tCost = getCost(this.selection) 
             if(!this.agency){
@@ -282,6 +290,98 @@ export default class ProdSelected extends LightningElement {
             }
             this.unsavedProducts = true; 
             this.startEventListener()
+    }
+//need to add 2 shipping line items
+//need to see if the array already has objects. 
+//Make Sure ID's are correct
+    addShips(){
+        const atsShip = {
+            sObjectType: 'OpportunityLineItem',
+            Id: '',
+            PricebookEntryId: '01u2M00000ZBLn5QAH',
+            Product2Id: '01t2M0000062XwhQAE',
+            agency: false,
+            name: 'ATS SHIPPING',
+            ProductCode: 'ATS SHIPPING',
+            Ship_Weight__c: 0,
+            Quantity: 1,
+            UnitPrice: 1.00,
+            floorPrice: 0.00,
+            lOne: 0.00,
+            lTwo: 0.00, 
+            CPQ_Margin__c: 0.00,
+            Cost__c: 0.00,
+            displayCost: 0.00,
+            lastPaid: 'use report',
+            lastMarg: 'use report',
+            docDate: '',
+            TotalPrice: 1.00,
+            wInv:  0.00,
+            showLastPaid: true,
+            lastQuoteAmount: 0.00,
+            lastQuoteMargin: 0.00,
+            lastQuoteDate: 0.00,
+            flrText: 'flr price $',
+            lOneText: 'lev 1 $',
+            companyLastPaid: 0.00,
+            palletConfig: 0.00,
+            //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+            goodPrice: true,
+            manLine: false,
+            url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            OpportunityId: this.recordId
+        }
+        const atsShipNT = {
+            sObjectType: 'OpportunityLineItem',
+            Id: '',
+            PricebookEntryId: '01u6T00000H6GNQQA3',
+            Product2Id: '01t6T000006OzAyQAK',
+            agency: false,
+            name: 'ATS SHIPPING - SPLIT SHIPMENTS',
+            ProductCode: 'ATS SHIPPING-SPLIT',
+            Ship_Weight__c: 0,
+            Quantity: 1,
+            UnitPrice: 1.00,
+            floorPrice: 0.00,
+            lOne: 0.00,
+            lTwo: 0.00, 
+            CPQ_Margin__c: 0.00,
+            Cost__c: 0.00,
+            displayCost: 0.00,
+            lastPaid: 'use report',
+            lastMarg: 'use report',
+            docDate: '',
+            TotalPrice: 1.00,
+            wInv:  0.00,
+            showLastPaid: true,
+            lastQuoteAmount: 0.00,
+            lastQuoteMargin: 0.00,
+            lastQuoteDate: 0.00,
+            flrText: 'flr price $',
+            lOneText: 'lev 1 $',
+            companyLastPaid: 0.00,
+            palletConfig: 0.00,
+            //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+            goodPrice: true,
+            manLine: false,
+            url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            OpportunityId: this.recordId
+        }
+        const checkShip = this.selection.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
+        const checkNT = this.selection.findIndex(x => x.Product2Id === '01t6T000006OzAyQAK')
+        console.log(1, checkShip, 2, checkNT)
+        if(checkShip >= 0 && checkNT >=0 ){
+            return; 
+        }else if(checkShip < 0 && checkNT < 0){
+            this.selection = [...this.selection, atsShip, atsShipNT]; 
+        }else if(checkShip < 0 && checkNT >=0){
+            this.selection = [...this.selection, atsShip ];
+        }else if(checkShip >= 0 && checkNT < 0){
+            this.selection = [...this.selection, atsShipNT ];
+        }else{
+            return; 
+        }
+        
     }
 
     addManualLine(){
@@ -437,7 +537,7 @@ export default class ProdSelected extends LightningElement {
         this.tCost = getCost(this.selection)
         this.unsavedProducts = true;
         this.startEventListener();
-        unSavedChanges(true); 
+        this.unsavedProducts = true;
         if(!this.selection[index].agency){
             let margin = setMargin(this.tCost, this.tPrice)
             this.tMargin = roundNum(margin, 2);
@@ -778,7 +878,7 @@ export default class ProdSelected extends LightningElement {
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
             if(lastQuote.length>0){
-                console.log('running mergeLastQuote');
+                //console.log('running mergeLastQuote');
                 mergedInven = await mergeLastQuote(mergedInven, lastQuote);
             }
             //merge last paid saved products
@@ -872,6 +972,7 @@ export default class ProdSelected extends LightningElement {
         
         
             for(let i=0; i<this.selection.length; i++){
+                //console.log(this.selection[i])
                 let target = this.selection[i].ProductCode
                 let level = Number(this.selection[i].lOne);
                 let floor = Number(this.selection[i].floorPrice);
@@ -927,4 +1028,26 @@ export default class ProdSelected extends LightningElement {
     openProdSearch(){
         this.template.querySelector('c-prod-search').openPriceScreen(); 
     }
+
+    // congaTest(){
+    //    // https://advancedturf--c.vf.force.com/services/Soap/u/37.0/00D41000002Fly1
+    //     let url ="https://advancedturf.lightning.force.com/apex/APXTConga4__Conga_Composer?ServerURL=/Soap/u/37.0/00D41000002Fly1&solmgr=1" +
+    //     "&id=0014100001vPUVrAAO" +
+    //     "&templateid=a2O2M000009948kUAA" +
+    //     "&ac0=1" +
+    //     "&ac1=EOP Storage Agreement Sent via CongaSign" +
+    //     "&csvisible=1" +
+    //     "&csroutingtype=PARALLEL" +
+    //     "&uf0=1" +
+    //     "&mfts0=EOP_Storage_Agreement__c" +  
+    //     "&mftsvalue0=True" +
+    //     "&ds7=1142" +
+    //     "&csrecipient1=0034100002QhPfEAAV" +
+    //     "&csrecipient2=00541000006o7BzAAI"  +
+    //     "&csrole2=cc" +
+    //     "&ReturnPath=0014100001vPUVrAAO";
+    //     let target = '_self'; 
+    //     let features = ''
+    //     window.open( url, target, features );
+    // }
 }

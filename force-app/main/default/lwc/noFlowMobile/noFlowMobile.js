@@ -77,12 +77,12 @@ export default class NoFlowMobile extends LightningElement {
                 this.stage = getFieldValue(data, STAGE);
                 this.pbId = getFieldValue(data, PRICE_BOOK); 
                 this.warehouse = getFieldValue(data, WAREHOUSE); 
-                console.log(1, this.warehouse)
+                //console.log(1, this.warehouse)
                 this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
                 this.shipType = getFieldValue(data, SHIPTYPE);  
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.submitted = this.stage === 'Closed Won'? true : false;
-                //console.log('ship type '+this.shipType)
+                console.log('ship type '+this.shipType)
             }else if(error){
                 console.log('error '+JSON.stringify(error));
                 

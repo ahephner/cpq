@@ -10,19 +10,28 @@
             <div class="slds-grid">
                 <div class='slds-col'>
                     <figure class="iconContainer">
-                        <lightning-icon icon-name="action:new" size="small" onclick={openProducts}
-                                    class='slds-icon_container_circle slds-m-left_small' 
-                                    alternative-text="Add Product" title="Add Products"></lightning-icon>
-                                    <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>Add Products</figcaption>
-                    </figure>                    
-                </div>
-                <div class='slds-col'>
-                    <figure class='iconContainer'>
                         <lightning-icon icon-name="action:edit" size="small" onclick={editAll}
                                     class='slds-icon_container_circle slds-m-left_small' 
                                     alternative-text="Edit All" title="Edit All"></lightning-icon>
                                     <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>{editAllText}</figcaption>
+                    </figure>                    
+                </div>
+                <div class='slds-col'>
+                    <figure class='iconContainer'>
+                        <lightning-icon icon-name="action:new" size="small" onclick={openProducts}
+                                    class='slds-icon_container_circle slds-m-left_small' 
+                                    alternative-text="Add Product" title="Add Products"></lightning-icon>
+                                    <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>Add Products</figcaption>
                     </figure>
+                </div>
+                <!-- Trying to add third button  -->
+                <div class='slds-col'>
+                    <figure class="iconContainer">
+                        <lightning-icon icon-name="action:new_child_case" size="small" onclick={addShip}
+                                    class='slds-icon_container_circle slds-m-left_small' 
+                                    alternative-text="Add Split Ship" title="Add Products"></lightning-icon>
+                                    <figcaption class='slds-p-top_x-small slds-text-body_small icon-figcaption'>Add Split Ship</figcaption>
+                    </figure>                    
                 </div>
             </div>
     <!-- Mobile Search Location -->
@@ -128,6 +137,9 @@
                                 name ={item.Product2Id} readonly></lightning-input>
     <!-- Last Quote Margin -->
                 <lightning-input value={item.lastQuoteMargin} type='number'  label='Last Quote Marg' 
+                            name ={item.Product2Id} readonly></lightning-input>
+    <!-- SGN SIZE -->
+                <lightning-input value={item.sgn} type='number'  label='SGN Size' 
                             name ={item.Product2Id} readonly></lightning-input>
             </div>
 

@@ -35,12 +35,13 @@ public class cpqEOPClone {
               //recordtypeid for full: 01275000000CgcYAAS
               //recordtypeid for prod: 0122M000001ElAYQA0
                newOp = x.clone(false);
-               newOp.RecordTypeId = '01275000000CgcYAAS';
+               newOp.RecordTypeId = '0122M000001ElAYQA0';
                newOp.Name = newOp.Account.Name+ ' '+ nameDate;
                newOp.StageName = 'Working';
                newOp.CloseDate = cd;
                newOp.Ship_Type__c = x.account.ship_method__c;
                newOp.Warehouse__c = x.Sales_Rep__r.Warehouse__c;
+               newOp.EOP_Order__c = 'Yes';         
               newOp.Pricebook2Id = '01s410000077vSKAAY'; 
                insert newOp; 
                
@@ -57,7 +58,9 @@ public class cpqEOPClone {
              when 'Quote(75%)'{
                  newOp = x.clone(false);
                  newOp.Name = x.Description;
-                 newOp.RecordTypeId = '01275000000CgcYAAS';
+                 //prod
+                 newOp.RecordTypeId = '0122M000001ElAYQA0';
+                 //newOp.RecordTypeId = '01275000000CgcYAAS';
                  newOp.StageName = 'Working';
                  newOp.CloseDate = cd;
                  newOp.Pricebook2Id = '01s410000077vSKAAY';
@@ -101,21 +104,30 @@ public class cpqEOPClone {
            Map<String, Opportunity_Product__c> originalProducts = new Map<String,Opportunity_Product__c>(); 
            Map<String, pricebookentry> priceBookEntries = new Map<String, pricebookentry>(); 
            List<opportunitylineitem> newLines = new List<opportunitylineitem>();
+           //List of older Precision SKU's to search for
+           List<String> precisionCodes = new list<String>{'PL1085-20GL', 'PL1085-2.5GL', 'PL1082-20GL', 'PL1082-2.5GL', 'PL1000-55DR','PL1000-2.5GL', 'PL1081-2.5GL', 'PL1023-DR'};
+           Map<String, Decimal> precisionLI = new Map<String, Decimal>();  
            //Rollback point
            Savepoint sp = Database.setSavepoint();
            system.debug(oppId);
            try{
-           //Get the older product codes
-           List<Opportunity_Product__c> eopProducts = [select id, Product_Code__c, Order_Qty__c,Unit_Price__c,Line_Comment__c, 
-                                                       Margin__c from Opportunity_Product__c where Opportunity__c =: OppId];
-               
-               for(Opportunity_Product__c a:eopProducts){
-                   originalProducts.put(a.Product_Code__c, a);
-               }
+           //Get the older product codes no precision
+           for(Opportunity_Product__c a :[select id, Product_Code__c, Order_Qty__c,Unit_Price__c,Line_Comment__c,Name, 
+                                          Margin__c from Opportunity_Product__c where Opportunity__c =: OppId and Product_Code__c not in:precisionCodes]){
+                                           originalProducts.put(a.Product_Code__c, a);                           
+                                          }
+               system.debug('not ->'+originalProducts);
+           //Get PrecisionProducts
+           for(Opportunity_Product__c op: [select id, Product_Code__c, Order_Qty__c,Unit_Price__c,Line_Comment__c, Name, 
+                                           Margin__c from Opportunity_Product__c where Opportunity__c =: OppId and Product_Code__c in:precisionCodes]){
+                                               precisionLI.put(op.Product_Code__c, op.Order_Qty__c); 
+                                           }
+               system.debug('precisi ->'+precisionLI);
            //get price book entries based on unique product code     
            list<pricebookentry> pbe = [Select id, ProductCode, product2Id, Floor_Price__c,Product_Cost__c,Agency_Product__c, Pricebook2Id
                                        from pricebookentry where pricebook2id =: pbId and ProductCode in: originalProducts.keySet() and product2.IsActive = true and IsActive = true];
                
+               //add non precision pbe to a mape
                for(pricebookentry y: pbe){
                    priceBookEntries.put(y.ProductCode, y);
                }
@@ -154,8 +166,12 @@ public class cpqEOPClone {
                            OpportunityId = newOppId
                        ));
                    }  
-                  
                }
+                    if(!precisionLI.isEmpty()){
+                       system.Debug('precision is not empty');
+                       list<opportunitylineitem> presLines = whiteBoard.precisionLines(precisionLI, pbId, newOppId); 
+                       newLines.addAll(presLines);
+                   }
            }catch(exception e){
                Database.rollback(sp);
                ApexPages.addMessages(e); 

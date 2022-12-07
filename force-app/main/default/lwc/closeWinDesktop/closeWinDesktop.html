@@ -48,7 +48,7 @@
                 ></lightning-combobox> -->
             </div>
             <div class="slds-grid">
-                <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2" required={reqPO} onchange={newPo}></lightning-input>
+                <lightning-input label={custPOLabel} value={po} class="slds-m-bottom_x-small slds-col slds-size_1-of-2 validate" required={reqPO} onchange={newPo}></lightning-input>
                 <lightning-input label="First Requested Delivery Date" type='date' value={deliveryDate} required
                 onchange={newDeliveryDate} class="slds-col slds-size_1-of-2 slds-m-left_small slds-m-bottom_x-small validate"></lightning-input>
 
@@ -73,6 +73,80 @@
 
                 </div>
                 <lightning-input label="To" type='date' value={deliverDate2} onchange={newDevDate2} class="slds-m-bottom_x-small slds-m-left_small slds-col slds-size_1-of-2"></lightning-input>
+            </div>
+            <!-- EOP Section. Can comment out after -->
+            <div class="slds-grid">
+                <div class="slds-col slds-size_1-of-2">
+                    <lightning-combobox
+                        name="eopBox"
+                        label="EOP Order"
+                        value={eopOrder}
+                        options={EOPOptions}
+                        onchange={handleEOP}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small validate eopInput"
+                ></lightning-combobox>
+                <template if:true={showEOPInfo}>
+                    <lightning-combobox
+                        name="eopPayType"
+                        label="EOP Pay Type"
+                        value={eopPayType}
+                        options={payOptions}
+                        onchange={handlePay}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                    ></lightning-combobox>
+                    <lightning-combobox
+                        name="earlyPay"
+                        label="Early Pay?"
+                        value={earlyPay}
+                        options={EOPOptions}
+                        onchange={handleEarlyPay}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                    ></lightning-combobox>
+                    
+                    <lightning-combobox
+                        name="eopBox"
+                        label="Bill and Hold?"
+                        value={billHold}
+                        options={EOPOptions}
+                        onchange={handleBillHold}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                ></lightning-combobox> 
+               
+                    <!-- discount -->
+                    <lightning-input type="number" name="input6" 
+                    label="Discount %" value="0.5" formatter="percent" step="0.01"></lightning-input> -->
+                </template>
+                </div>
+                <template if:true={showEOPInfo}>
+                    <div class="slds-col slds-size_1-of-2 slds-m-left_small">
+
+                        <lightning-combobox
+                        name="eopNumPay"
+                        label="Number of Payments"
+                        value={numPayments}
+                        options={numOptions}
+                        onchange={handleNumbOpts}
+                        required
+                        class="slds-col slds-size_1-of-2 slds-m-bottom_x-small eopInputs"
+                ></lightning-combobox>
+        <!--Due Date and Invoice Date-->
+                        <lightning-input class="eopInputs" type="date" 
+                                         name="dateInput" label="Due Date" 
+                                         value={firstPayDate} onchange={handleDate} required></lightning-input>
+
+                        <lightning-input class="eopInputs" type="date" 
+                                         name="dateInput" label="Invoice Date" 
+                                         value={invoiceDate} onchange={handleInvoiceDate} required></lightning-input>
+                    </div>
+                </template>
+        <!-- closing div EOP section -->
+            </div>
+            <div class="slds-grid">
+                <br/><br/><br/>
             </div>
             <div slot="footer">
                 <lightning-button

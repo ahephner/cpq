@@ -161,7 +161,8 @@ export default class ProdSearch extends LightningElement {
         const rowAg = e.detail.row.Agency_Product__c;
         const rowWeight = e.detail.row.Product2.Ship_Weight__c;
         const rowLastPaid = e.detail.row.Product2.Last_Purchase_Price__c;
-        const rowPalletQty = e.detail.row.Product2.Pallet_Qty__c 
+        const rowPalletQty = e.detail.row.Product2.Pallet_Qty__c;
+        const rowSGN = e.detail.row.Product2.SGN__c; 
         //const rowFormulaProdtect = e.detail.row.Level_1_Protection_Formula__c;
        // const rowFormula = e.detail.row.Level_1_Formula__c; 
     
@@ -187,7 +188,8 @@ export default class ProdSearch extends LightningElement {
                     agencyProduct: rowAg,
                     prodWeight: rowWeight,
                     lastPaid: rowLastPaid,
-                    palletQty: rowPalletQty
+                    palletQty: rowPalletQty,
+                    size: rowSGN 
                 }
                       
     //send it 

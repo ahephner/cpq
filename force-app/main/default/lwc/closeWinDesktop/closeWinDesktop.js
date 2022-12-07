@@ -15,18 +15,28 @@ import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
-import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
+//import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
-import getAddress from '@salesforce/apex/cpqApex.getAddress'
+//EOP FIELDS
+import EOP_ORDER from '@salesforce/schema/Opportunity.EOP_Order__c';
+import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
+import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
+import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
+import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
+import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
+import getAddress from '@salesforce/apex/cpqApex.getAddress';
+import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
+import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS]
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
     {test: (o) => o.hasItems === true,
      message: 'No Products found. Close this screen and hit save on the products section'}
 ]
+
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
@@ -48,7 +58,15 @@ export default class CloseWinDesktop extends LightningElement {
     shipReq; 
     errorMsg = {};
     custPOLabel; 
-    hasItems; 
+    hasItems;
+    eopOrder;
+    eopPayType = '';
+    numPayments = '';
+    firstPayDate = ''; 
+    billHold;
+    earlyPay;
+    invoiceDate; 
+    showEOPInfo = false;
     passVal = true; 
     connectedCallback(){
     }
@@ -57,10 +75,10 @@ export default class CloseWinDesktop extends LightningElement {
             if(data){
                     this.accountId = getFieldValue(data, ACCID)?getFieldValue(data, ACCID): '';
                     this.hasItems = getFieldValue(data, HASITEMS); 
-                    console.log(1, this.accountId, 2, this.hasItems)
+                    //console.log(1, this.accountId, 2, this.hasItems)
                     let check = {accId: this.accountId, hasItems: this.hasItems}
                     let loadMore = validate(check, rules);
-                    console.log(loadMore)
+                   //console.log(loadMore)
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
                     this.quoteNumb = getFieldValue(data, QUOTENUM);
@@ -72,6 +90,15 @@ export default class CloseWinDesktop extends LightningElement {
                     this.shipTo = getFieldValue(data, SHIPTO); 
                     this.reqPO = getFieldValue(data, REQPO);
                     this.shipType = getFieldValue(data, SHIPTYPE);
+                    this.eopOrder = getFieldValue(data, EOP_ORDER) ? getFieldValue(data, EOP_ORDER): '';
+                    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
+                    this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
+                    this.numPayments = getFieldValue(data, NUM_PAYMENTS);
+                    this.firstPayDate = getFieldValue(data, FIRST_DATE);
+                    this.earlyPay = getFieldValue(data, EARLY_PAY);
+                    this.invoiceDate = getFieldValue(data, INVOICE_DATE); 
+                    //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
+                    this.billHold = getFieldValue(data, BILL_HOLD); 
                     this.findAddress(this.accountId);
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
@@ -81,6 +108,8 @@ export default class CloseWinDesktop extends LightningElement {
                     this.valErrs = loadMore.errors;
                     this.loaded = true; 
                }
+               
+               
             }else if(error){
                 let err = JSON.stringify(error);
                 alert(err)
@@ -96,7 +125,34 @@ export default class CloseWinDesktop extends LightningElement {
 //         { label: 'Closed Lost', value: 'Closed Lost' },
 //     ];
 // }
+//EOP Order Option
+get EOPOptions(){
+    return [
+        {label: 'Yes', value: 'Yes'},
+        {label: 'No', value:'No'}
+    ]
+}
 
+get payOptions(){
+    return [
+        {label:'Set Due Date',value:'Set Due Date'},
+        {label:'See Split Terms', value:'See Split Terms'},
+        {label:'BASF', value:'BASF'},
+        {label:'Bayer', value:'Bayer'},
+        {label:'FMC', value:'FMC'}
+    ]
+}
+
+get numOptions(){
+    return [
+        {label:'1', value:'1'},
+        {label:'2', value:'2'},
+        {label:'3', value:'3'},
+        {label:'4', value:'4'},
+        {label:'5', value:'5'},
+        {label:'6', value:'6'},
+    ]
+}
 //Stage Options
 get shipOptions() {
     return [
@@ -159,7 +215,39 @@ selectChange(event){
 handleShipChange(event){
     this.shipType = event.detail.value; 
 }
-
+handleEOP(event){
+    this.eopOrder = event.detail.value; 
+    this.showEOPInfo = this.eopOrder === 'Yes' ? true : false;
+    //console.log(this.eopOrder)
+}
+handlePay(event){
+    //BASF 2023-06-07
+    //Bayer 2023-06-02
+    //FMC 2023-07-02
+    this.eopPayType = event.detail.value;
+    this.firstPayDate = this.handleSetPayDate(this.eopPayType); 
+}
+handleSetPayDate(payType){
+    return payType === 'BASF' ? '2023-06-07' :
+    payType === 'Bayer' ? '2023-06-02' :
+    payType === 'FMC' ? '2023-07-02' : ''; 
+}
+handleEarlyPay(event){
+    this.earlyPay = event.detail.value; 
+}
+handleNumbOpts(event){
+    this.numPayments = event.detail.value; 
+}
+handleDate(event){
+    this.firstPayDate = event.detail.value; 
+}
+//checkbox check against checked not value
+handleBillHold(event){
+    this.billHold = event.detail.value
+}
+handleInvoiceDate(event){
+    this.invoiceDate = event.detail.value; 
+}
 //Stage Change
 // handleStageChange(event) {
 //     this.stage = event.detail.value;
@@ -184,11 +272,19 @@ newDeliveryDate(e){
 newDevDate2(e){
     this.deliverDate2 = e.detail.value; 
 }
+// submitTest(event){
+//     event.preventDefault();
+//     const ok = this.isInputValid();
+//     const eopOk = this.eopValid(); 
+//     console.log(1, ok, 2,eopOk);
+    
+// }
 //Save Submit section!
     handleSave(){
         
         let ok = this.isInputValid();
-        if(ok){
+        let eopOK = this.eopValid(); 
+        if(ok && eopOK){
             this.loaded = false; 
             const fields = {}
             fields[NAME.fieldApiName] = this.name;
@@ -200,7 +296,14 @@ newDevDate2(e){
             fields[DELIVERDATE2.fieldApiName] = this.deliverDate2;
             fields[SHIPTO.fieldApiName] = this.shipTo;
             fields[SHIPTYPE.fieldApiName] = this.shipType;
-            //fields[SALESPAD_READY.fieldApiName] = true; 
+            //EOP INFO COMMENT OUT WHEN NOT USING
+            fields[EOP_ORDER.fieldApiName] = this.eopOrder;
+            fields[EOP_PAYTYPE.fieldApiName] = this.eopPayType;
+            fields[NUM_PAYMENTS.fieldApiName] = this.numPayments;
+            fields[FIRST_DATE.fieldApiName] = this.firstPayDate;
+            fields[BILL_HOLD.fieldApiName] = this.billHold; 
+            fields[EARLY_PAY.fieldApiName] = this.earlyPay; 
+            fields[INVOICE_DATE.fieldApiName] = this.invoiceDate; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
             console.log(JSON.stringify(opp))
@@ -240,7 +343,7 @@ newDevDate2(e){
     }
     isInputValid() {
         let isValid = true;
-        let inputFields = this.template.querySelectorAll('lightning-input');
+        let inputFields = this.template.querySelectorAll('.validate');
         const ship = this.template.querySelector('.valAdd');
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
@@ -250,9 +353,30 @@ newDevDate2(e){
                 ship.reportValidity(); 
                 isValid = false; 
             }
+            console.log(this.billHold)
             this.errorMsg[inputField.name] = inputField.value;
         });
         return isValid;
+    }
+//check eop fields
+    eopValid(){
+    let isValid = true; 
+    let inputFields = this.template.querySelectorAll('.eopInputs')
+    const orderType = this.template.querySelector('.eopInput');
+    
+    if(this.eopOrder === ''){
+        orderType.reportValidity();
+        isValid = false
+    }else if(this.eopOrder === 'Yes'){
+        inputFields.forEach(x=>{
+            if(!x.checkValidity()){
+                x.reportValidity();
+                isValid = false;
+            }
+        })
+    }
+
+    return isValid; 
     }
 //New Address info
         cancelNewAddress(){

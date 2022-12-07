@@ -35,7 +35,7 @@ public class cpqOppClone {
             newOp.StageName = 'Working';
             newOp.CloseDate = cd;
             //newOp.Warehouse__c = opp.Warehouse__c;
-         //   newOp.CloseDate = cd;  
+           //newOp.CloseDate = cd;  
             insert newOp; 
             system.debug('here new opp -> ' +newOp);
            //test new data
@@ -66,14 +66,70 @@ public class cpqOppClone {
         }
         return new PageReference('/lightning/r/Opportunity/'+newOp.id+'/view'); 
     }
-       
+//EOP CLONE!!
+	@AuraEnabled(cacheable=false)
+    public static string cloneOppEOP(string recId, string EOP){
+        ID newOppID; 
+    	string nonActiveItem = '';
+        //Rollback point
+        Savepoint sp = Database.setSavepoint();
+        //new Opportunity Var
+        Opportunity newOp;
+        Opportunity opp; 
+        List<OpportunityLineItem> opli = new List<OpportunityLineItem>(); 
+       Date cd = System.today() + 14; 
+       String nameDate = String.valueOf(System.today());  
+        try{
+         opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, account.name,
+                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c FROM Opportunity where id = :recId]; 
+  
+            newOp = opp.clone(false);
+            
+            newOp.Name = newOp.Account.Name+ ' '+ nameDate;
+            newOp.StageName = 'Working';
+            newOp.CloseDate = cd;
+            newOp.EOP_Order__c = EOP; 
+            //newOp.Warehouse__c = opp.Warehouse__c;
+         //   newOp.CloseDate = cd;  
+            insert newOp; 
+            system.debug('here new opp -> ' +newOp);
+           //test new data
+            newOppID = newOp.Id;
+
+			list<Opportunitylineitem> items = cpqCloneHelper(recId, newOppID, opp.Pricebook2Id);              
+			
+            if(items.size()>0){
+                insert items; 
+            }
+//Look and see if there are any non active items from the old quote            
+            List<Opportunitylineitem> nonActiveItems = [SELECT product2.name, unitprice, quantity, CPQ_Margin__c,
+                                                   		rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Account__c
+                                                   		from opportunitylineitem where opportunityid = :recId and PriceBookEntry.IsActive = false]; 
+//Turned the @mention to just show Sean due to his request. To turn to a rep see --> {'+opp.Sales_Rep__r.OwnerId+'}             
+            if(nonactiveItems.size()>0){
+                for(Opportunitylineitem i: nonActiveItems){
+                   // system.debug(nonActiveItem);
+                    nonActiveItem +='* '+ i.product2.name + '  UNIT PRICE:  $'+ i.UnitPrice +'  QTY: '+ i.Quantity + '\n' +'\n'; 
+                }
+                ConnectApiHelper.postFeedItemWithMentions(Network.getNetworkId(), newOp.id, '{'+opp.Sales_Rep__r.OwnerId+'} these products are no longer active and were on the old quote '+'\n'+nonActiveItem );
+            }
+            
+        }catch(exception i){
+            system.debug('excep '+ i);
+            Database.rollback(sp);
+            ApexPages.addMessages(i); 
+            return null; 
+        }
+        //system.debug('newOp.Id ----> '+newOp.Id);
+        return newOp.Id; 
+    }
     public static list<OpportunityLineItem> cpqCloneHelper(id OppId, id newOpId, id pbId){
         Map<Id, OpportunityLineItem> prodMap = new Map<Id, OpportunityLineItem>();
         Map<Id, pricebookentry> pbeMap = new Map<Id, pricebookentry>();
         List<opportunitylineitem> newLines = new List<opportunitylineitem>();
          //get opportunity line items that are still have active pricebook entries
-            List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, 
-                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c, Account__c
+            List<OpportunityLineItem> lineItems = [SELECT opportunityid, product2id, unitprice, quantity, CPQ_Margin__c,CPQ_Unit_Price__c, Product_Name__c, 
+                                                   rate__c, listprice, Description, Per_1_000__c, Per_Acre__c, Agency__c, Account__c, Product2.Name
                                                    from opportunitylineitem where opportunityid = :OppId and PriceBookEntry.IsActive = true];
                
         for(OpportunityLineItem x:lineItems){
@@ -84,12 +140,13 @@ public class cpqOppClone {
         for(pricebookentry x:pbe){
             pbeMap.put(x.product2Id, x);
         }
-        system.debug('map line items');
-        system.debug(pbeMap);
+        //system.debug('map line items');
+        //system.debug(pbeMap);
         for(opportunitylineitem ol: lineItems){
-            system.debug('ol '+ol);
+            //system.debug('ol '+ol);
            // decimal marg = (ol.UnitPrice/pbeMap.get(ol.Product2Id).UnitPrice)*100;
             //decimal roundMarg = marg.setScale(2, RoundingMode.HALF_UP);
+            system.debug(ol.Product2.Name); 
             if(ol.Agency__c == true){
 				newLines.add(new OpportunityLineItem(					
                     PricebookEntryId = pbeMap.get(ol.Product2Id).id,
@@ -100,6 +157,16 @@ public class cpqOppClone {
                     description = ol.description,
                     Account__c = ol.Account__c,
                     OpportunityId  = newOpId));                
+            }else if(ol.Product2.Name.contains('ATS SHIPPING')){
+      			newLines.add(new OpportunityLineItem(					
+                    PricebookEntryId = pbeMap.get(ol.Product2Id).id,
+                    product2id = ol.product2id,
+                    quantity = ol.quantity,
+                    unitprice = pbeMap.get(ol.Product2Id).UnitPrice,
+                    CPQ_Unit_Price__c = pbeMap.get(ol.Product2Id).UnitPrice,
+                    description = ol.description,
+                    Account__c = ol.Account__c,
+                    OpportunityId  = newOpId));
             }else{
                 decimal salesCal;
                 decimal salesPrice;

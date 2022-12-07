@@ -19,6 +19,7 @@ public class test_cpqEOPClone {
          Product__c r1 = new Product__c();
   		 Product__c r2 = new Product__c();
 		 Product__c r3 = new Product__c();
+         //Product__c r4 = new Product__c();
         
 		 r1.Product_Name__c='rake';
          r1.Name = 'rake';
@@ -102,5 +103,33 @@ public class test_cpqEOPClone {
          test.stopTest();        
 		opportunity clonedOp = [select id from opportunity where id =:clone.newOppID];
         system.assertNotEquals(null, clonedOp); 
+    }
+    
+    @isTest
+    static void testWhiteBoard(){
+        Map<String, Decimal> prodMap = new Map<String, Decimal>();
+        Id pricebookId = Test.getStandardPricebookId();
+        string fakeId = string.valueOf(pricebookId);
+        string newOp = '01s410000077vSKAAY';
+        
+        prodMap.put('PL1085-20GL', 1);
+        prodMap.put('PL1085-2.5GL', 1);
+        prodMap.put('PL1082-20GL', 1);
+        prodMap.put('PL1082-2.5GL', 1);
+        prodMap.put('PL1000-55DR', 1);
+        prodMap.put('PL1000-2.5GL', 1);
+        prodMap.put('PL1081-2.5GL', 1);
+        prodMap.put('PL1023-DR', 1);
+        
+        product2 shovel = new product2(name ='shovel', IsActive= True, Agency_Pricing__c=false, Floor_Price__c=140, ProductCode='PL1085-2.5GL'); 
+        insert shovel; 
+        
+        PricebookEntry shovelpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=shovel.id,
+                                                 unitprice=4, IsActive = True, UseStandardPrice=False);
+        insert shovelpbe;         
+        Test.startTest();
+        system.debug('shovel -->'+fakeId + ' 2 ' +pricebookId);
+        	list<OpportunityLineItem> back = whiteBoard.precisionLines(prodMap, fakeId, newOp); 
+        Test.stopTest();
     }
 }

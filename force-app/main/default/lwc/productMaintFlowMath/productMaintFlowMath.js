@@ -58,26 +58,25 @@ export default class ProductMaintFlowMath extends LightningElement {
             warnTwo; 
             return {...el, bLevOne, bLevTwo, difOne, difTwo, warnOne, warnTwo}
         })
-        console.log(JSON.stringify(this.toUpdate));
+        //console.log(JSON.stringify(this.toUpdate));
         
         for(let i=0; i<this.toUpdate.length; i++){
             if(this.toUpdate[i].Agency_Product__c){
-                console.log('agency '+this.toUpdate[i].Name);
+                //console.log('agency '+this.toUpdate[i].Name);
                 this.agencyCount ++; 
-            }else if(this.toUpdate[i].Floor_Price__c >0 && this.toUpdate[i].Agency_Product__c===false){
+            }else if(this.toUpdate[i].Product_Cost__c >0 && this.toUpdate[i].Agency_Product__c===false){
                 this.updatedRecordCount ++; 
                 let before ={...this.toUpdate[i]}
-               //console.log(typeof this.toUpdate[i])
                 this.beforePricing.push(before);
-                this.toUpdate[i].Level_1_Price__c = this.roundNum(this.toUpdate[i].Floor_Price__c /(1- this.levelOne/100),2)
-                this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].Floor_Price__c /(1- this.levTwoMarg/100),2);
+                this.toUpdate[i].Level_1_Price__c = this.roundNum(this.toUpdate[i].Product_Cost__c /(1- this.levelOne/100),2);
+                this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].Product_Cost__c /(1- this.levTwoMarg/100),2);
                 this.toUpdate[i].difOne = this.roundNum(this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne, 2);
                 this.toUpdate[i].difTwo = this.roundNum(this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo,2);
                 this.toUpdate[i].warnOne = (this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
                 this.toUpdate[i].warnTwo = (this.toUpdate[i].Level_2_Price__c - this.toUpdate[i].bLevTwo)<0 ? 'slds-text-color_error' : 'slds-text-color_success';
                 this.updatedRecords.push(this.toUpdate[i]);
             }
-            else if(this.toUpdate[i].Floor_Price__c <=0 ||this.toUpdate[i].Floor_Price__c === undefined){
+            else if(this.toUpdate[i].Product_Cost__c <=0 ||this.toUpdate[i].Product_Cost__c === undefined){
                 //console.log('bad ' +this.toUpdate[i].Name);
                 let name = this.toUpdate[i].Name;
                 this.badRecords.push(name);
@@ -106,8 +105,8 @@ export default class ProductMaintFlowMath extends LightningElement {
             let Id = draft.Id
             let Level_1_Price__c = draft.Level_1_Price__c
             let Level_2_Price__c = draft.Level_2_Price__c
-
-            const fields = {Id, Level_1_Price__c, Level_2_Price__c}
+            let isChanged__c = true; 
+            const fields = {Id, Level_1_Price__c, Level_2_Price__c, isChanged__c}
             return {fields}
         })
         console.log(inputs);

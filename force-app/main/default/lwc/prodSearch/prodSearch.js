@@ -163,9 +163,11 @@ export default class ProdSearch extends LightningElement {
         const rowLastPaid = e.detail.row.Product2.Last_Purchase_Price__c;
         const rowPalletQty = e.detail.row.Product2.Pallet_Qty__c;
         const rowSGN = e.detail.row.Product2.SGN__c; 
+        const rowRUP = e.detail.row.RUP__c
         //const rowFormulaProdtect = e.detail.row.Level_1_Protection_Formula__c;
        // const rowFormula = e.detail.row.Level_1_Formula__c; 
-    
+        
+        
         //get that row button so we can update it  
         let index = this.prod.find((item) => item.Id === rowId);
         //console.log('rowWeight '+rowWeight);
@@ -189,7 +191,8 @@ export default class ProdSearch extends LightningElement {
                     prodWeight: rowWeight,
                     lastPaid: rowLastPaid,
                     palletQty: rowPalletQty,
-                    size: rowSGN 
+                    size: rowSGN,
+                    rup: rowRUP 
                 }
                       
     //send it 

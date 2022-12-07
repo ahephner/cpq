@@ -24,7 +24,7 @@ public with sharing class cpqApex {
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c, Product2.Pallet_Qty__c,'
                 + '  Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c, Product2.Temp_Unavailable__c,'
-          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c, Product2.Temp_Mess__c, Product2.SGN__C'
+          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c, Product2.Temp_Mess__c, Product2.SGN__C, RUP__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND' ; 
                  
       if(!searchterm.contains('null') && category == 'All' && pf == 'All'){
@@ -68,7 +68,7 @@ public with sharing class cpqApex {
       //system.debug('pf '+pf+ ' cat '+category+ ' searchterm ' +searchterm);
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c,UnitPrice, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c,Product2.Pallet_Qty__c,'
-                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c,'
+                + '  Level_1_Price__c, Level_2_Price__c, Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c,RUP__c,'
           		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c, Product2.Temp_Unavailable__c, Product2.Temp_Mess__c, Product2.SGN__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass ' ;
                  
@@ -268,7 +268,7 @@ public with sharing class cpqApex {
     public static list<OpportunityLineItem> getProducts(string oppId){
         list<OpportunityLineItem> opLi = [select id, pricebookEntryId, product2Id,product2.name,Product2.ProductCode,Product2.Floor_Type__c, TotalPrice,product2.Ship_Weight__c,
                                           product2.Agency_Pricing__c, Quantity, CPQ_Unit_Price__c,CPQ_Margin__c, Cost__c, OpportunityId,Description, Product2.Last_Purchase_Price__c,
-                                          Product2.Pallet_Qty__c, Product2.SGN__c
+                                          Product2.Pallet_Qty__c, Product2.SGN__c, Product2.RUP__c
                                           from OpportunityLineItem where opportunityId =: oppId];
         
         return opLi; 

@@ -45,6 +45,7 @@ export default class ProdSelected extends LightningElement {
     levelTwoMargin;
     companyLastPaid;
     palletConfig;
+    resUse; 
     sgn;   
     agency;
     sId; 
@@ -157,6 +158,7 @@ export default class ProdSelected extends LightningElement {
                 this.companyLastPaid = mess.lastPaid
                 this.palletConfig = mess.palletQty;
                 this.sgn = mess.size; 
+                this.resUse = mess.rup;
                 this.handleNewProd(); 
                 this.prodFound = true;
              }        

@@ -15,6 +15,7 @@ import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
+import PEST_DATE from '@salesforce/schema/Opportunity.Pest_Expiration_Date__c';
 //import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
@@ -29,7 +30,7 @@ import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE];
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -56,6 +57,7 @@ export default class CloseWinDesktop extends LightningElement {
     shipType; 
     options;
     shipReq; 
+    pestExp;
     errorMsg = {};
     custPOLabel; 
     hasItems;
@@ -90,6 +92,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.shipTo = getFieldValue(data, SHIPTO); 
                     this.reqPO = getFieldValue(data, REQPO);
                     this.shipType = getFieldValue(data, SHIPTYPE);
+                    this.pestExp = getFieldValue(data, PEST_DATE);
                     this.eopOrder = getFieldValue(data, EOP_ORDER) ? getFieldValue(data, EOP_ORDER): '';
                     this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
                     this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
@@ -103,6 +106,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
                     this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
+                    console.log(1, this.pestExp)
                 }else{
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;

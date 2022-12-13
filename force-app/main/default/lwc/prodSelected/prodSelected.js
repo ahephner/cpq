@@ -27,7 +27,8 @@ import SHIPADD  from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate} from 'c/helper'
+import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -55,6 +56,7 @@ export default class ProdSelected extends LightningElement {
     deliveryDate; 
     shipType;
     dropShip;
+    rupSelected; 
     lineDiscount;  
     stage;
     warehouse;
@@ -170,7 +172,7 @@ export default class ProdSelected extends LightningElement {
         this.subscription = null;
     }
 //get record values
-    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE, DISCOUNT]})
+    @wire(getRecord, {recordId: '$recordId', fields:[ACC, STAGE, PRICE_BOOK, WAREHOUSE, SHIPADD, DELIVERYDATE, SHIPTYPE, DISCOUNT, RUP_PROD]})
         loadFields({data, error}){
             if(data){
                 this.accountId = getFieldValue(data, ACC);
@@ -180,7 +182,8 @@ export default class ProdSelected extends LightningElement {
                 this.shippingAddress  = getFieldValue(data, SHIPADD);
                 this.deliveryDate = getFieldValue(data, DELIVERYDATE); 
                 this.shipType = getFieldValue(data, SHIPTYPE);
-                this.lineDiscount = getFieldValue(data, DISCOUNT)  
+                this.lineDiscount = getFieldValue(data, DISCOUNT);
+                this.rupSelected = getFieldValue(data, RUP_PROD); 
                 this.dropShip = this.shipType === 'DS' ? true : false; 
                 this.wasSubmitted = this.stage === 'Closed Won'? true : false;
             }else if(error){
@@ -233,6 +236,7 @@ export default class ProdSelected extends LightningElement {
                     sgn: this.sgn, 
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
+                    resUse: this.resUse,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
@@ -275,6 +279,7 @@ export default class ProdSelected extends LightningElement {
                     sgn: this.sgn,
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
+                    resUse: this.resUse,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
@@ -329,6 +334,7 @@ export default class ProdSelected extends LightningElement {
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
+            resUse: 'false',
             manLine: false,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
@@ -365,6 +371,7 @@ export default class ProdSelected extends LightningElement {
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
+            resUse: 'false',
             manLine: false,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
@@ -418,6 +425,7 @@ export default class ProdSelected extends LightningElement {
                 lOneText: 'lev 1 $', 
                 tips: 'manual line',
                 goodPrice: true,
+                resUse: 'false',
                 manLine: true,
                 OpportunityId: this.recordId
             }
@@ -431,7 +439,7 @@ export default class ProdSelected extends LightningElement {
 
     //If a user decides to uncheck a product on the search screen
     handleRemove(y){
-        console.log('handleRemove');
+        
         let index = this.selection.findIndex(prod => prod.PricebookEntryId === y.detail);
         
         if(index > -1){
@@ -556,12 +564,13 @@ export default class ProdSelected extends LightningElement {
     removeProd(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
         let id = this.selection[index].Id; 
-        let shipCode = this.selection[index].ProductCode
+        let shipCode = this.selection[index].ProductCode;
+        let resUseProd = this.selection[index].resUse;
         if(index >= 0){
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
                 this.selection.splice(index, 1);
-                if(id && !shipCode.includes('SHIPPING')){
+                if(id && !shipCode.includes('SHIPPING') && !resUseProd){
                     
                     deleteRecord(id);
         //check if the deleted line item is shipping. If so reset shipping to zero 
@@ -573,7 +582,18 @@ export default class ProdSelected extends LightningElement {
                     fields[ID_FIELD.fieldApiName] = this.recordId;
                     fields[SHIPCHARGE.fieldApiName] = 0;
                     const shipRec = {fields}
-                    updateRecord(shipRec)
+                    updateRecord(shipRec);
+        //check if it's a RUP product. Then check if there are another RUP product on order. If no then update the opportunity field RUP Selected ? to false
+                }else if(id && resUseProd){
+                    deleteRecord(id);
+                    let rupProds = checkRUP(this.selection);
+                    if(!rupProds && this.rupSelected){
+                        const fields = {};
+                        fields[ID_FIELD.fieldApiName] = this.recordId;
+                        fields[RUP_PROD.fieldApiName] = rupProds;
+                        const resUseSelected = {fields}
+                        updateRecord(resUseSelected);  
+                    }
                 }
                 //update order totals
                 let totals =  getTotals(this.selection);
@@ -665,7 +685,10 @@ export default class ProdSelected extends LightningElement {
 
         const alreadyThere = this.selection.filter(y=>y.Id != '')
         let shipTotal = this.selection.filter(y => y.ProductCode.includes('SHIPPING'));
+        //check if there are Restricted Use Products on the order list
+        let rupProds = checkRUP(this.selection);
         console.log('sending '+JSON.stringify(this.selection))
+        
         //createProducts({newProds: newProduct, upProduct: alreadyThere, oppId: this.recordId})
         createProducts({olList: this.selection, oppId: this.recordId, accId: this.accountId})
         .then(result=>{
@@ -686,16 +709,30 @@ export default class ProdSelected extends LightningElement {
             //this is throwing errors on save. Not letting the remove
             getRecordNotifyChange([{recordId: this.recordId}])
         }).then(()=>{
-            if(shipTotal.length>0){
-                console.log('saving shipping');
-                let shipCharge = getShipping(shipTotal);
-                
+            let shipCharge = getShipping(shipTotal);
+            if(shipCharge >0 && !rupProds){
+            
                 const fields = {};
                 fields[ID_FIELD.fieldApiName] = this.recordId;
                 fields[SHIPCHARGE.fieldApiName] = shipCharge;
                 const shipRec = {fields}
                 updateRecord(shipRec)
-            } 
+            }else if(shipCharge <= 0 && rupProds){
+                
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[RUP_PROD.fieldApiName] = rupProds;
+                const recUpdate = {fields}
+                updateRecord(recUpdate);
+            }else if(shipCharge >0 && rupProds){
+    
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.recordId;
+                fields[RUP_PROD.fieldApiName] = rupProds;
+                fields[SHIPCHARGE.fieldApiName] = shipCharge;
+                const bothUpdate = {fields}
+                updateRecord(bothUpdate);
+            }
          
         }).catch(error=>{
             this.endEventListener(); 

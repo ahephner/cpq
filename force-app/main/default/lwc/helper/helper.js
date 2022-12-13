@@ -90,6 +90,7 @@
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
             sgn: x.Product2.SGN__c,
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
+            resUse: x.Product2.RUP__c,
             manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false, 
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
             OpportunityId: recordId
@@ -252,6 +253,18 @@ const roundRate = (numb, places) =>{
   return +(Math.round(numb + `e+${places}`) + `e-${places}`)
 }
 
+const checkRUP = (items)=>{
+  let isRup = false; 
+
+  for(const x of items){
+    if(x.resUse){
+      isRup = true;
+      break; 
+    }
+  }
+  return isRup; 
+}
+
 // make it so functions can be used other pages
-export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote, roundRate}
+export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP}
 

@@ -1,21 +1,40 @@
 <template>
     <template if:true={loaded}>
-        
+        <!-- If error caused during validation -->
         <template if:false={passVal}>
-            <lightning-quick-action-panel header="Missing Info">
-                <template if:true={valErrs} for:each={valErrs} for:item="err" for:index="index">
-                <li key={err}>
-                        {err}
-                </li>
-                </template>
-                <div slot="footer">
-                    <lightning-button
-                        variant="neutral"
-                        label="Cancel"
-                        onclick={handleCancel}
-                    ></lightning-button>
-                </div>
-            </lightning-quick-action-panel>
+            <!-- If validation errors contain non RUP error or addition to. The first error block should be non RUP -->
+            <template if:false={rupError}>
+                <lightning-quick-action-panel header="Missing Info">
+                    <template if:true={valErrs} for:each={valErrs} for:item="err" for:index="index">
+                    <li key={err}>
+                            {err.message}
+                    </li>
+                    </template>
+                    <div slot="footer">
+                        <lightning-button
+                            variant="neutral"
+                            label="Cancel"
+                            onclick={handleCancel}
+                        ></lightning-button>
+                    </div>
+                </lightning-quick-action-panel>
+            </template>
+            <template if:true={rupError}>
+                <lightning-quick-action-panel header="Missing RUP Info">
+                    <template if:true={valErrs} for:each={valErrs} for:item="err" for:index="index">
+                    <li key={err}>
+                            {err.message}
+                    </li>
+                    </template>
+                    <div slot="footer">
+                        <lightning-button
+                            variant="neutral"
+                            label="Cancel"
+                            onclick={handleCancel}
+                        ></lightning-button>
+                    </div>
+                </lightning-quick-action-panel>
+            </template>
         </template>
 <template if:true={passVal}>
     <template if:true={info}>

@@ -233,12 +233,16 @@
       return margin; 
     }
     // Validation function
-    const validate = (obj, rules) => {
+    const validate = (obj, rules, rupRules, isRUP) => {
+      //if RUP product is selected add rup rules to validate against
+      if(isRUP){
+        rules = [...rules, ...rupRules]
+      }
       const errors = rules.reduce((errs, rule) => {
         
         const result = rule.test(obj);
         if (result === false) {
-          errs.push(rule.message);
+          errs.push({message:rule.message, type: rule.type});
         }
         return errs;
       }, []);

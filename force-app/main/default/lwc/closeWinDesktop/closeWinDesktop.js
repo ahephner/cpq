@@ -16,6 +16,7 @@ import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import PEST_DATE from '@salesforce/schema/Opportunity.Pest_Expiration_Date__c';
+import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
 //import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
@@ -30,12 +31,20 @@ import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE];
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD];
 const rules =[
     {test: (o) => o.accId.length === 18,
-     message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
+     message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`,
+    type:'missingInfo'},
     {test: (o) => o.hasItems === true,
-     message: 'No Products found. Close this screen and hit save on the products section'}
+     message: 'No Products found. Close this screen and hit save on the products section',
+     type:'missingInfo'}
+]
+//rules for RUP
+const rupRules = [
+    {test: (o) => o.expDate >= o.today,
+    message: 'RUP Product Selected. License either expired or not found.',
+    type:'rupMissing'}
 ]
 
 export default class CloseWinDesktop extends LightningElement {
@@ -58,6 +67,7 @@ export default class CloseWinDesktop extends LightningElement {
     options;
     shipReq; 
     pestExp;
+    rupSelected;
     errorMsg = {};
     custPOLabel; 
     hasItems;
@@ -70,6 +80,9 @@ export default class CloseWinDesktop extends LightningElement {
     invoiceDate; 
     showEOPInfo = false;
     passVal = true; 
+    rupError; 
+    //for evaluating time
+    today = new Date().toJSON().substring(0,10);
     connectedCallback(){
     }
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
@@ -77,9 +90,13 @@ export default class CloseWinDesktop extends LightningElement {
             if(data){
                     this.accountId = getFieldValue(data, ACCID)?getFieldValue(data, ACCID): '';
                     this.hasItems = getFieldValue(data, HASITEMS); 
-                    //console.log(1, this.accountId, 2, this.hasItems)
-                    let check = {accId: this.accountId, hasItems: this.hasItems}
-                    let loadMore = validate(check, rules);
+                    this.rupSelected = getFieldValue(data, RUP_PROD);
+                    this.pestExp = getFieldValue(data, PEST_DATE);
+                    
+                    let check = {accId: this.accountId, hasItems: this.hasItems, expDate:this.pestExp, today: this.today}
+                    console.log('check ' , check);
+                    
+                    let loadMore = validate(check, rules, rupRules, this.rupSelected);
                    //console.log(loadMore)
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
@@ -92,7 +109,6 @@ export default class CloseWinDesktop extends LightningElement {
                     this.shipTo = getFieldValue(data, SHIPTO); 
                     this.reqPO = getFieldValue(data, REQPO);
                     this.shipType = getFieldValue(data, SHIPTYPE);
-                    this.pestExp = getFieldValue(data, PEST_DATE);
                     this.eopOrder = getFieldValue(data, EOP_ORDER) ? getFieldValue(data, EOP_ORDER): '';
                     this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
                     this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
@@ -106,10 +122,11 @@ export default class CloseWinDesktop extends LightningElement {
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
                     this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
-                    console.log(1, this.pestExp)
+                    console.log(1, this.pestExp, 2, typeof this.pestExp, 3, this.today)
                 }else{
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;
+                    this.rupError = loadMore.errors[0].type === 'rupMissing' ? true : false; 
                     this.loaded = true; 
                }
                

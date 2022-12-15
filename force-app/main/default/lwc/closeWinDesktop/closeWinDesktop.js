@@ -20,6 +20,10 @@ import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c';
 //import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
+//Account RUP info
+import PEST_NUMB from '@salesforce/schema/Account.Pesticide_License__c';
+import NEW_PEST_DATE from '@salesforce/schema/Account.Pest_License_Exp_Date__c'; 
+import CUST_ID from '@salesforce/schema/Account.Id';
 //EOP FIELDS
 import EOP_ORDER from '@salesforce/schema/Opportunity.EOP_Order__c';
 import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
@@ -81,6 +85,7 @@ export default class CloseWinDesktop extends LightningElement {
     showEOPInfo = false;
     passVal = true; 
     rupError; 
+    showLicenseUpLoad = false; 
     //for evaluating time
     today = new Date().toJSON().substring(0,10);
     connectedCallback(){
@@ -127,6 +132,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;
                     this.rupError = loadMore.errors[0].type === 'rupMissing' ? true : false; 
+
                     this.loaded = true; 
                }
                
@@ -362,6 +368,7 @@ newDevDate2(e){
     handleCancel(){
         this.dispatchEvent(new CloseActionScreenEvent());
     }
+//validate closing input
     isInputValid() {
         let isValid = true;
         let inputFields = this.template.querySelectorAll('.validate');
@@ -374,7 +381,7 @@ newDevDate2(e){
                 ship.reportValidity(); 
                 isValid = false; 
             }
-            console.log(this.billHold)
+            
             this.errorMsg[inputField.name] = inputField.value;
         });
         return isValid;
@@ -418,4 +425,83 @@ newDevDate2(e){
             });
             this.dispatchEvent(evt);  
         }
+//Handle missing RUP 
+    handleUpload(){
+        this.showLicenseUpLoad = true; 
+        //this.rupError = false; 
+    }        
+    newPestDate;
+    newPestNumber; 
+    licenseUpLoaded = false; 
+    handlePestChange(event){
+        this.newPestNumber = event.detail.value
+    }
+
+    handleExpDate(evt){
+        this.newPestDate = evt.detail.value
+    }
+    handleManager(){
+        console.log('handle manager alert');
+    }
+    cancelUpload(){
+        this.showLicenseUpLoad = false; 
+        this.rupError = true;
+    }
+    //Handle File upload
+    handleUploadFinished(event) {
+        // Get the list of uploaded files
+        const uploadedFiles = event.detail.files;
+        this.licenseUpLoaded = uploadedFiles.length === 1 ? true : false; 
+        
+    }
+//Acceptable file types for upload
+    get acceptedFormats() {
+        return ['.pdf', '.png', '.jpeg', '.jpg', '.csv', '.xlsx'];
+    }
+
+//Save new license info then move to order page
+    saveUpload(){
+        let ok = true; 
+        
+         
+        if(ok && this.licenseUpLoaded){
+            this.loaded = false; 
+            
+            const fields = {};
+            fields[PEST_NUMB.fieldApiName] = this.newPestNumber;
+            fields[NEW_PEST_DATE.fieldApiName] = this.newPestDate;
+            fields[CUST_ID.fieldApiName] = this.accountId;
+
+            const recordInput = {fields};
+
+            updateRecord(recordInput).then(()=>{
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'License Updated',
+                        variant: 'success'
+                    })
+                );
+                this.passVal = true; 
+                this.showLicenseUpLoad = false; 
+                this.loaded = true; 
+            }).catch(error=>{
+                console.log(JSON.stringify(error))
+                let message = 'Unknown error';
+                if (Array.isArray(error.body)) {
+                    message = error.body.map(e => e.message).join(', ');
+                } else if (typeof error.body.message === 'string') {
+                    message = error.body.message;
+                }
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error Saving Products',
+                        message,
+                        variant: 'error',
+                    }),
+                );
+            })
+
+        }
+    }
 }

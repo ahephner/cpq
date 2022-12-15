@@ -19,21 +19,76 @@
                     </div>
                 </lightning-quick-action-panel>
             </template>
+            <!-- This will show if the order is tried to be submitted w/RUP but missing license -->
             <template if:true={rupError}>
-                <lightning-quick-action-panel header="Missing RUP Info">
-                    <template if:true={valErrs} for:each={valErrs} for:item="err" for:index="index">
-                    <li key={err}>
-                            {err.message}
-                    </li>
-                    </template>
-                    <div slot="footer">
-                        <lightning-button
-                            variant="neutral"
-                            label="Cancel"
-                            onclick={handleCancel}
-                        ></lightning-button>
-                    </div>
-                </lightning-quick-action-panel>
+                <template if:false={showLicenseUpLoad}>
+                    <lightning-quick-action-panel header="Missing RUP Info">
+                        <template if:true={valErrs} for:each={valErrs} for:item="err" for:index="index">
+                        <li key={err}>
+                                {err.message}
+                        </li>
+                        </template>
+                        <template if:true={pestExp}>
+                            <p>License on file expiration date is: {pestExp}</p>
+                        </template>
+                        <div slot="footer">
+                            <lightning-button-group>
+                                <lightning-button
+                                    variant="neutral"
+                                    label="Cancel"
+                                    onclick={handleCancel}
+                                ></lightning-button>
+                                <lightning-button
+                                    variant="brand"
+                                    label="Upload License"
+                                    onclick={handleUpload}
+                                    ></lightning-button>
+                                <lightning-button
+                                    variant="brand-outlline"
+                                    label="Notify Manager"
+                                    onclick={handleManager}
+                                    ></lightning-button>
+                            </lightning-button-group>
+                        </div>
+                    </lightning-quick-action-panel>
+                </template>
+
+                <!-- Show the ablity to upload new RUP license -->
+                <template if:true={showLicenseUpLoad}>
+                    <lightning-quick-action-panel header="Upload License">
+                        <div class="slds-p-around_medium lgc-bg">
+                            <lightning-input class='validate' type="text" label="License #" onchange={handlePestChange} required></lightning-input>
+                            <lightning-input class='validate' type="date" name="input1" label="Expiration Date" onchange={handleExpDate} required ></lightning-input>
+                         <template if:false={licenseUpLoaded}>   
+                            <lightning-file-upload
+                            label="Attach Copy of Pesticide License"
+                            name="fileUploader"
+                            accept={acceptedFormats}
+                            record-id={accountId}
+                            onuploadfinished={handleUploadFinished}></lightning-file-upload>
+                        </template>
+                        <template if:true={licenseUpLoaded}>
+                            <div class="slds-m-top_x-small">
+                                <lightning-icon icon-name="action:approval" alternative-text="Approved" title="Uploaded"></lightning-icon>
+                                <p>Copy Uploaded</p>
+                            </div>
+                        </template>
+                        </div>
+                        <div slot="footer">
+                            <lightning-button-group>
+                                <lightning-button
+                                    variant="neutral"
+                                    label="Cancel"
+                                    onclick={cancelUpload}></lightning-button>
+                                    <lightning-button
+                                    variant="brand"
+                                    label="Save"
+                                    onclick={saveUpload}></lightning-button>
+
+                            </lightning-button-group>
+                        </div>
+                    </lightning-quick-action-panel>
+                </template>
             </template>
         </template>
 <template if:true={passVal}>

@@ -3,7 +3,8 @@
 import { LightningElement, api, wire } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
+//import { refreshApex } from '@salesforce/apex';
+import { getRecord, getFieldValue, updateRecord, getRecordNotifyChange  } from 'lightning/uiRecordApi';
 import NAME from '@salesforce/schema/Opportunity.Name';
 import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number__c';
 import CLOSEDATE from '@salesforce/schema/Opportunity.CloseDate';
@@ -99,7 +100,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.pestExp = getFieldValue(data, PEST_DATE);
                     
                     let check = {accId: this.accountId, hasItems: this.hasItems, expDate:this.pestExp, today: this.today}
-                    console.log('check ' , check);
+                    //console.log('check ' , check);
                     
                     let loadMore = validate(check, rules, rupRules, this.rupSelected);
                    //console.log(loadMore)
@@ -373,6 +374,7 @@ newDevDate2(e){
         let isValid = true;
         let inputFields = this.template.querySelectorAll('.validate');
         const ship = this.template.querySelector('.valAdd');
+        console.log(1, inputFields, 2, ship)
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
                 inputField.reportValidity();
@@ -458,12 +460,26 @@ newDevDate2(e){
     get acceptedFormats() {
         return ['.pdf', '.png', '.jpeg', '.jpg', '.csv', '.xlsx'];
     }
+//validate that the fields on the Upload License Screen are actually filled out. 
+    licenseInputValid() {
+        let isValid = true;
+        let inputFields = this.template.querySelectorAll('.licenseField');
+    
+        inputFields.forEach(inputField => {
+            if(!inputField.checkValidity()) {
+                inputField.reportValidity();
+                isValid = false;
+            }
+            
+            this.errorMsg[inputField.name] = inputField.value;
+        });
+        return isValid;
+    }
 
 //Save new license info then move to order page
     saveUpload(){
-        let ok = true; 
-        
-         
+        let ok = this.licenseInputValid(); 
+                 
         if(ok && this.licenseUpLoaded){
             this.loaded = false; 
             
@@ -475,6 +491,10 @@ newDevDate2(e){
             const recordInput = {fields};
 
             updateRecord(recordInput).then(()=>{
+                console.log('refreshing Apex')
+                getRecordNotifyChange([{recordId: this.recordId}]);
+                console.log('refreshed.......')
+            }).then(()=>{
                 this.dispatchEvent(
                     new ShowToastEvent({
                         title: 'Success',

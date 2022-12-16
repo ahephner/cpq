@@ -57,8 +57,8 @@
                 <template if:true={showLicenseUpLoad}>
                     <lightning-quick-action-panel header="Upload License">
                         <div class="slds-p-around_medium lgc-bg">
-                            <lightning-input class='validate' type="text" label="License #" onchange={handlePestChange} required></lightning-input>
-                            <lightning-input class='validate' type="date" name="input1" label="Expiration Date" onchange={handleExpDate} required ></lightning-input>
+                            <lightning-input class='licenseField' type="text" label="License #" onchange={handlePestChange} required></lightning-input>
+                            <lightning-input class='licenseField' type="date" name="input1" label="Expiration Date" onchange={handleExpDate} required ></lightning-input>
                          <template if:false={licenseUpLoaded}>   
                             <lightning-file-upload
                             label="Attach Copy of Pesticide License"

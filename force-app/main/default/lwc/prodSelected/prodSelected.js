@@ -761,7 +761,6 @@ export default class ProdSelected extends LightningElement {
                 const fields = {};
                 fields[ID_FIELD.fieldApiName] = this.recordId;
                 fields[SHIPADD.fieldApiName] = this.shippingAddress;
-                fields[ID_FIELD.fieldApiName] = this.recordId;
                 fields[STAGE.fieldApiName] = 'Quote(45%)';
                 const shipRec = {fields}
                 updateRecord(shipRec)

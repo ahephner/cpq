@@ -43,11 +43,11 @@
                                     label="Upload License"
                                     onclick={handleUpload}
                                     ></lightning-button>
-                                <lightning-button
+                                <!-- <lightning-button
                                     variant="brand-outlline"
                                     label="Notify Manager"
                                     onclick={handleManager}
-                                    ></lightning-button>
+                                    ></lightning-button> -->
                             </lightning-button-group>
                         </div>
                     </lightning-quick-action-panel>
@@ -65,7 +65,8 @@
                             name="fileUploader"
                             accept={acceptedFormats}
                             record-id={accountId}
-                            onuploadfinished={handleUploadFinished}></lightning-file-upload>
+                            onuploadfinished={handleUploadFinished}
+                            multiple></lightning-file-upload>
                         </template>
                         <template if:true={licenseUpLoaded}>
                             <div class="slds-m-top_x-small">

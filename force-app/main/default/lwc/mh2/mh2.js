@@ -94,6 +94,7 @@
             levels:'Lvl 1 $'+x.Level_1_UserView__c + ' Lvl 2 $'+x.Level_2_UserView__c,
             //check if it's agency product if not eval floor pricing 
             goodPrice:x.Product2.Agency_Pricing__c ? true : (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
+            resUse: x.Product2.RUP__c, 
             OpportunityId: x.OpportunityId
         }
       })
@@ -209,6 +210,18 @@
         }
       return merge;
     }
+
+    const checkRUP = (items)=>{
+      let isRup = false; 
+    
+      for(const x of items){
+        if(x.resUse){
+          isRup = true;
+          break; 
+        }
+      }
+      return isRup; 
+    }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory, mergeLastQuote}
+export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory, mergeLastQuote, checkRUP}
 

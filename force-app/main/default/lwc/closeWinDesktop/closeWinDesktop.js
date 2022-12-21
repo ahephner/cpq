@@ -485,6 +485,7 @@ newDevDate2(e){
             
             const fields = {};
             fields[PEST_NUMB.fieldApiName] = this.newPestNumber;
+            
             fields[NEW_PEST_DATE.fieldApiName] = this.newPestDate;
             fields[CUST_ID.fieldApiName] = this.accountId;
 

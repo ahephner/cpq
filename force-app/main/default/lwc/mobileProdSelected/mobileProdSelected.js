@@ -12,7 +12,8 @@ import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
+import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c';
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory, checkRUP} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 
@@ -24,6 +25,8 @@ export default class MobileProdSelected extends LightningElement {
     @api pbId;
     @api shipType;  
     @api stage; 
+    //on load was a rup product selected 
+    @api rupSelected; 
     showDelete = false;  
     addProducts = false;
     shipAddress = false; 
@@ -51,7 +54,8 @@ export default class MobileProdSelected extends LightningElement {
     total; 
     lastQuote; 
     sgn; 
-    
+    rupProd;
+
     hasRendered = true;
     dropShip;
     connectedCallback() {
@@ -314,6 +318,8 @@ export default class MobileProdSelected extends LightningElement {
         const newProduct = this.prod.filter(x=>x.Id === '') 
         const alreadyThere = this.prod.filter(y=>y.Id != '')
         let shipTotal = this.prod.filter(y => y.ProductCode.includes('SHIPPING'));
+        //check if there are Restricted Use Products on the order list
+        let rupProds = checkRUP(this.prod);
         createProducts({olList: this.prod, oppId: this.oppId})
         .then(result => {
             let back = updateNewProducts(newProduct, result);
@@ -323,16 +329,29 @@ export default class MobileProdSelected extends LightningElement {
             this.showSpinner = false; 
             alert('Products Saved!')
         }).then(()=>{
-            if(shipTotal.length>0){
-                console.log('saving shipping');
-                let shipCharge = getShipping(shipTotal);
+            let shipCharge = getShipping(shipTotal);
+            
+            if(shipCharge >0  && ! rupProds){
                 
                 const fields = {};
                 fields[ID_FIELD.fieldApiName] = this.oppId;
                 fields[SHIPCHARGE.fieldApiName] = shipCharge;
                 const shipRec = {fields}
                 updateRecord(shipRec)
-            } 
+            }else if(shipCharge <= 0 && rupProds){
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.oppId;
+                fields[RUP_PROD.fieldApiName] = rupProds;
+                const recUpdate = {fields}
+                updateRecord(recUpdate);
+            }else if(shipCharge >0 && rupProds){
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.oppId;
+                fields[RUP_PROD.fieldApiName] = rupProds;
+                fields[SHIPCHARGE.fieldApiName] = shipCharge;
+                const bothUpdate = {fields}
+                updateRecord(bothUpdate);
+            }
          
         }).catch(error=>{
             alert(JSON.stringify(error))
@@ -403,7 +422,8 @@ export default class MobileProdSelected extends LightningElement {
         this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
         this.palletConfig = prodx.detail.Product2.Pallet_Qty__c;
         this.sgn = prodx.detail.Product2.SGN__c; 
-       // console.log('2 '+this.agProduct);
+        this.rupProd = prodx.detail.rup; 
+      // console.log('selected rup? '+this.rupProd);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
@@ -547,6 +567,7 @@ export default class MobileProdSelected extends LightningElement {
                     lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
                     sgn: this.sgn,
+                    resUse: this.rupProd,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
                     OpportunityId: this.oppId
@@ -586,6 +607,7 @@ export default class MobileProdSelected extends LightningElement {
                     lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
                     sgn: this.sgn,
+                    resUse: this.rupProd,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
                     OpportunityId: this.oppId

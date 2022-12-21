@@ -20,6 +20,7 @@
             <property name="accountId" type="String" label="account id" description="Pass Account Id"/>
             <property name="pbId" type="String" label="pricebook id" description="Pass Price Book Id"/>
             <property name="shipType" type="String" label="ship type" description="pass ship type value"/>
+            <property name='rupSelected' type="Boolean" label="Rup Selected?" description="was a rup product on the opp"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

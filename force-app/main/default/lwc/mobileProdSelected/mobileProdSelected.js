@@ -272,13 +272,36 @@ export default class MobileProdSelected extends LightningElement {
 //delete individual line items. 
     handleDelete(index){
         let id = this.prod[index].Id;
-
+        let shipCode = this.prod[index].ProductCode;
+        let resUseProd = this.prod[index].resUse;
+        
         if(index >= 0 ){
             let cf = confirm('Do you want to delete this line item')
             if(cf === true){
                 this.prod.splice(index, 1);
-                if(id){
+                if(id && !shipCode.includes('SHIPPING') && !resUseProd){
                     deleteRecord(id);
+                }else if(id && shipCode.includes('SHIPPING')){
+                    deleteRecord(id);
+                    console.log('resetting shipping cost ');
+                    
+                    const fields = {};
+                    fields[ID_FIELD.fieldApiName] = this.oppId;
+                    fields[SHIPCHARGE.fieldApiName] = 0;
+                    const shipRec = {fields}
+                    updateRecord(shipRec);
+        //check if it's a RUP product. Then check if there are another RUP product on order. If no then update the opportunity field RUP Selected ? to false
+                }else if(id && resUseProd){
+                    deleteRecord(id);
+                    let rupProds = checkRUP(this.prod);
+                    console.log('rup deleting ',' this.rupSelected ', this.rupSelected, ' rupProds', rupProds)
+                    if(!rupProds && this.rupSelected){
+                        const fields = {};
+                        fields[ID_FIELD.fieldApiName] = this.oppId;
+                        fields[RUP_PROD.fieldApiName] = rupProds;
+                        const resUseSelected = {fields}
+                        updateRecord(resUseSelected);  
+                    }
                 }
             }
             this.goodPricing = checkPricing(this.prod);

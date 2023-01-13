@@ -1,5 +1,5 @@
   //used to merge inventory and selected products on load
-   const mergeInv = (a1, a2) =>{
+  const mergeInv = (a1, a2) =>{
     
     let merge
     if(a2){
@@ -91,16 +91,40 @@
             sgn: x.Product2.SGN__c,
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             resUse: x.Product2.RUP__c,
-            manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false, 
+            manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false,
+            Line_Order__c: x.Line_Order__c,  
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
             OpportunityId: recordId
         }
       })
-     
-     //console.table(prod)
-      return prod; 
+//sort the array based on user input
+//see below
+    let sortedProd = sortArray(prod)
+    //  console.log(JSON.stringify(prod));
+    //  console.log('sorted below')
+    //  console.log(JSON.stringify(sortedProd));
+    return sortedProd; 
+  }
+  //sort the products on load to order by when they were added or rep has updated where they have been added
+  //used for quoting tool when they want to group products together; 
+  const sortArray = (el) =>{
+    
+    el.sort((a,b)=>{
+      return a.Line_Order__c - b.Line_Order__c; 
+    })
+    return el; 
   }
 
+  //This is called when an item is removed from an order. It will update the remaining items 
+  //order so that when a quote is created it will still put the products in order
+  const removeLineItem = ((index, arr)=>{
+    let prod = [...arr]
+    for(let i = index; i< prod.length; i++){
+      
+      prod[i].Line_Order__c --;
+    }
+    return prod; 
+  })
   //this sets the number of manual lines on the order so we don't add more than 10
   const getManLines = (list) =>{ 
      let numbofLines = 0; 
@@ -269,6 +293,27 @@ const checkRUP = (items)=>{
   return isRup; 
 }
 
-// make it so functions can be used other pages
-export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP}
 
+// make it so functions can be used other pages
+export{ validate, 
+        mergeInv, 
+        lineTotal, 
+        onLoadProducts, 
+        mergeLastPaid, 
+        newInventory,
+        updateNewProducts, 
+        getTotals, 
+        getCost, 
+        totalChange, 
+        roundNum, 
+        allInventory, 
+        checkPricing, 
+        getShipping, 
+        getManLines, 
+        setMargin, 
+        mergeLastQuote, 
+        roundRate, 
+        checkRUP,
+        sortArray,
+        removeLineItem
+      }

@@ -222,6 +222,7 @@ public with sharing class cpqApex {
             ol.Single_Product_Weight__c  = x.Ship_Weight__c;
             ol.Discount = x.Discount; 
             ol.OpportunityId = x.OpportunityId;
+            ol.Line_Order__c = x.Line_Order__c;
             ol.Account__c = accId; 
                 newPricebookEntry.add(x.PricebookEntryId);
         }else if(!String.isBlank(x.Id)){
@@ -239,6 +240,7 @@ public with sharing class cpqApex {
             ol.Description = x.Description;
             ol.Account__c = accId;
             ol.Discount = x.Discount;  
+            ol.Line_Order__c = x.Line_Order__c;
             //ol.OpportunityId = x.OpportunityId;
         }
             

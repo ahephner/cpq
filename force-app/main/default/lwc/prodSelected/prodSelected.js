@@ -28,7 +28,8 @@ import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
 import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP} from 'c/helper'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, 
+    checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP, sortArray,removeLineItem} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -80,7 +81,9 @@ export default class ProdSelected extends LightningElement {
     pryingEyes = false
     numbOfManLine = 0
     eventListening = false; 
-    @track selection = []
+    @track selection = [];
+    //for ordering products on the order. This will be set to the last Line_Order__c # on load or set at 0 on new order;
+    lineOrderNumber = 0; 
 //for message service
     subscritption = null;
 
@@ -238,6 +241,7 @@ export default class ProdSelected extends LightningElement {
                     goodPrice: true,
                     resUse: this.resUse,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                    Line_Order__c: this.lineOrderNumber,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
                 }
@@ -281,6 +285,7 @@ export default class ProdSelected extends LightningElement {
                     goodPrice: true,
                     resUse: this.resUse,
                     manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                    Line_Order__c: this.lineOrderNumber,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
                 }
@@ -295,6 +300,7 @@ export default class ProdSelected extends LightningElement {
                 let margin = setMargin(this.tCost, this.tPrice)
                 this.tMargin = roundNum(margin, 2);
             }
+            this.lineOrderNumber ++;
             this.unsavedProducts = true; 
             this.startEventListener()
     }
@@ -560,15 +566,24 @@ export default class ProdSelected extends LightningElement {
         this.unsavedProducts = true;   
         this.startEventListener();  
     }
+
+    updateLineNumb(x){
+        let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name);
+        this.selection[index].Line_Order__c = x.detail.value; 
+        this.unsavedProducts = true;   
+        this.startEventListener(); 
+    }
     
     removeProd(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
         let id = this.selection[index].Id; 
         let shipCode = this.selection[index].ProductCode;
         let resUseProd = this.selection[index].resUse;
+        let lineNum = this.selection[index].Line_Order__c;
         if(index >= 0){
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
+                this.selection = removeLineItem(index, this.selection); 
                 this.selection.splice(index, 1);
                 if(id && !shipCode.includes('SHIPPING') && !resUseProd){
                     
@@ -576,7 +591,7 @@ export default class ProdSelected extends LightningElement {
         //check if the deleted line item is shipping. If so reset shipping to zero 
                 }else if(id && shipCode.includes('SHIPPING')){
                     deleteRecord(id);
-                    console.log('resetting shipping cost ');
+                    
                     
                     const fields = {};
                     fields[ID_FIELD.fieldApiName] = this.recordId;
@@ -696,7 +711,8 @@ export default class ProdSelected extends LightningElement {
             let back = updateNewProducts(newProduct, result);
             
             this.selection =[...alreadyThere, ...back];
-            
+            //sort based on line item for pdf
+            this.selection = sortArray(this.selection)
             //console.log(JSON.stringify(this.selection));
             
             this.dispatchEvent(
@@ -890,7 +906,8 @@ export default class ProdSelected extends LightningElement {
         let codes = [];
         try{
             let results = await getProducts({oppId: this.recordId})
-            if(!results){
+            
+            if(results.length === 0){
                 return; 
             }else if(results){
 
@@ -927,6 +944,11 @@ export default class ProdSelected extends LightningElement {
             
             //IF THERE IS A PROBLEM NEED TO HANDLE THAT STILL!!!
             this.selection = await onLoadProducts(mergedLevels, this.recordId); 
+            
+            //get for ordering
+            this.lineOrderNumber = isNaN((this.selection.at(-1).Line_Order__c + 1)) ? (this.selection.length + 1) : (this.selection.at(-1).Line_Order__c + 1);
+            
+            
             //get the order totals; 
             let totals = await getTotals(this.selection);
             //set the number of manual lines on the order
@@ -935,7 +957,7 @@ export default class ProdSelected extends LightningElement {
             //this.shpWeight = totals.Ship_Weight__c;
             this.tQty = totals.Quantity;
             this.tCost = await getCost(this.selection);  
-            console.log('total cost '+this.tCost)
+            
             let margin = setMargin(this.tCost, this.tPrice)
             this.tMargin = roundNum(margin, 2);
             

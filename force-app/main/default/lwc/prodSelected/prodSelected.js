@@ -573,13 +573,41 @@ export default class ProdSelected extends LightningElement {
         this.unsavedProducts = true;   
         this.startEventListener(); 
     }
-    
+
+    //save line items updated order on removal of old line items. 
+    saveLineItems(arr){
+        const recordInputs = arr.slice().map(draft =>{
+            let Id = draft.Id; 
+            let Line_Order__c = draft.Line_Order__c;
+            const fields = {Id, Line_Order__c}
+
+        return {fields};
+        })
+        
+        const promises = recordInputs.map(input => updateRecord(input)); 
+        Promise.all(promises).then(prod => {
+            return; 
+        }).catch(error => {
+            console.log(error);
+            
+            // Handle error
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Margin Error',
+                    message: error.body.output.errors[0].message,
+                    variant: 'error'
+                })
+            )
+        })
+    }
+
+
     removeProd(x){
         let index = this.selection.findIndex(prod => prod.ProductCode === x.target.name)
         let id = this.selection[index].Id; 
         let shipCode = this.selection[index].ProductCode;
         let resUseProd = this.selection[index].resUse;
-        let lineNum = this.selection[index].Line_Order__c;
+        
         if(index >= 0){
             let cf = confirm('Do you want to remove this entry?')
             if(cf ===true){
@@ -610,6 +638,11 @@ export default class ProdSelected extends LightningElement {
                         updateRecord(resUseSelected);  
                     }
                 }
+                //save the product numbers for ordering products in line
+                this.saveLineItems(this.selection);
+
+                //for ordering the products on the screen
+                this.lineOrderNumber = isNaN((this.selection.at(-1).Line_Order__c + 1)) ? (this.selection.length + 1) : (this.selection.at(-1).Line_Order__c + 1);
                 //update order totals
                 let totals =  getTotals(this.selection);
             
@@ -623,6 +656,14 @@ export default class ProdSelected extends LightningElement {
                 this.goodPricing = checkPricing(this.selection);
             }
         }      
+    }
+
+    //allow reps to sort line items
+     sortBtnText = 'Sort Items'
+     showSort = false; 
+    handleSort(){
+       this.sortBtnText = this.sortBtnText === 'Sort Items'? 'Edit Pricing': 'Sort Items'; 
+       this.showSort = this.showSort === true ? false: true;       
     }
     //get warehouse options
 //these are hardcoded to full NEED TO GET DYNAMIC

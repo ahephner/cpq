@@ -92,7 +92,7 @@
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             resUse: x.Product2.RUP__c,
             manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false,
-            Line_Order__c: x.Line_Order__c,  
+            Line_Order__c: Number(x.Line_Order__c),
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
             OpportunityId: recordId
         }

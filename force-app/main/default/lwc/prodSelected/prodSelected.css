@@ -11,6 +11,9 @@
     margin-left: 30%;
     font-size: small;
 }
+.align{
+    display: inline-flex;
+}
 .up{
     padding-top: 1.5%;
 }

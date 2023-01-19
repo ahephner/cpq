@@ -8,14 +8,19 @@
     <template if:true={loaded}>
         <template if:false={wasSubmitted}>
         <div class='slds-grid'>
-            <span class='slds-col slds-size_8-of-12'>
+            <span class='slds-col slds-size_4-of-12'>
                 <template if:true={unsavedProducts}>
                     <p class="changedProduct">You have unsaved changes!</p>
                 </template>
             </span>
+<!-- Sort Btn Allow reps to order products on quote -->
+            <span class="slds-col slds-size_4-of-12 slds-m-bottom_x-small">
+                <lightning-button variant="success" label={sortBtnText} title="titleName" onclick={handleSort}></lightning-button>
+            </span>
             <span class='slds-col slds-size_4-of-12 slds-m-bottom_x-small'>
                 <div class='slds-float_right slds-m-right_medium'>
-                    <lightning-button-group>
+                    <!-- <lightning-button-group> -->
+                <div class="align">
                 <!-- Switch Warehouse inventories -->
                     <lightning-combobox
                     name="warehouse"
@@ -25,10 +30,11 @@
                     onchange={checkInventory} ></lightning-combobox>
                     <lightning-button class='slds-m-top_large' variant="Neutral" label="Add Product" title="priceBook" onclick={openProdSearch}></lightning-button> 
                     <lightning-button class='slds-m-top_large' variant="brand" label="Add Split Ship" title="splitShip" onclick={addShips}></lightning-button>
-                    <!-- <lightning-button class='slds-m-top_large' variant="destructive" label="Conga Test" title="splitShip" onclick={congaTest}></lightning-button> -->
+                    <!-- <lightning-button class='slds-m-top_large' variant="destructive" label="Conga Test" title="splitShip" onclick={mixTest}></lightning-button>  -->
                     <!-- <lightning-button class='slds-m-top_large' variant="brand" label="Manual Line" title="manLine" onclick={addManualLine}></lightning-button> -->
                     <!-- <lightning-button class='slds-m-top_large' variant="Neutral" label="Get Pricing" title="pricing" onclick={initPriceCheck}></lightning-button>  -->
-                    </lightning-button-group>   
+                </div>
+                    <!-- </lightning-button-group>    -->
                 </div>
             </span>
             <!-- <span class='slds-col slds-size_2-of-12 slds-m-bottom_x-small'>
@@ -46,11 +52,22 @@
         <template if:true={prodFound}>
             <!-- Set Table Headers here -->
             <div class='slds-grid header'>
+                <!-- Here is the Sort Order Start -->
+            <template if:true={showSort}>
+                <div class='slds-col slds-size_2-of-12'>
+                    <p class='header'>Product Name</p>
+                </div>
+                <div class="slds-col slds-size_1-of-12">
+                    <p class='header'>Order On PDF</p>
+                </div>
+            </template>  
+                <template if:false={showSort}>
                 <div class='slds-col slds-size_2-of-12 slds-align_absolute-center'>
                     <p class='header'>Product Name</p>
                 </div>
+  
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
-                    <p class='header'>LON</p>
+                    <p class='header'>Qty</p>
                 </div>
                 <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
                     <p class='header'>Price</p>
@@ -84,6 +101,7 @@
                 <div class="slds-col slds-size_2-of-12 slds-align_absolute-center">
                     <p class='header'>Comment</p>
                 </div>
+            </template>
             
             </div>
             <!--Table cells here-->
@@ -117,12 +135,23 @@
                                         </span>
                                     </div>        
                         </div>
+<!-- show line order for quotes -->
+                        <template if:true={showSort}>
+                            <div class="slds-col slds-size_1-of-12 qtyDiv">
+                                <div>
+                                    <lightning-input type="number" name={sp.ProductCode}  value={sp.Line_Order__c} onchange={updateLineNumb}></lightning-input>
+                                    <!-- <lightning-input type="number" class='qtyMark' data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
+                                    value={sp.Quantity} onchange={newQTY} step="0.01"></lightning-input> -->
+                                </div>
+                            </div>
+                        </template>
+        <!-- Show Manual Inputs -->
+                        <template if:false={showSort}>
                         <!-- user qty -->
                         <div class="slds-col slds-size_1-of-12 qtyDiv">
                             <div>
-                                <lightning-input type="number" name={sp.ProductCode}  value={sp.Line_Order__c} onchange={updateLineNumb}></lightning-input>
-                                <!-- <lightning-input type="number" class='qtyMark' data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
-                                value={sp.Quantity} onchange={newQTY} step="0.01"></lightning-input> -->
+                                <lightning-input type="number" class='qtyMark' data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
+                                value={sp.Quantity} onchange={newQTY} step="0.01"></lightning-input>
                             </div>
                         </div>
                         <!-- user price -->
@@ -226,6 +255,8 @@
                         </div>
                     </div>
                 </template>
+            </template>
+<!-- This is the end of the for template -->
                     </div>
                 </template>
             </div>

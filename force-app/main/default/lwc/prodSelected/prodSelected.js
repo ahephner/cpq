@@ -662,8 +662,37 @@ export default class ProdSelected extends LightningElement {
      sortBtnText = 'Sort Items'
      showSort = false; 
     handleSort(){
-       this.sortBtnText = this.sortBtnText === 'Sort Items'? 'Edit Pricing': 'Sort Items'; 
+       this.sortBtnText = this.sortBtnText === 'Sort Items'? 'Hide Sort': 'Sort Items'; 
        this.showSort = this.showSort === true ? false: true;       
+    }
+
+//Sort the line items up and down if you dont want to enter number
+    moveUp(event){
+        
+        let index = this.selection.findIndex(prod => prod.ProductCode === event.target.name)
+        if(index>0){
+            let moveEl = index -1; 
+            this.selection[index].Line_Order__c --;
+            this.selection[moveEl].Line_Order__c ++;
+            let lineUp = sortArray(this.selection)
+            this.selection = [...lineUp]; 
+            this.unsavedProducts = true;   
+            this.startEventListener(); 
+        }
+    }
+    moveDown(event){
+        
+        let index = this.selection.findIndex(x => x.ProductCode === event.target.name);
+        
+        if(index<(this.selection.length-1)){
+            let moveEl = index + 1; 
+            this.selection[index].Line_Order__c ++;
+            this.selection[moveEl].Line_Order__c --;
+            let lineUp = sortArray(this.selection)
+            this.selection = [...lineUp];
+            this.unsavedProducts = true;   
+            this.startEventListener();
+        }
     }
     //get warehouse options
 //these are hardcoded to full NEED TO GET DYNAMIC

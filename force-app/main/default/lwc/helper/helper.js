@@ -125,6 +125,8 @@
     }
     return prod; 
   })
+
+
   //this sets the number of manual lines on the order so we don't add more than 10
   const getManLines = (list) =>{ 
      let numbofLines = 0; 

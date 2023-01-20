@@ -118,6 +118,11 @@
       width: 90%; 
       margin-left: 5%;
   }
+
+  .arrBtn{
+    margin-top: 1.5%;
+    padding-left: 5px;
+  }
 .changedProduct{
     color: #313131; 
     text-align: center;
@@ -196,3 +201,8 @@
         display: inline-flex; 
     }
 
+/* lightning-button.sortBTN{
+    --sds-c-button-brand-color-background: #b1b1b4c5;
+    --slds-c-button-outline-brand-color-background-active: #b1b1b4c5;
+    --sds-c-button-text-color: #000508;
+} */

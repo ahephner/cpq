@@ -13,7 +13,8 @@ import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
 import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory, checkRUP} from 'c/mh2'
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, 
+    getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory, checkRUP, sortArray, removeLineItem} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 
@@ -55,7 +56,8 @@ export default class MobileProdSelected extends LightningElement {
     lastQuote; 
     sgn; 
     rupProd;
-
+    //for ordering products on the order. This will be set to the last Line_Order__c # on load or set at 0 on new order;
+    lineOrderNumber = 0; 
     hasRendered = true;
     dropShip;
     connectedCallback() {
@@ -130,6 +132,7 @@ export default class MobileProdSelected extends LightningElement {
             this.prod = await onLoadProducts(mergedLevels, this.recordId); 
             //console.log(JSON.stringify(this.prod))
             this.backUp = this.prod; 
+            this.lineOrderNumber = isNaN((this.prod.at(-1).Line_Order__c + 1)) ? (this.prod.length + 1) : (this.prod.at(-1).Line_Order__c + 1);
             this.showSpinner =false; 
          }catch(error){
             let mess = error; 
@@ -269,6 +272,39 @@ export default class MobileProdSelected extends LightningElement {
             this.handleWarning(targetId,lOne, flr, unitp, index )
         },500)
     }
+
+//Handle the updating of sort order
+handleOrderSort(item){
+    let index = this.prod.findIndex(prod => prod.Product2Id === item.target.name);
+    this.prod[index].Line_Order__c = Number(item.detail.value);
+}
+
+    //save line items updated order on removal of old line items. 
+    saveLineItems(arr){
+        const recordInputs = arr.slice().map(draft =>{
+            let Id = draft.Id; 
+            let Line_Order__c = draft.Line_Order__c;
+            const fields = {Id, Line_Order__c}
+
+        return {fields};
+        })
+        
+        const promises = recordInputs.map(input => updateRecord(input)); 
+        Promise.all(promises).then(prod => {
+            return; 
+        }).catch(error => {
+            console.log(error);
+            
+            // Handle error
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Margin Error',
+                    message: error.body.output.errors[0].message,
+                    variant: 'error'
+                })
+            )
+        })
+    }
 //delete individual line items. 
     handleDelete(index){
         let id = this.prod[index].Id;
@@ -278,6 +314,7 @@ export default class MobileProdSelected extends LightningElement {
         if(index >= 0 ){
             let cf = confirm('Do you want to delete this line item')
             if(cf === true){
+                this.prod = removeLineItem(index, this.prod);
                 this.prod.splice(index, 1);
                 if(id && !shipCode.includes('SHIPPING') && !resUseProd){
                     deleteRecord(id);
@@ -304,6 +341,9 @@ export default class MobileProdSelected extends LightningElement {
                     }
                 }
             }
+            this.saveLineItems(this.prod);
+            //for ordering the products on the screen
+            this.lineOrderNumber = isNaN((this.prod.at(-1).Line_Order__c + 1)) ? (this.prod.length + 1) : (this.prod.at(-1).Line_Order__c + 1);
             this.goodPricing = checkPricing(this.prod);
         }
     }
@@ -347,6 +387,7 @@ export default class MobileProdSelected extends LightningElement {
         .then(result => {
             let back = updateNewProducts(newProduct, result);
             this.prod =[...alreadyThere, ...back]; 
+            this.prod = sortArray(this.prod); 
             this.backUp = this.prod; 
             this.total = this.orderTotal(this.prod)
             this.showSpinner = false; 
@@ -493,6 +534,7 @@ export default class MobileProdSelected extends LightningElement {
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
             manLine: false,
+            Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.oppId
         }
@@ -530,8 +572,10 @@ export default class MobileProdSelected extends LightningElement {
             goodPrice: true,
             manLine: false,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            Line_Order__c: this.lineOrderNumber,
             OpportunityId: this.oppId
         }
+        this.lineOrderNumber +=2; 
         const checkShip = this.prod.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
         const checkNT = this.prod.findIndex(x => x.Product2Id === '01t75000000rTHPAA2')
         console.log(1, checkShip, 2, checkNT)
@@ -593,6 +637,7 @@ export default class MobileProdSelected extends LightningElement {
                     resUse: this.rupProd,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
+                    Line_Order__c: this.lineOrderNumber,
                     OpportunityId: this.oppId
                 }
             ]
@@ -633,10 +678,12 @@ export default class MobileProdSelected extends LightningElement {
                     resUse: this.rupProd,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
+                    Line_Order__c: this.lineOrderNumber,
                     OpportunityId: this.oppId
                 }
             ]
         } //console.log('new product '+JSON.stringify(this.prod))
+        this.lineOrderNumber ++
     }
 //handle show the save button options
 allowSave(){

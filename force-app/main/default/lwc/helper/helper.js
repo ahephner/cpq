@@ -101,7 +101,7 @@
 //see below
     let sortedProd = sortArray(prod)
     //  console.log(JSON.stringify(prod));
-    console.log(typeof sortedProd[0].Line_Order__c, ' 2 ', sortedProd[0].Line_Order__c); 
+    //console.log(typeof sortedProd[0].Line_Order__c, ' 2 ', sortedProd[0].Line_Order__c); 
     //  console.log('sorted below')
     //  console.log(JSON.stringify(sortedProd));
     return sortedProd; 

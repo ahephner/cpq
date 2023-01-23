@@ -52,8 +52,9 @@
   //WARNING IF YOU DO SOMETHING LIKE '$'+x.Product_Cost__c  will throw errors
   const onLoadProducts = (products, recordId) =>{
     //console.log(JSON.stringify(products))
+    let count = 0;
       let prod = products.map(x =>{
-         
+        count ++;  
         return   {
             sObjectType: 'OpportunityLineItem',
             Id: x.Id,
@@ -95,12 +96,34 @@
             //check if it's agency product if not eval floor pricing 
             goodPrice:x.Product2.Agency_Pricing__c ? true : (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             resUse: x.Product2.RUP__c, 
+            Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c),
             OpportunityId: x.OpportunityId
         }
       })
-      //console.log(JSON.stringify(prod))
-      return prod; 
+      //console.log(JSON.stringify(prod));
+      let sortedProd = sortArray(prod)
+      return sortedProd; 
   }
+//sort the products on load to order by when they were added or rep has updated where they have been added
+  //used for quoting tool when they want to group products together; 
+  const sortArray = (el) =>{
+    
+    el.sort((a,b)=>{
+      return a.Line_Order__c - b.Line_Order__c; 
+    })
+    return el; 
+  }
+
+  //This is called when an item is removed from an order. It will update the remaining items 
+  //order so that when a quote is created it will still put the products in order
+  const removeLineItem = ((index, arr)=>{
+    let prod = [...arr]
+    for(let i = index; i< prod.length; i++){
+      
+      prod[i].Line_Order__c --;
+    }
+    return prod; 
+  })
 
   const updateNewProducts = (noIdProduct, returnedProducts)=>{
     const newProducts=[];
@@ -223,5 +246,21 @@
       return isRup; 
     }
 // make it so functions can be used other pages
-export{mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory, updateNewProducts, getTotals, totalChange, roundNum, checkPricing, getShipping, allInventory, mergeLastQuote, checkRUP}
+export{mergeInv, 
+      lineTotal, 
+      onLoadProducts, 
+      mergeLastPaid, 
+      newInventory, 
+      updateNewProducts, 
+      getTotals, 
+      totalChange, 
+      roundNum, 
+      checkPricing, 
+      getShipping, 
+      allInventory, 
+      mergeLastQuote, 
+      checkRUP,
+      sortArray,
+      removeLineItem
+    }
 

@@ -89,6 +89,8 @@
     <!-- Qty -->
                 <lightning-input class="slds-m-bottom_x-small" value={item.Quantity} type='number' label='Qty' step="0.01" min={minUnits}
                                 name ={item.Product2Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
+    <!--Inventory  -->
+                <lightning-input value={item.wInv} type='number' name ={item.Product2Id} label='Inventory Avail.' readonly></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
@@ -104,12 +106,14 @@
             </template>            
     <!-- Total Price -->
                 <lightning-input value={item.TotalPrice} name ={item.Product2Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
+    <!--Order By-->
+                <lightning-input value={item.Line_Order__c} name ={item.Product2Id}  type='number'  
+                                label='PDF Order' onchange={handleOrderSort} read-only={item.editQTY}></lightning-input>
             </div>
-            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-    <!--Inventory  -->
-                <lightning-input value={item.wInv} type='number' 
-                                name ={item.Product2Id} label='Inventory Avail.' readonly></lightning-input>
-            </div>
+    <!-- Former Inventory ref -->
+            <!-- <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+
+            </div> -->
         </template>
     <!--Shows more info like inventory if we can link it some how and costs-->    
         <template if:true={item.showInfo}>

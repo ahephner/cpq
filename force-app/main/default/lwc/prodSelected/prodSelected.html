@@ -258,17 +258,43 @@
                         <lightning-input type="text" value={sp.Description} 
                                              name={sp.ProductCode} onchange={newComment} label=""></lightning-input>
                     </div>
-                    <!--For Man Lines-->
-                                    <template if:true={sp.manLine}>
-                                        <div class='slds-col slds-size_8-of-12'>
-                                            <div data-margin={sp.ProductCode}>
-                                            <lightning-input type="text" value={sp.Description} class="manLine"
-                                                name={sp.ProductCode} onchange={newComment} label="Comment CUSTOMER FACING"></lightning-input>
-                                            </div>
-                                        </div>
-                                    </template>
                 </template>
+        <!--End of Manual Line-->    
             </template>
+            <!--For Man Lines-->
+                    <template if:true={sp.manLine}>
+                        <template if:false={showSort}>
+                                <div class='slds-col slds-size_8-of-12'>
+                                    <div data-margin={sp.ProductCode}>
+                                    <lightning-input type="text" value={sp.Description} class="manLine"
+                                        name={sp.ProductCode} onchange={newComment} label="Comment CUSTOMER FACING"></lightning-input>
+                                    </div>
+                                </div>
+                        </template>
+                        <template if:true={showSort}>
+                            <span class="slds-col slds-size_6-of-12"></span>
+                            <div class="slds-col slds-size_1-of-12 qtyDiv manQ">
+                                <div>
+                                    <lightning-input type="number" name={sp.ProductCode}  value={sp.Line_Order__c} onchange={updateLineNumb}></lightning-input>
+                                            <!-- <lightning-input type="number" class='qtyMark' data-tar={sp.ProductCode} name={sp.ProductCode} min='1'
+                                            value={sp.Quantity} onchange={newQTY} step="0.01"></lightning-input> -->
+                                </div>
+                            </div>
+                            <div class="slds-col slds-size_1-of-12 arrBtn">
+                                <div>
+                                    <lightning-button-icon icon-name="utility:arrowup" 
+                                        alternative-text="move up" title="move up" 
+                                        name={sp.ProductCode} onclick={moveUp} size="small">
+                                    </lightning-button-icon>
+    
+                                    <lightning-button-icon icon-name="utility:arrowdown" 
+                                        alternative-text="move down" title="move down" 
+                                        name={sp.ProductCode} onclick={moveDown} size="small">
+                                    </lightning-button-icon>
+                                </div>
+                        </div>
+                        </template>
+                    </template>
 <!-- This is the end of the for template -->
                     </div>
                 </template>

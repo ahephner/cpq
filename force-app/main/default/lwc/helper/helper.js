@@ -52,9 +52,9 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    
-      let prod = products.map(x =>{
-        
+    let count = 0;
+    let prod = products.map(x =>{
+      count++   
         //console.log(JSON.stringify(products));
         return   {
             sObjectType: 'OpportunityLineItem',
@@ -92,15 +92,16 @@
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             resUse: x.Product2.RUP__c,
             manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false,
-            Line_Order__c: Number(x.Line_Order__c),
+            Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c) ,
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
             OpportunityId: recordId
-        }
+        } 
       })
 //sort the array based on user input
 //see below
     let sortedProd = sortArray(prod)
     //  console.log(JSON.stringify(prod));
+    console.log(typeof sortedProd[0].Line_Order__c, ' 2 ', sortedProd[0].Line_Order__c); 
     //  console.log('sorted below')
     //  console.log(JSON.stringify(sortedProd));
     return sortedProd; 

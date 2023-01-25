@@ -450,6 +450,7 @@ export default class ProdSelected extends LightningElement {
         
         if(index > -1){
             this.selection.splice(index, 1);
+            this.lineOrderNumber --; 
         }else{
             return; 
         }   
@@ -671,6 +672,7 @@ export default class ProdSelected extends LightningElement {
         
         let index = this.selection.findIndex(prod => prod.ProductCode === event.target.name)
         if(index>0){
+            //this.template.querySelector(`[data-box="${event.target.name}"]`).classList.add('moveBoxUp');
             let moveEl = index -1; 
             this.selection[index].Line_Order__c --;
             this.selection[moveEl].Line_Order__c ++;
@@ -678,6 +680,7 @@ export default class ProdSelected extends LightningElement {
             this.selection = [...lineUp]; 
             this.unsavedProducts = true;   
             this.startEventListener(); 
+            //setTimeout(()=>{this.template.querySelector(`[data-box="${event.target.name}"]`).classList.remove('moveBoxUp');},1000);
         }
     }
     moveDown(event){
@@ -685,6 +688,7 @@ export default class ProdSelected extends LightningElement {
         let index = this.selection.findIndex(x => x.ProductCode === event.target.name);
         
         if(index<(this.selection.length-1)){
+            //this.template.querySelector(`[data-box="${event.target.name}"]`).classList.add('moveBoxDown');
             let moveEl = index + 1; 
             this.selection[index].Line_Order__c ++;
             this.selection[moveEl].Line_Order__c --;
@@ -692,6 +696,7 @@ export default class ProdSelected extends LightningElement {
             this.selection = [...lineUp];
             this.unsavedProducts = true;   
             this.startEventListener();
+            //setTimeout(()=>{this.template.querySelector(`[data-box="${event.target.name}"]`).classList.remove('moveBoxDown');},1000);
         }
     }
     //get warehouse options
@@ -1141,9 +1146,7 @@ export default class ProdSelected extends LightningElement {
     showValues(e){
         let index = this.selection.findIndex(prod => prod.ProductCode === e.target.dataset.targetId);
         
-        if(this.selection[index].showLastPaid){
-            console.log('turning false');
-            
+        if(this.selection[index].showLastPaid){ 
             this.selection[index].showLastPaid = false;
         }else{
             this.selection[index].showLastPaid = true; 

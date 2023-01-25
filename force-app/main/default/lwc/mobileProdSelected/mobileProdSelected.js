@@ -278,7 +278,29 @@ handleOrderSort(item){
     let index = this.prod.findIndex(prod => prod.Product2Id === item.target.name);
     this.prod[index].Line_Order__c = Number(item.detail.value);
 }
-
+    moveUp(event){
+            
+        let index = this.prod.findIndex(prod => prod.Product2Id === event.target.name)
+        if(index>0){
+            let moveEl = index -1; 
+            this.prod[index].Line_Order__c --;
+            this.prod[moveEl].Line_Order__c ++;
+            let lineUp = sortArray(this.prod)
+            this.prod = [...lineUp];     
+        }
+    }
+    moveDown(event){
+        
+        let index = this.selection.findIndex(x => x.Product2Id === event.target.name);
+        
+        if(index<(this.selection.length-1)){
+            let moveEl = index + 1; 
+            this.selection[index].Line_Order__c ++;
+            this.selection[moveEl].Line_Order__c --;
+            let lineUp = sortArray(this.prod)
+            this.prod = [...lineUp];
+        }
+    }
     //save line items updated order on removal of old line items. 
     saveLineItems(arr){
         const recordInputs = arr.slice().map(draft =>{
@@ -464,6 +486,7 @@ handleOrderSort(item){
              
             if(index > -1){
                 this.prod.splice(index, 1);
+                this.lineOrderNumber --; 
             }else{
                 return; 
             }    

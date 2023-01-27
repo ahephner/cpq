@@ -672,23 +672,28 @@ export default class ProdSelected extends LightningElement {
         
         let index = this.selection.findIndex(prod => prod.ProductCode === event.target.name)
         if(index>0){
-            //this.template.querySelector(`[data-box="${event.target.name}"]`).classList.add('moveBoxUp');
+            this.template.querySelector(`[data-box="${event.target.name}"]`).classList.add('moveBoxUp');
+            let name = event.target.name; 
             let moveEl = index -1; 
+         
             this.selection[index].Line_Order__c --;
             this.selection[moveEl].Line_Order__c ++;
             let lineUp = sortArray(this.selection)
             this.selection = [...lineUp]; 
             this.unsavedProducts = true;   
             this.startEventListener(); 
-            //setTimeout(()=>{this.template.querySelector(`[data-box="${event.target.name}"]`).classList.remove('moveBoxUp');},1000);
+            setTimeout(()=>{
+                this.template.querySelector(`[data-box="${name}"]`).classList.remove('moveBoxUp');
+            },500);
+           
         }
     }
     moveDown(event){
         
         let index = this.selection.findIndex(x => x.ProductCode === event.target.name);
-        
+        let name = event.target.name;
         if(index<(this.selection.length-1)){
-            //this.template.querySelector(`[data-box="${event.target.name}"]`).classList.add('moveBoxDown');
+            this.template.querySelector(`[data-box="${event.target.name}"]`).classList.add('moveBoxDown');
             let moveEl = index + 1; 
             this.selection[index].Line_Order__c ++;
             this.selection[moveEl].Line_Order__c --;
@@ -696,7 +701,9 @@ export default class ProdSelected extends LightningElement {
             this.selection = [...lineUp];
             this.unsavedProducts = true;   
             this.startEventListener();
-            //setTimeout(()=>{this.template.querySelector(`[data-box="${event.target.name}"]`).classList.remove('moveBoxDown');},1000);
+            setTimeout(()=>{
+                this.template.querySelector(`[data-box="${name}"]`).classList.remove('moveBoxDown');
+            },500);
         }
     }
     //get warehouse options

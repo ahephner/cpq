@@ -291,12 +291,12 @@ handleOrderSort(item){
     }
     moveDown(event){
         
-        let index = this.selection.findIndex(x => x.Product2Id === event.target.name);
+        let index = this.prod.findIndex(x => x.Product2Id === event.target.name);
         
-        if(index<(this.selection.length-1)){
+        if(index<(this.prod.length-1)){
             let moveEl = index + 1; 
-            this.selection[index].Line_Order__c ++;
-            this.selection[moveEl].Line_Order__c --;
+            this.prod[index].Line_Order__c ++;
+            this.prod[moveEl].Line_Order__c --;
             let lineUp = sortArray(this.prod)
             this.prod = [...lineUp];
         }

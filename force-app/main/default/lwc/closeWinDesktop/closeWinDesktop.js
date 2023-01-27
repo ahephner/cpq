@@ -128,7 +128,7 @@ export default class CloseWinDesktop extends LightningElement {
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
                     this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
-                    console.log(1, this.pestExp, 2, typeof this.pestExp, 3, this.today)
+                    //console.log(1, this.pestExp, 2, typeof this.pestExp, 3, this.today)
                 }else{
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;
@@ -374,7 +374,7 @@ newDevDate2(e){
         let isValid = true;
         let inputFields = this.template.querySelectorAll('.validate');
         const ship = this.template.querySelector('.valAdd');
-        console.log(1, inputFields, 2, ship)
+        //console.log(1, inputFields, 2, ship)
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
                 inputField.reportValidity();

@@ -260,10 +260,14 @@
       return margin; 
     }
     // Validation function
-    const validate = (obj, rules, rupRules, isRUP) => {
+    const validate = (obj, rules, rupRules, isRUP, bhRules, isBH) => {
       //if RUP product is selected add rup rules to validate against
       if(isRUP){
         rules = [...rules, ...rupRules]
+      }
+      //check if bill and hold was selected
+      if(isBH === 'Yes'){
+        rules = [...rules, ...bhRules]
       }
       const errors = rules.reduce((errs, rule) => {
         

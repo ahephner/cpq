@@ -35,8 +35,10 @@ import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
+import BH_SIGNED from '@salesforce/schema/Opportunity.Bill_Hold_Signed__c';
+ 
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD];
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, BH_SIGNED, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`,
@@ -51,7 +53,12 @@ const rupRules = [
     message: 'RUP Product Selected. License either expired or not found.',
     type:'rupMissing'}
 ]
-
+//Bill and Hold Validation
+const bhRules = [
+    {test: (o) => o.billHoldSigned === true,
+     message: 'You selected Bill and Hold, however, the agreement has not been signed or uploaded correctly',
+     type:'missingInfo'}
+]
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
@@ -81,6 +88,7 @@ export default class CloseWinDesktop extends LightningElement {
     numPayments = '';
     firstPayDate = ''; 
     billHold;
+    billHoldSigned; 
     earlyPay;
     invoiceDate; 
     showEOPInfo = false;
@@ -98,11 +106,17 @@ export default class CloseWinDesktop extends LightningElement {
                     this.hasItems = getFieldValue(data, HASITEMS); 
                     this.rupSelected = getFieldValue(data, RUP_PROD);
                     this.pestExp = getFieldValue(data, PEST_DATE);
+                    this.billHold = getFieldValue(data, BILL_HOLD);
+                    this.billHoldSigned = getFieldValue(data, BH_SIGNED); 
                     
-                    let check = {accId: this.accountId, hasItems: this.hasItems, expDate:this.pestExp, today: this.today}
-                    //console.log('check ' , check);
+                    let check = {accId: this.accountId, 
+                                hasItems: this.hasItems, 
+                                expDate:this.pestExp, 
+                                today: this.today,
+                                billHoldSigned: this.billHoldSigned}
                     
-                    let loadMore = validate(check, rules, rupRules, this.rupSelected);
+                    
+                    let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
                    //console.log(loadMore)
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
@@ -123,12 +137,11 @@ export default class CloseWinDesktop extends LightningElement {
                     this.earlyPay = getFieldValue(data, EARLY_PAY);
                     this.invoiceDate = getFieldValue(data, INVOICE_DATE); 
                     //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
-                    this.billHold = getFieldValue(data, BILL_HOLD); 
                     this.findAddress(this.accountId);
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
                     this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
-                    //console.log(1, this.pestExp, 2, typeof this.pestExp, 3, this.today)
+                   
                 }else{
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;

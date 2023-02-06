@@ -81,7 +81,9 @@ export default class CloseWinDesktop extends LightningElement {
     pestExp;
     rupSelected;
     errorMsg = {};
-    custPOLabel; 
+    custPOLabel;
+    //allow users to save  
+    disabledBtn;
     hasItems;
     eopOrder;
     eopPayType = '';
@@ -282,10 +284,19 @@ handleNumbOpts(event){
 handleDate(event){
     this.firstPayDate = event.detail.value; 
 }
-//checkbox check against checked not value
+//Update Bill and Hold Status check storage agreement is signed on teh account
+bhError
 handleBillHold(event){
-    this.billHold = event.detail.value
+    this.billHold = event.detail.value;
+    if(this.billHold === 'Yes' && !this.billHoldSigned ){
+        this.bhError = true;
+        this.disabledBtn = true; 
+    }else{
+        this.bhError = false; 
+        this.disabledBtn = false;
+    }    
 }
+
 handleInvoiceDate(event){
     this.invoiceDate = event.detail.value; 
 }

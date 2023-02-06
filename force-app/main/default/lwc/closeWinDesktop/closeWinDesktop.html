@@ -216,12 +216,16 @@
                         <lightning-input class="eopInputs" type="date" 
                                          name="dateInput" label="Invoice Date" 
                                          value={invoiceDate} onchange={handleInvoiceDate} required></lightning-input>
+
                     </div>
                 </template>
         <!-- closing div EOP section -->
             </div>
             <div class="slds-grid">
-                <br/><br/><br/>
+                <br/><br/>
+                <template if:true={bhError}>
+                    <p class="errText">You have selected Bill and Hold but you don't have a storage agreement uploaded. You can go to their account page and upload a copy</p>
+               </template>
             </div>
             <div slot="footer">
                 <lightning-button
@@ -232,6 +236,7 @@
                 <lightning-button
                     variant="brand"
                     label="Submit"
+                    disabled={disabledBtn}
                     class="slds-m-left_x-small"
                     onclick={handleSave}
                 ></lightning-button>

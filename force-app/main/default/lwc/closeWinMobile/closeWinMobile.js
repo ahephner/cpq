@@ -30,8 +30,9 @@ import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
+import BH_SIGNED from '@salesforce/schema/Opportunity.Bill_Hold_Signed__c';
 import {validate} from 'c/helper'
-const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY, FIRST_DATE, BILL_HOLD,NUM_PAYMENTS, EOP_PAYTYPE, INVOICE_DATE, PEST_DATE, RUP_PROD];
+const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY, FIRST_DATE, BILL_HOLD, BH_SIGNED, NUM_PAYMENTS, EOP_PAYTYPE, INVOICE_DATE, PEST_DATE, RUP_PROD];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -44,6 +45,12 @@ const rupRules = [
     {test: (o) => o.expDate >= o.today,
     message: 'RUP Product Selected. License either expired or not found.',
     type:'rupMissing'}
+]
+//Bill and Hold Validation
+const bhRules = [
+    {test: (o) => o.billHoldSigned === true,
+     message: 'You selected Bill and Hold, however, the agreement has not been signed or uploaded correctly',
+     type:'missingInfo'}
 ]
 export default class CloseWinMobile extends LightningElement {
     
@@ -68,6 +75,8 @@ export default class CloseWinMobile extends LightningElement {
     rupSelected; 
     errorMsg = {};
     custPOLabel; 
+//allow users to save can set it to false when needed further validation
+    disabledBtn;
     hasItems; 
     passVal = true; 
     rupError;
@@ -77,7 +86,8 @@ export default class CloseWinMobile extends LightningElement {
     eopOrder
     eopPayType
     numPayments;
-    billHold; 
+    billHold;
+    billHoldSigned; 
     invoiceDate;
     earlyPay;
     showEOPInfo = false;
@@ -92,9 +102,16 @@ export default class CloseWinMobile extends LightningElement {
                         this.hasItems = getFieldValue(data, HASITEMS);
                         this.rupSelected = getFieldValue(data, RUP_PROD);
                         this.pestExp = getFieldValue(data, PEST_DATE);
+                        this.billHold = getFieldValue(data, BILL_HOLD); 
+                        this.billHoldSigned = getFieldValue(data, BH_SIGNED);
+
+                        let check = {accId: this.accountId, 
+                                    hasItems: this.hasItems, 
+                                    expDate:this.pestExp, 
+                                    today: this.today,
+                                    billHoldSigned: this.billHoldSigned}
                         
-                        let check = {accId: this.accountId, hasItems: this.hasItems, expDate:this.pestExp, today: this.today}
-                        let loadMore = validate(check, rules, rupRules, this.rupSelected)
+                        let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
                         
                         if(loadMore.isValid){
                             this.name = getFieldValue(data, NAME);
@@ -112,7 +129,6 @@ export default class CloseWinMobile extends LightningElement {
                             this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
                             this.numPayments = getFieldValue(data, NUM_PAYMENTS);
                             this.firstPayDate = getFieldValue(data, FIRST_DATE);
-                            this.billHold = getFieldValue(data, BILL_HOLD); 
                             this.earlyPay = getFieldValue(data, EARLY_PAY);
                             this.invoiceDate = getFieldValue(data, INVOICE_DATE);
                             this.findAddress(this.accountId);
@@ -397,8 +413,16 @@ handleNumbOpts(event){
 handleDate(event){
     this.firstPayDate = event.detail.value; 
 }
+bhError
 handleBillHold(event){
-    this.billHold = event.detail.value;  
+    this.billHold = event.detail.value;
+    if(this.billHold === 'Yes' && !this.billHoldSigned ){
+        this.bhError = true;
+        this.disabledBtn = true; 
+    }else{
+        this.bhError = false; 
+        this.disabledBtn = false;
+    }   
 }
 handleInvoiceDate(event){
     this.invoiceDate = event.detail.value; 

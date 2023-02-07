@@ -119,7 +119,7 @@ export default class CloseWinDesktop extends LightningElement {
                     
                     
                     let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
-                   //console.log(loadMore)
+                   
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
                     this.quoteNumb = getFieldValue(data, QUOTENUM);

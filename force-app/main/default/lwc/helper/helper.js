@@ -91,7 +91,7 @@
             sgn: x.Product2.SGN__c,
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
             resUse: x.Product2.RUP__c,
-            manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false,
+            manLine: x.Product2.ProductCode.includes('MANUAL CHARGE')  ? true : false,
             Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c) ,
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
             OpportunityId: recordId
@@ -116,6 +116,22 @@
     return el; 
   }
 
+//this runs on init load. It's to make sure that the products actually loaded with cost. On cloning an opp
+//often times it does not fully load the product info. This will check if cost has been loaded and if not 
+//will tell the component to run the load job again.   
+  const loadCheck = (items)=>{
+    let missingCost = false; 
+  
+    for(const x of items){
+      //console.log(x.name +' '+x.Cost__c);
+      
+      if(x.Cost__c === undefined){
+        missingCost = true;
+        break; 
+      }
+    }
+    return missingCost; 
+  }
   //This is called when an item is removed from an order. It will update the remaining items 
   //order so that when a quote is created it will still put the products in order
   const removeLineItem = ((index, arr)=>{
@@ -322,5 +338,6 @@ export{ validate,
         roundRate, 
         checkRUP,
         sortArray,
-        removeLineItem
+        removeLineItem,
+        loadCheck
       }

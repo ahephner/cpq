@@ -29,7 +29,7 @@ import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
 import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, 
-    checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP, sortArray,removeLineItem} from 'c/helper'
+    checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP, sortArray,removeLineItem, loadCheck} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -97,11 +97,16 @@ export default class ProdSelected extends LightningElement {
     }
     renderedCallback(){
         if(this.selection.length>0 && this.hasRendered){
-            
-            this.initPriceCheck();
+            let startCheck = loadCheck(this.selection); 
+            //console.log('startCheck '+startCheck); 
+            if(startCheck){
+                this.loadProducts(); 
+                this.initPriceCheck();
+            }
         }
         
     }
+
     disconnectedCallback() {
         this.unsubscribeToMessageChannel();
     }
@@ -240,7 +245,7 @@ export default class ProdSelected extends LightningElement {
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     resUse: this.resUse,
-                    manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
                     Line_Order__c: this.lineOrderNumber,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId
@@ -284,7 +289,7 @@ export default class ProdSelected extends LightningElement {
                     //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
                     goodPrice: true,
                     resUse: this.resUse,
-                    manLine: this.productCode === 'MANUAL CHARGE' ? true : false,
+                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
                     Line_Order__c: this.lineOrderNumber,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
                     OpportunityId: this.recordId

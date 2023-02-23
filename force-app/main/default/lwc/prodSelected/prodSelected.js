@@ -82,6 +82,7 @@ export default class ProdSelected extends LightningElement {
     numbOfManLine = 0
     eventListening = false; 
     @track selection = [];
+    
     //for ordering products on the order. This will be set to the last Line_Order__c # on load or set at 0 on new order;
     lineOrderNumber = 0; 
 //for message service
@@ -91,6 +92,7 @@ export default class ProdSelected extends LightningElement {
     messageContext;
     // Standard lifecycle hooks used to subscribe and unsubsubscribe to the message channel
     connectedCallback() {
+        this.loaded = false; 
         this.subscribeToMessageChannel();
         this.loadProducts(); 
         
@@ -98,15 +100,22 @@ export default class ProdSelected extends LightningElement {
     renderedCallback(){
         if(this.selection.length>0 && this.hasRendered){
             let startCheck = loadCheck(this.selection); 
-            //console.log('startCheck '+startCheck); 
             if(startCheck){
                 this.loadProducts(); 
-                this.initPriceCheck();
+                this.priceCheck();
+            }else{
+                this.priceCheck();
             }
         }
-        
+         
     }
+priceCheck(){
+    window.clearTimeout(this.delay)
+    this.delay = setTimeout(()=>{
+        this.initPriceCheck();
+    }, 1500)
 
+}
     disconnectedCallback() {
         this.unsubscribeToMessageChannel();
     }
@@ -994,7 +1003,7 @@ export default class ProdSelected extends LightningElement {
         try{
             let results = await getProducts({oppId: this.recordId})
             
-            if(results.length === 0){
+            if(results.length === 0){                
                 return; 
             }else if(results){
 
@@ -1062,6 +1071,7 @@ export default class ProdSelected extends LightningElement {
             
         }finally{
             this.prodFound = true; 
+            this.loaded = true;
         }
 
     }
@@ -1114,9 +1124,8 @@ export default class ProdSelected extends LightningElement {
     //should only run on load. Then handleWarning function above runs because it only runs over the individual line
     //Important don't query UnitPrice on Opp Line Item. Otherwise it will think the cost is the same price. 
     initPriceCheck(){
-        
         this.hasRendered = false; 
-        
+        console.log('init');
         
             for(let i=0; i<this.selection.length; i++){
                 //console.log(this.selection[i])

@@ -143,7 +143,7 @@
                         </div>
                         <!-- user price -->
                         <div class="slds-col slds-size_1-of-12 slds-m-right_x-large">
-                            <div data-id={sp.ProductCode}>
+                            <div data-id={sp.ProductCode} >
                             <lightning-input class='price' type="number"  
                                         label="" name={sp.ProductCode} 
                                         value={sp.UnitPrice} onchange={newPrice} 
@@ -347,7 +347,7 @@
             <template if:false={goodPricing}>
                 <div class='slds-align_absolute-center'>
                     <p>One or more items is below floor. Look for the price in <span style='color:red'>red</span></p>     
-                    
+                    <!-- <button onclick={initPriceCheck}>Check Floor Prices</button> -->
                 </div>
             </template>
             </template>

@@ -93,7 +93,7 @@
             resUse: x.Product2.RUP__c,
             manLine: x.Product2.ProductCode.includes('MANUAL CHARGE')  ? true : false,
             Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c) ,
-            url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
+            url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`, 
             OpportunityId: recordId
         } 
       })
@@ -253,8 +253,8 @@
       
       let check = true; 
       for(let i=0; i<prods.length; i++){
+        //console.log(prods[i].name, prods[i].goodPrice, 'index ', i)
           if(!prods[i].goodPrice){
-            //console.log(prods[i].Name, prods[i].goodPrice)
             check = false;
             return check;
           }

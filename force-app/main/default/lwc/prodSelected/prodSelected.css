@@ -40,7 +40,14 @@
     margin-left:35%;
     font-size:12px;
 }
-
+.THIS .spins::after {
+    position: absolute;
+    content: 'Please wait while loading';
+    width: 100%;
+    text-align: center;
+    top: calc(50% + 3em);
+    font-weight: bold;
+}
 .price{
     margin-left: 35%;
     width: 113%;

@@ -47,4 +47,8 @@
         <fieldName>unSavedChange</fieldName>
         <description>boolean to notify there are unsaved work</description>
     </lightningMessageFields>
+        <lightningMessageFields>
+        <fieldName>newDiscount</fieldName>
+        <description>boolean reload after discount update</description>
+    </lightningMessageFields>
 </LightingMessageChannel>

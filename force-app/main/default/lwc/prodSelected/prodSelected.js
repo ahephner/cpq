@@ -156,6 +156,8 @@ priceCheck(){
             //console.log('shipping address');
             
             this.shippingAddress = mess.shipAddress;
+        }else if(mess.newDiscount){
+            this.loadProducts(); 
         }else{
             //console.log('new product');
             

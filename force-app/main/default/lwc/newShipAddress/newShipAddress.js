@@ -113,7 +113,7 @@ export default class NewShipAddress extends LightningElement{
                     console.log(error); 
                     const evt = new ShowToastEvent({
                         title: 'Error',
-                        message: error,
+                        message: 'You must own the account to add new ship. Please chatter @IT',
                         variant: 'error'
                     });
                     this.dispatchEvent(evt);

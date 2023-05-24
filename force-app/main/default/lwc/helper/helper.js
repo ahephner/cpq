@@ -1,5 +1,5 @@
   //used to merge inventory and selected products on load
-   const mergeInv = (a1, a2) =>{
+  const mergeInv = (a1, a2) =>{
     
     let merge
     if(a2){
@@ -52,9 +52,9 @@
   //loading for the desktop version. accepts product list and assigns values
   //if you want to add another field to the screen start it here
   const onLoadProducts = (products, recordId) =>{
-    
-      let prod = products.map(x =>{
-        
+    let count = 0;
+    let prod = products.map(x =>{
+      count++   
         //console.log(JSON.stringify(products));
         return   {
             sObjectType: 'OpportunityLineItem',
@@ -90,15 +90,59 @@
             lOneText: 'lev 1 $'+x.Level_1_UserView__c,
             sgn: x.Product2.SGN__c,
             goodPrice:x.Product2.Agency_Pricing__c ?true: (x.Floor_Price__c <= x.CPQ_Unit_Price__c ? true: false),
-            manLine: x.Product2.ProductCode === 'MANUAL CHARGE' ? true : false, 
-            url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`,
+            resUse: x.Product2.RUP__c,
+            manLine: x.Product2.ProductCode.includes('MANUAL CHARGE')  ? true : false,
+            Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c) ,
+            url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`, 
             OpportunityId: recordId
-        }
+        } 
       })
-     
-     //console.table(prod)
-      return prod; 
+//sort the array based on user input
+//see below
+    let sortedProd = sortArray(prod)
+    //  console.log(JSON.stringify(prod));
+    //console.log(typeof sortedProd[0].Line_Order__c, ' 2 ', sortedProd[0].Line_Order__c); 
+    //  console.log('sorted below')
+    //  console.log(JSON.stringify(sortedProd));
+    return sortedProd; 
   }
+  //sort the products on load to order by when they were added or rep has updated where they have been added
+  //used for quoting tool when they want to group products together; 
+  const sortArray = (el) =>{
+    
+    el.sort((a,b)=>{
+      return a.Line_Order__c - b.Line_Order__c; 
+    })
+    return el; 
+  }
+
+//this runs on init load. It's to make sure that the products actually loaded with cost. On cloning an opp
+//often times it does not fully load the product info. This will check if cost has been loaded and if not 
+//will tell the component to run the load job again.   
+  const loadCheck = (items)=>{
+    let missingCost = false; 
+  
+    for(const x of items){
+      //console.log(x.name +' '+x.Cost__c);
+      
+      if(x.Cost__c === undefined){
+        missingCost = true;
+        break; 
+      }
+    }
+    return missingCost; 
+  }
+  //This is called when an item is removed from an order. It will update the remaining items 
+  //order so that when a quote is created it will still put the products in order
+  const removeLineItem = ((index, arr)=>{
+    let prod = [...arr]
+    for(let i = index; i< prod.length; i++){
+      
+      prod[i].Line_Order__c --;
+    }
+    return prod; 
+  })
+
 
   //this sets the number of manual lines on the order so we don't add more than 10
   const getManLines = (list) =>{ 
@@ -209,8 +253,8 @@
       
       let check = true; 
       for(let i=0; i<prods.length; i++){
+        //console.log(prods[i].name, prods[i].goodPrice, 'index ', i)
           if(!prods[i].goodPrice){
-            //console.log(prods[i].Name, prods[i].goodPrice)
             check = false;
             return check;
           }
@@ -232,12 +276,20 @@
       return margin; 
     }
     // Validation function
-    const validate = (obj, rules) => {
+    const validate = (obj, rules, rupRules, isRUP, bhRules, isBH) => {
+      //if RUP product is selected add rup rules to validate against
+      if(isRUP){
+        rules = [...rules, ...rupRules]
+      }
+      //check if bill and hold was selected
+      if(isBH === 'Yes'){
+        rules = [...rules, ...bhRules]
+      }
       const errors = rules.reduce((errs, rule) => {
         
         const result = rule.test(obj);
         if (result === false) {
-          errs.push(rule.message);
+          errs.push({message:rule.message, type: rule.type});
         }
         return errs;
       }, []);
@@ -252,6 +304,40 @@ const roundRate = (numb, places) =>{
   return +(Math.round(numb + `e+${places}`) + `e-${places}`)
 }
 
-// make it so functions can be used other pages
-export{ validate, mergeInv, lineTotal, onLoadProducts, mergeLastPaid, newInventory,updateNewProducts, getTotals,getCost, totalChange, roundNum, allInventory, checkPricing,getShipping, getManLines, setMargin, mergeLastQuote, roundRate}
+const checkRUP = (items)=>{
+  let isRup = false; 
 
+  for(const x of items){
+    if(x.resUse){
+      isRup = true;
+      break; 
+    }
+  }
+  return isRup; 
+}
+
+
+// make it so functions can be used other pages
+export{ validate, 
+        mergeInv, 
+        lineTotal, 
+        onLoadProducts, 
+        mergeLastPaid, 
+        newInventory,
+        updateNewProducts, 
+        getTotals, 
+        getCost, 
+        totalChange, 
+        roundNum, 
+        allInventory, 
+        checkPricing, 
+        getShipping, 
+        getManLines, 
+        setMargin, 
+        mergeLastQuote, 
+        roundRate, 
+        checkRUP,
+        sortArray,
+        removeLineItem,
+        loadCheck
+      }

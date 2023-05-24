@@ -95,7 +95,7 @@ export default class QuickPriceCheck extends LightningElement {
         return [
             {label:'All', value:'All'},
             {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
-            {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
+            {label:'115 | ATS Ingals', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
@@ -119,7 +119,8 @@ export default class QuickPriceCheck extends LightningElement {
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
-            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
+            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'},
+            {label:'999 | ATS - Fishers', value:'1312M000000PB3FQAW'}
 
         ];
     }

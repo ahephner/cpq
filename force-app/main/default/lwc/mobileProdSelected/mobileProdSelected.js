@@ -12,7 +12,9 @@ import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import {updateRecord, deleteRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import SHIPCHARGE from '@salesforce/schema/Opportunity.Shipping_Total__c';
-import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory} from 'c/mh2'
+import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c';
+import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory, handleWarning,updateNewProducts, mergeLastQuote, 
+    getTotals, roundNum,totalChange, checkPricing, getShipping, allInventory, checkRUP, sortArray, removeLineItem} from 'c/mh2'
 import { FlowNavigationNextEvent,FlowAttributeChangeEvent, FlowNavigationBackEvent  } from 'lightning/flowSupport';
 
 
@@ -24,6 +26,8 @@ export default class MobileProdSelected extends LightningElement {
     @api pbId;
     @api shipType;  
     @api stage; 
+    //on load was a rup product selected 
+    @api rupSelected; 
     showDelete = false;  
     addProducts = false;
     shipAddress = false; 
@@ -51,7 +55,9 @@ export default class MobileProdSelected extends LightningElement {
     total; 
     lastQuote; 
     sgn; 
-    
+    rupProd;
+    //for ordering products on the order. This will be set to the last Line_Order__c # on load or set at 0 on new order;
+    lineOrderNumber = 0; 
     hasRendered = true;
     dropShip;
     connectedCallback() {
@@ -126,6 +132,7 @@ export default class MobileProdSelected extends LightningElement {
             this.prod = await onLoadProducts(mergedLevels, this.recordId); 
             //console.log(JSON.stringify(this.prod))
             this.backUp = this.prod; 
+            this.lineOrderNumber = isNaN((this.prod.at(-1).Line_Order__c + 1)) ? (this.prod.length + 1) : (this.prod.at(-1).Line_Order__c + 1);
             this.showSpinner =false; 
          }catch(error){
             let mess = error; 
@@ -265,18 +272,100 @@ export default class MobileProdSelected extends LightningElement {
             this.handleWarning(targetId,lOne, flr, unitp, index )
         },500)
     }
+
+//Handle the updating of sort order
+handleOrderSort(item){
+    let index = this.prod.findIndex(prod => prod.Product2Id === item.target.name);
+    this.prod[index].Line_Order__c = Number(item.detail.value);
+}
+    moveUp(event){
+            
+        let index = this.prod.findIndex(prod => prod.Product2Id === event.target.name)
+        if(index>0){
+            let moveEl = index -1; 
+            this.prod[index].Line_Order__c --;
+            this.prod[moveEl].Line_Order__c ++;
+            let lineUp = sortArray(this.prod)
+            this.prod = [...lineUp];     
+        }
+    }
+    moveDown(event){
+        
+        let index = this.prod.findIndex(x => x.Product2Id === event.target.name);
+        
+        if(index<(this.prod.length-1)){
+            let moveEl = index + 1; 
+            this.prod[index].Line_Order__c ++;
+            this.prod[moveEl].Line_Order__c --;
+            let lineUp = sortArray(this.prod)
+            this.prod = [...lineUp];
+        }
+    }
+    //save line items updated order on removal of old line items. 
+    saveLineItems(arr){
+        const recordInputs = arr.slice().map(draft =>{
+            let Id = draft.Id; 
+            let Line_Order__c = draft.Line_Order__c;
+            const fields = {Id, Line_Order__c}
+
+        return {fields};
+        })
+        
+        const promises = recordInputs.map(input => updateRecord(input)); 
+        Promise.all(promises).then(prod => {
+            return; 
+        }).catch(error => {
+            console.log(error);
+            
+            // Handle error
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Margin Error',
+                    message: error.body.output.errors[0].message,
+                    variant: 'error'
+                })
+            )
+        })
+    }
 //delete individual line items. 
     handleDelete(index){
         let id = this.prod[index].Id;
-
+        let shipCode = this.prod[index].ProductCode;
+        let resUseProd = this.prod[index].resUse;
+        
         if(index >= 0 ){
             let cf = confirm('Do you want to delete this line item')
             if(cf === true){
+                this.prod = removeLineItem(index, this.prod);
                 this.prod.splice(index, 1);
-                if(id){
+                if(id && !shipCode.includes('SHIPPING') && !resUseProd){
                     deleteRecord(id);
+                }else if(id && shipCode.includes('SHIPPING')){
+                    deleteRecord(id);
+                    console.log('resetting shipping cost ');
+                    
+                    const fields = {};
+                    fields[ID_FIELD.fieldApiName] = this.oppId;
+                    fields[SHIPCHARGE.fieldApiName] = 0;
+                    const shipRec = {fields}
+                    updateRecord(shipRec);
+        //check if it's a RUP product. Then check if there are another RUP product on order. If no then update the opportunity field RUP Selected ? to false
+                }else if(id && resUseProd){
+                    deleteRecord(id);
+                    let rupProds = checkRUP(this.prod);
+                    console.log('rup deleting ',' this.rupSelected ', this.rupSelected, ' rupProds', rupProds)
+                    if(!rupProds && this.rupSelected){
+                        const fields = {};
+                        fields[ID_FIELD.fieldApiName] = this.oppId;
+                        fields[RUP_PROD.fieldApiName] = rupProds;
+                        const resUseSelected = {fields}
+                        updateRecord(resUseSelected);  
+                    }
                 }
             }
+            this.saveLineItems(this.prod);
+            //for ordering the products on the screen
+            this.lineOrderNumber = isNaN((this.prod.at(-1).Line_Order__c + 1)) ? (this.prod.length + 1) : (this.prod.at(-1).Line_Order__c + 1);
             this.goodPricing = checkPricing(this.prod);
         }
     }
@@ -314,25 +403,41 @@ export default class MobileProdSelected extends LightningElement {
         const newProduct = this.prod.filter(x=>x.Id === '') 
         const alreadyThere = this.prod.filter(y=>y.Id != '')
         let shipTotal = this.prod.filter(y => y.ProductCode.includes('SHIPPING'));
+        //check if there are Restricted Use Products on the order list
+        let rupProds = checkRUP(this.prod);
         createProducts({olList: this.prod, oppId: this.oppId})
         .then(result => {
             let back = updateNewProducts(newProduct, result);
             this.prod =[...alreadyThere, ...back]; 
+            this.prod = sortArray(this.prod); 
             this.backUp = this.prod; 
             this.total = this.orderTotal(this.prod)
             this.showSpinner = false; 
             alert('Products Saved!')
         }).then(()=>{
-            if(shipTotal.length>0){
-                console.log('saving shipping');
-                let shipCharge = getShipping(shipTotal);
+            let shipCharge = getShipping(shipTotal);
+            
+            if(shipCharge >0  && ! rupProds){
                 
                 const fields = {};
                 fields[ID_FIELD.fieldApiName] = this.oppId;
                 fields[SHIPCHARGE.fieldApiName] = shipCharge;
                 const shipRec = {fields}
                 updateRecord(shipRec)
-            } 
+            }else if(shipCharge <= 0 && rupProds){
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.oppId;
+                fields[RUP_PROD.fieldApiName] = rupProds;
+                const recUpdate = {fields}
+                updateRecord(recUpdate);
+            }else if(shipCharge >0 && rupProds){
+                const fields = {};
+                fields[ID_FIELD.fieldApiName] = this.oppId;
+                fields[RUP_PROD.fieldApiName] = rupProds;
+                fields[SHIPCHARGE.fieldApiName] = shipCharge;
+                const bothUpdate = {fields}
+                updateRecord(bothUpdate);
+            }
          
         }).catch(error=>{
             alert(JSON.stringify(error))
@@ -381,6 +486,7 @@ export default class MobileProdSelected extends LightningElement {
              
             if(index > -1){
                 this.prod.splice(index, 1);
+                this.lineOrderNumber --; 
             }else{
                 return; 
             }    
@@ -403,7 +509,8 @@ export default class MobileProdSelected extends LightningElement {
         this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
         this.palletConfig = prodx.detail.Product2.Pallet_Qty__c;
         this.sgn = prodx.detail.Product2.SGN__c; 
-       // console.log('2 '+this.agProduct);
+        this.rupProd = prodx.detail.rup; 
+      // console.log('selected rup? '+this.rupProd);
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
@@ -450,6 +557,7 @@ export default class MobileProdSelected extends LightningElement {
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
             manLine: false,
+            Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.oppId
         }
@@ -487,8 +595,10 @@ export default class MobileProdSelected extends LightningElement {
             goodPrice: true,
             manLine: false,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            Line_Order__c: this.lineOrderNumber,
             OpportunityId: this.oppId
         }
+        this.lineOrderNumber +=2; 
         const checkShip = this.prod.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
         const checkNT = this.prod.findIndex(x => x.Product2Id === '01t75000000rTHPAA2')
         console.log(1, checkShip, 2, checkNT)
@@ -547,8 +657,10 @@ export default class MobileProdSelected extends LightningElement {
                     lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
                     sgn: this.sgn,
+                    resUse: this.rupProd,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
+                    Line_Order__c: this.lineOrderNumber,
                     OpportunityId: this.oppId
                 }
             ]
@@ -586,12 +698,15 @@ export default class MobileProdSelected extends LightningElement {
                     lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
                     Ship_Weight__c: this.shipWeight,
                     sgn: this.sgn,
+                    resUse: this.rupProd,
                     levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
                     goodPrice: true,
+                    Line_Order__c: this.lineOrderNumber,
                     OpportunityId: this.oppId
                 }
             ]
         } //console.log('new product '+JSON.stringify(this.prod))
+        this.lineOrderNumber ++
     }
 //handle show the save button options
 allowSave(){
@@ -676,7 +791,7 @@ allowSave(){
         return [
             {label:'All', value:'All'},
             {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
-            {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
+            {label:'115 | ATS Ingalls', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
@@ -700,7 +815,8 @@ allowSave(){
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
-            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
+            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'},
+            {label:'999 | ATS - Fishers', value:'1312M000000PB3FQAW'}
 
         ];
     }

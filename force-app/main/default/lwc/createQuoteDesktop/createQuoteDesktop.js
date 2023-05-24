@@ -8,7 +8,8 @@ import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import STAGE from '@salesforce/schema/Opportunity.StageName';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import PDF_CHECKBOX from '@salesforce/schema/Opportunity.Generate_PDF_Quote_Checkbox__c';
-const FIELDS = [SHIPTO, ACCID, STAGE, PDF_CHECKBOX];
+import PEST_DATE from '@salesforce/schema/Opportunity.Pest_Expiration_Date__c';
+const FIELDS = [SHIPTO, ACCID, STAGE, PDF_CHECKBOX,PEST_DATE];
 const SUCCESS_TITLE = 'Quote is being Created';
 const SUCCESS_MESS = 'Quote will be in the files section in a few mins depending on internet speed'
 export default class CreateQuoteDesktop extends LightningElement { 
@@ -18,6 +19,7 @@ export default class CreateQuoteDesktop extends LightningElement {
     stageFromRecord; 
     accountId; 
     shipTo; 
+    pestExp;
     info = true;
     loaded = false; 
     options;
@@ -29,7 +31,8 @@ export default class CreateQuoteDesktop extends LightningElement {
                 this.shipTo = getFieldValue(data, SHIPTO); 
                 this.accountId = getFieldValue(data, ACCID);
                 this.stageFromRecord = getFieldValue(data, STAGE);
-                console.log(1, this.shipTo, 2, this.accountId, 3,this.stageFromRecord);
+                this.pestExp = getFieldValue(data, PEST_DATE)
+                console.log(1, this.shipTo, 2, this.accountId, 3,this.stageFromRecord, 4, this.pestExp);
                 if(this.shipTo === null){ 
                     this.findAddress(this.accountId);
                     this.loaded = true; 

@@ -11,6 +11,9 @@
     margin-left: 30%;
     font-size: small;
 }
+.align{
+    display: inline-flex;
+}
 .up{
     padding-top: 1.5%;
 }
@@ -37,7 +40,14 @@
     margin-left:35%;
     font-size:12px;
 }
-
+.THIS .spins::after {
+    position: absolute;
+    content: 'Please wait while loading';
+    width: 100%;
+    text-align: center;
+    top: calc(50% + 3em);
+    font-weight: bold;
+}
 .price{
     margin-left: 35%;
     width: 113%;
@@ -66,9 +76,6 @@
     font-weight: bold;
 }
 
-.qtyDiv{
-    padding-left: 3.2%;
-}
 .qtyMark{
     width: 85%;
     
@@ -115,14 +122,43 @@
       width: 90%; 
       margin-left: 5%;
   }
+  .qtyDiv{
+    padding-left: 3.2%;
+}
+  .arrBtn{
+    margin-top: 1.5%;
+    padding-left: 5px;
+  }
+  .moveBoxUp{
+    animation-name: addBorderBoxUp;
+    animation-duration: 1s;
+
+  }
+  @keyframes addBorderBoxUp {
+      from {border-style: solid; border-color:black}
+      to {}
+    }
+    .moveBoxDown{
+        animation-name: addBorderBoxDown;
+        animation-duration: 1s;
+    
+      }
+  @keyframes addBorderBoxDown {
+      from {border-style: solid; border-color:red}
+      to {}
+    }
+  .manQ{
+    margin-left:-2%; 
+  }
 .changedProduct{
     color: #313131; 
     text-align: center;
     margin-top: 1%;
     margin-left: 5%;
     font-size: medium;
-    -webkit-animation: colorchange 20s infinite alternate; 
+    animation: colorchange 20s infinite alternate; 
 }
+
 .bottomChangedProduct{
     display: inline-block;
     margin-left: 15%;
@@ -193,3 +229,8 @@
         display: inline-flex; 
     }
 
+/* lightning-button.sortBTN{
+    --sds-c-button-brand-color-background: #b1b1b4c5;
+    --slds-c-button-outline-brand-color-background-active: #b1b1b4c5;
+    --sds-c-button-text-color: #000508;
+} */

@@ -72,7 +72,24 @@
                     <lightning-menu-item value="Delete" label="Delete" class='btnOptions'></lightning-menu-item>
                 </lightning-button-menu>
             </div>
-        </div>    
+        </div>
+<!--Move order up or down  -->
+        <template if:false={item.editQTY}>
+            <div class="slds-col slds-size_1-of-2 slds-m-left_x-small">
+                <p>Move PDF Order</p>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-m-left_x-small  arrBtn">
+                <lightning-button-icon icon-name="utility:arrowup" 
+                    alternative-text="move up" title="move up" 
+                    name={item.Product2Id} onclick={moveUp} size="small">
+                </lightning-button-icon>
+    
+                <lightning-button-icon icon-name="utility:arrowdown" 
+                    alternative-text="move down" title="move down" 
+                    name={item.Product2Id} onclick={moveDown} size="small">
+                </lightning-button-icon>
+            </div>
+        </template>
     <!--Shows pricing info stuff the rep can edit-->
         <template if:false={item.showInfo}>
     <!-- Unit Price -->
@@ -89,27 +106,32 @@
     <!-- Qty -->
                 <lightning-input class="slds-m-bottom_x-small" value={item.Quantity} type='number' label='Qty' step="0.01" min={minUnits}
                                 name ={item.Product2Id} read-only={item.editQTY} onchange={handleQty}></lightning-input>
+    <!--Inventory  -->
+                <lightning-input value={item.wInv} type='number' name ={item.Product2Id} label='Inventory Avail.' readonly></lightning-input>
             </div>
             <!-- <div class='slds-col slds-size_1-of-4'></div> -->
             <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
     <!-- Margin -->
             <div data-target-id={item.Product2Id}>
                 <lightning-input value={item.CPQ_Margin__c} type='number' formater='percent' step="0.01"
-                name ={item.Product2Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
+                                name ={item.Product2Id} label='Margin' read-only={item.readOnly} onchange={handleMargin}></lightning-input>
             </div>
     <!--Last Margin-->
             <template if:true={item.prevPurchase}>
                 <lightning-input value={item.lastMarg} type='text' formatter="percent" label='Last Paid Margin' 
-                name ={item.Product2Id} readonly></lightning-input>
+                                name ={item.Product2Id} readonly></lightning-input>
             </template>            
     <!-- Total Price -->
-                <lightning-input value={item.TotalPrice} name ={item.Product2Id}  type='number' formater='currency' label='Total Price' readonly></lightning-input>
+                <lightning-input value={item.TotalPrice} name ={item.Product2Id}  type='number' 
+                                formater='currency' label='Total Price' readonly></lightning-input>
+    <!-- Floor Type -->
+                <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
+                                name ={item.Product2Id} readonly></lightning-input>
             </div>
-            <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
-    <!--Inventory  -->
-                <lightning-input value={item.wInv} type='number' 
-                                name ={item.Product2Id} label='Inventory Avail.' readonly></lightning-input>
-            </div>
+    <!-- Former Inventory ref -->
+            <!-- <div class='slds-col slds-size_1-of-3 slds-m-left_x-small'>
+
+            </div> -->
         </template>
     <!--Shows more info like inventory if we can link it some how and costs-->    
         <template if:true={item.showInfo}>
@@ -132,9 +154,10 @@
     <!-- Floor Price -->
                 <lightning-input value={item.Floor_Price__c} type='number' formatter="currency" label='Floor Price' 
                                 name ={item.Product2Id} readonly></lightning-input>
-    <!-- Floor Type -->
-                <lightning-input value={item.Floor_Type__c} type='text'  label='Floor Type' 
-                                name ={item.Product2Id} readonly></lightning-input>
+    <!--Order By-->
+                <lightning-input value={item.Line_Order__c} name ={item.Product2Id}  type='number'  
+                                label='PDF Order' onchange={handleOrderSort} read-only={item.editQTY}></lightning-input>
+
     <!-- Last Quote Margin -->
                 <lightning-input value={item.lastQuoteMargin} type='number'  label='Last Quote Marg' 
                             name ={item.Product2Id} readonly></lightning-input>

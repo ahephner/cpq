@@ -89,6 +89,7 @@ export default class MobileSearch extends LightningElement {
                 let palletConfig;
                 let msg;
                 let sgn; 
+                let rup;
                 this.prod = results.map(x =>{
                     Name = x.Product2.Name,
                     ProductCode = x.Product2.ProductCode,
@@ -100,8 +101,9 @@ export default class MobileSearch extends LightningElement {
                     status = x.Product2.Product_Status__c,
                     palletConfig = x.Product2.Pallet_Qty__c,
                     msg =  x.Product2.Temp_Mess__c,
-                    sgn = x.Product2.SGN__c
-                    return {...x, Name, ProductCode, icon, title, agency, onhand, weight, status, palletConfig, msg, sgn}
+                    sgn = x.Product2.SGN__c,
+                    rup = x.RUP__c
+                    return {...x, Name, ProductCode, icon, title, agency, onhand, weight, status, palletConfig, msg, sgn, rup}
                 })
                 //console.log(JSON.stringify(this.prod))
               

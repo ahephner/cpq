@@ -1,9 +1,10 @@
 //NEED A SPINNER 
-
+//orderBy Comment
 import { LightningElement, api, wire } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import { getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
+//import { refreshApex } from '@salesforce/apex';
+import { getRecord, getFieldValue, updateRecord, getRecordNotifyChange  } from 'lightning/uiRecordApi';
 import NAME from '@salesforce/schema/Opportunity.Name';
 import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number__c';
 import CLOSEDATE from '@salesforce/schema/Opportunity.CloseDate';
@@ -15,9 +16,15 @@ import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
+import PEST_DATE from '@salesforce/schema/Opportunity.Pest_Expiration_Date__c';
+import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
 //import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem'
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
+//Account RUP info
+import PEST_NUMB from '@salesforce/schema/Account.Pesticide_License__c';
+import NEW_PEST_DATE from '@salesforce/schema/Account.Pest_License_Exp_Date__c'; 
+import CUST_ID from '@salesforce/schema/Account.Id';
 //EOP FIELDS
 import EOP_ORDER from '@salesforce/schema/Opportunity.EOP_Order__c';
 import EOP_PAYTYPE from '@salesforce/schema/Opportunity.EOP_Pay_Type__c';
@@ -28,15 +35,30 @@ import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
+import BH_SIGNED from '@salesforce/schema/Opportunity.Bill_Hold_Signed__c';
+ 
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, DISCOUNT, EARLY_PAY, INVOICE_DATE];
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, BH_SIGNED, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD];
 const rules =[
     {test: (o) => o.accId.length === 18,
-     message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
+     message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`,
+    type:'missingInfo'},
     {test: (o) => o.hasItems === true,
-     message: 'No Products found. Close this screen and hit save on the products section'}
+     message: 'No Products found. Close this screen and hit save on the products section',
+     type:'missingInfo'}
 ]
-
+//rules for RUP
+const rupRules = [
+    {test: (o) => o.expDate >= o.today,
+    message: 'RUP Product Selected. License either expired or not found.',
+    type:'rupMissing'}
+]
+//Bill and Hold Validation
+const bhRules = [
+    {test: (o) => o.billHoldSigned === true,
+     message: 'You selected Bill and Hold, however, the agreement has not been signed or uploaded correctly',
+     type:'missingInfo'}
+]
 export default class CloseWinDesktop extends LightningElement {
     @api recordId;
     @api objectApiName; 
@@ -56,18 +78,27 @@ export default class CloseWinDesktop extends LightningElement {
     shipType; 
     options;
     shipReq; 
+    pestExp;
+    rupSelected;
     errorMsg = {};
-    custPOLabel; 
+    custPOLabel;
+    //allow users to save  
+    disabledBtn;
     hasItems;
     eopOrder;
     eopPayType = '';
     numPayments = '';
     firstPayDate = ''; 
     billHold;
+    billHoldSigned; 
     earlyPay;
     invoiceDate; 
     showEOPInfo = false;
     passVal = true; 
+    rupError; 
+    showLicenseUpLoad = false; 
+    //for evaluating time
+    today = new Date().toJSON().substring(0,10);
     connectedCallback(){
     }
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
@@ -75,10 +106,20 @@ export default class CloseWinDesktop extends LightningElement {
             if(data){
                     this.accountId = getFieldValue(data, ACCID)?getFieldValue(data, ACCID): '';
                     this.hasItems = getFieldValue(data, HASITEMS); 
-                    //console.log(1, this.accountId, 2, this.hasItems)
-                    let check = {accId: this.accountId, hasItems: this.hasItems}
-                    let loadMore = validate(check, rules);
-                   //console.log(loadMore)
+                    this.rupSelected = getFieldValue(data, RUP_PROD);
+                    this.pestExp = getFieldValue(data, PEST_DATE);
+                    this.billHold = getFieldValue(data, BILL_HOLD);
+                    this.billHoldSigned = getFieldValue(data, BH_SIGNED); 
+                    
+                    let check = {accId: this.accountId, 
+                                hasItems: this.hasItems, 
+                                expDate:this.pestExp, 
+                                today: this.today,
+                                billHoldSigned: this.billHoldSigned}
+                    
+                    
+                    let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
+                   
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
                     this.quoteNumb = getFieldValue(data, QUOTENUM);
@@ -98,14 +139,16 @@ export default class CloseWinDesktop extends LightningElement {
                     this.earlyPay = getFieldValue(data, EARLY_PAY);
                     this.invoiceDate = getFieldValue(data, INVOICE_DATE); 
                     //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
-                    this.billHold = getFieldValue(data, BILL_HOLD); 
                     this.findAddress(this.accountId);
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
                     this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
+                   
                 }else{
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;
+                    this.rupError = loadMore.errors[0].type === 'rupMissing' ? true : false; 
+
                     this.loaded = true; 
                }
                
@@ -241,10 +284,19 @@ handleNumbOpts(event){
 handleDate(event){
     this.firstPayDate = event.detail.value; 
 }
-//checkbox check against checked not value
+//Update Bill and Hold Status check storage agreement is signed on teh account
+bhError
 handleBillHold(event){
-    this.billHold = event.detail.value
+    this.billHold = event.detail.value;
+    if(this.billHold === 'Yes' && !this.billHoldSigned ){
+        this.bhError = true;
+        this.disabledBtn = true; 
+    }else{
+        this.bhError = false; 
+        this.disabledBtn = false;
+    }    
 }
+
 handleInvoiceDate(event){
     this.invoiceDate = event.detail.value; 
 }
@@ -341,10 +393,12 @@ newDevDate2(e){
     handleCancel(){
         this.dispatchEvent(new CloseActionScreenEvent());
     }
+//validate closing input
     isInputValid() {
         let isValid = true;
         let inputFields = this.template.querySelectorAll('.validate');
         const ship = this.template.querySelector('.valAdd');
+        //console.log(1, inputFields, 2, ship)
         inputFields.forEach(inputField => {
             if(!inputField.checkValidity()) {
                 inputField.reportValidity();
@@ -353,7 +407,7 @@ newDevDate2(e){
                 ship.reportValidity(); 
                 isValid = false; 
             }
-            console.log(this.billHold)
+            
             this.errorMsg[inputField.name] = inputField.value;
         });
         return isValid;
@@ -397,4 +451,103 @@ newDevDate2(e){
             });
             this.dispatchEvent(evt);  
         }
+//Handle missing RUP 
+    handleUpload(){
+        this.showLicenseUpLoad = true; 
+        //this.rupError = false; 
+    }        
+//RUP vars
+    newPestDate;
+    newPestNumber; 
+    licenseUpLoaded = false; 
+    handlePestChange(event){
+        this.newPestNumber = event.detail.value
+    }
+
+    handleExpDate(evt){
+        this.newPestDate = evt.detail.value
+    }
+    handleManager(){
+        console.log('handle manager alert');
+    }
+    cancelUpload(){
+        this.showLicenseUpLoad = false; 
+        this.rupError = true;
+    }
+    //Handle File upload
+    handleUploadFinished(event) {
+        // Get the list of uploaded files
+        const uploadedFiles = event.detail.files;
+        this.licenseUpLoaded = uploadedFiles.length === 1 ? true : false; 
+        
+    }
+//Acceptable file types for upload
+    get acceptedFormats() {
+        return ['.pdf', '.png', '.jpeg', '.jpg', '.csv', '.xlsx'];
+    }
+//validate that the fields on the Upload License Screen are actually filled out. 
+    licenseInputValid() {
+        let isValid = true;
+        let inputFields = this.template.querySelectorAll('.licenseField');
+    
+        inputFields.forEach(inputField => {
+            if(!inputField.checkValidity()) {
+                inputField.reportValidity();
+                isValid = false;
+            }
+            
+            this.errorMsg[inputField.name] = inputField.value;
+        });
+        return isValid;
+    }
+
+//Save new license info then move to order page
+    saveUpload(){
+        let ok = this.licenseInputValid(); 
+                 
+        if(ok && this.licenseUpLoaded){
+            this.loaded = false; 
+            
+            const fields = {};
+            fields[PEST_NUMB.fieldApiName] = this.newPestNumber;
+            
+            fields[NEW_PEST_DATE.fieldApiName] = this.newPestDate;
+            fields[CUST_ID.fieldApiName] = this.accountId;
+
+            const recordInput = {fields};
+
+            updateRecord(recordInput).then(()=>{
+                console.log('refreshing Apex')
+                getRecordNotifyChange([{recordId: this.recordId}]);
+                console.log('refreshed.......')
+            }).then(()=>{
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'License Updated',
+                        variant: 'success'
+                    })
+                );
+                this.passVal = true; 
+                this.showLicenseUpLoad = false; 
+                this.loaded = true; 
+            }).catch(error=>{
+                console.log(JSON.stringify(error))
+                let message = 'Unknown error';
+                if (Array.isArray(error.body)) {
+                    message = error.body.map(e => e.message).join(', ');
+                } else if (typeof error.body.message === 'string') {
+                    message = error.body.message;
+                }
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error Saving Products',
+                        message,
+                        variant: 'error',
+                    }),
+                );
+            })
+
+        }
+    }
 }

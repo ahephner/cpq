@@ -121,7 +121,6 @@ priceCheck(){
     }
     //subscribe to channel
     subscribeToMessageChannel(){
-        
         if(!this.subscritption){
             this.subscritption = subscribe(
                 this.messageContext,
@@ -217,7 +216,7 @@ priceCheck(){
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
         this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
-        console.log('lq '+JSON.stringify(this.lastQuote))
+        
         if(this.newProd != null){
 
             this.selection = [
@@ -729,7 +728,7 @@ priceCheck(){
         return [
             {label:'All', value:'All'},
             {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
-            {label:'115 | ATS Fishers', value:'1312M00000001nsQAA'},
+            {label:'115 | ATS Ingalls', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
@@ -753,7 +752,8 @@ priceCheck(){
             {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
             {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
             {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
-            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'}
+            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'},
+            {label:'999 | ATS - Fishers', value:'1312M000000PB3FQAW'}
 
         ];
     }

@@ -1,4 +1,4 @@
-//Goes with prodSeach!!!!!
+//IMPORTANT this branch is the most up to date branch prior to search tag was used 5/25/2023
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 

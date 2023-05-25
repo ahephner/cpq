@@ -2,6 +2,7 @@
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';  
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
@@ -188,8 +189,9 @@ priceCheck(){
 
 //fired from search check if the product is already on the order if not set the id and call the function to load it's info.  
    handleTagProduct(mess){
-    let selectedPC = mess.detail[1]
-    let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === selectedPC);
+    this.productCode = mess.detail[1]
+    let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
+    
     if(alreadyThere<0){
         this.productId = mess.detail[0]
         this.handleNewProd();  
@@ -219,10 +221,28 @@ priceCheck(){
                 
             }
         }
+        setFieldValues(mess){
+            this.productName = mess.Product2.Name;
+            this.productId = mess.Product2Id; 
+            this.pbeId = mess.Id;
+            this.unitCost = mess.Product_Cost__c ?? 0.00;
+            this.unitWeight = mess.Product2.Ship_Weight__c ?? 0.00;
+            this.agency = mess.Agency_Product__c ?? 0.00;
+            this.fPrice = mess.Floor_Price__c ?? 0.00;
+            this.levelOne = mess.Level_1_UserView__c ?? 0.00;
+            this.levelOneMargin = mess.Level_1_Margin__c ?? 0.00;
+            this.levelTwo = mess.Level_2_UserView__c ?? 0.00;  
+            this.levelTwoMargin = mess.Level_2_Margin__c ?? 0.00; 
+            this.companyLastPaid = mess.Product2.Last_Purchase_Price__c ?? 0.00;  
+            this.prodFound = true;
+        }
     async handleNewProd(){
         //get last paid only works on new adding product
         let totalPrice;
         let totalQty; 
+        this.loaded = false; 
+        let singleProd = await selectedProducts({productIds: this.productId, priceBookId: this.pbId});
+        this.setFieldValues(singleProd); 
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
         this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
@@ -328,6 +348,7 @@ priceCheck(){
             this.lineOrderNumber ++;
             this.unsavedProducts = true; 
             this.startEventListener()
+            this.loaded = true; 
     }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 
@@ -1192,7 +1213,7 @@ priceCheck(){
     }
     //open price book search
     openProdSearch(){
-        this.template.querySelector('c-prod-search').openPriceScreen(); 
+        this.template.querySelector('c-prod-search-tags').openPriceScreen(); 
     }
 
     // congaTest(){

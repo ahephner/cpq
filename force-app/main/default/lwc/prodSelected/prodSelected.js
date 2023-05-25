@@ -185,6 +185,16 @@ priceCheck(){
             }
         
     }
+
+//fired from search check if the product is already on the order if not set the id and call the function to load it's info.  
+   handleTagProduct(mess){
+    let selectedPC = mess.detail[1]
+    let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === selectedPC);
+    if(alreadyThere<0){
+        this.productId = mess.detail[0]
+        this.handleNewProd();  
+    }
+}
     unsubscribeToMessageChannel() {   
         unsubscribe(this.subscription);
         this.subscription = null;

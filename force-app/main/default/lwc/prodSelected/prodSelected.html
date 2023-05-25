@@ -362,8 +362,9 @@
     </template>
     </lightning-card>
     <!-- price search -->
-    <c-prod-search
+    <c-prod-search-tags
                 price-book-id={pbId}
-                onremoveprod={handleRemove}></c-prod-search>
+                onremoveprod={handleRemove}
+                onaddprod={handleTagProduct}></c-prod-search-tags>
     <!-- Price Book Selection -->
 </template>

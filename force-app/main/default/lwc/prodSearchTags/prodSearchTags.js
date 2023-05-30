@@ -121,7 +121,7 @@ export default class ProdSearchTags extends LightningElement {
                 }else{
                     this.searchQuery = cpqSearchString(this.searchTerm, this.stock); 
                 }
-                //console.log(this.searchQuery);
+                console.log(this.searchQuery);
                 
                 let data = await searchTag({searchKey: this.searchQuery}) 
                 let once = data.length> 1 ? await uniqVals(data) : data;

@@ -237,6 +237,7 @@ priceCheck(){
             this.prodFound = true;
         }
     async handleNewProd(){
+        const start = performance.now();
         //get last paid only works on new adding product
         let totalPrice;
         let totalQty; 
@@ -349,6 +350,8 @@ priceCheck(){
             this.unsavedProducts = true; 
             this.startEventListener()
             this.loaded = true; 
+            const end = performance.now();
+            console.log(`Execution time: ${end - start} ms`);
     }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 

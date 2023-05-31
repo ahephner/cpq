@@ -1,6 +1,7 @@
 //Goes with prodSeach!!!!!
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
+import wrapSearch from '@salesforce/apex/cpqApexTags.getDetails';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';  
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
@@ -53,6 +54,7 @@ export default class ProdSelected extends LightningElement {
     agency;
     sId; 
     productName; 
+    soldLastNDays; 
     prodFound = false
     accountId;
     deliveryDate; 
@@ -194,7 +196,7 @@ priceCheck(){
     
     if(alreadyThere<0){
         this.productId = mess.detail[0]
-        this.handleNewProd();  
+        this.searchWrap();  
     }
 }
     unsubscribeToMessageChannel() {   
@@ -236,17 +238,144 @@ priceCheck(){
             this.companyLastPaid = mess.Product2.Last_Purchase_Price__c ?? 0.00;  
             this.prodFound = true;
         }
+    async searchWrap(){
+            //get last paid only works on new adding product
+            const start = performance.now(); 
+            let totalPrice;
+            let totalQty; 
+            let result; 
+            this.loaded = false;
+            if(this.accountId){
+                result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:this.accountId , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
+            }else{
+                
+                result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
+            }
+            console.log(result);
+            this.setFieldValues(result[0].selectedProduct);
+            this.invCount = result[0].inventory; 
+            this.newProd = result[0].lastPaid;
+            this.lastQuote = result[0].lastQuote; 
+                    
+        if(this.newProd != null){
+
+            this.selection = [
+                ...this.selection, {
+                    sObjectType: 'OpportunityLineItem',
+                    Id: '',
+                    PricebookEntryId: this.pbeId,
+                    Product2Id: this.productId,
+                    agency: this.agency,
+                    name: this.productName,
+                    ProductCode: this.productCode,
+                    Ship_Weight__c: this.unitWeight,
+                    Quantity: 1,
+                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                    floorPrice: this.fPrice,
+                    lOne: this.agency? this.fPrice : this.levelOne,
+                    lTwo: this.levelTwo, 
+                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
+                    Cost__c: this.unitCost,
+                    displayCost: this.agency ? 'Agency' : this.unitCost,
+                    lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
+                    lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
+                    docDate: this.newProd.Doc_Date__c,
+                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                    Discount: this.lineDiscount ? this.lineDiscount : '',
+                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                    showLastPaid: true,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
+                    flrText: 'flr price $'+ this.fPrice,
+                    lOneText: 'lev 1 $'+this.levelOne,
+                    companyLastPaid: this.companyLastPaid,
+                    palletConfig: this.palletConfig,
+                    sgn: this.sgn, 
+                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+                    goodPrice: true,
+                    resUse: this.resUse,
+                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
+                    Line_Order__c: this.lineOrderNumber,
+                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                    OpportunityId: this.recordId
+                }
+            ]
+            
+        }else{
+            this.selection = [
+                ...this.selection, {
+                    sObjectType: 'OpportunityLineItem',
+                    PricebookEntryId: this.pbeId,
+                    Id: '',
+                    Product2Id: this.productId,
+                    agency: this.agency,
+                    name: this.productName,
+                    ProductCode: this.productCode,
+                    Ship_Weight__c: this.unitWeight,
+                    Quantity: 1,
+                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                    floorPrice: this.fPrice,
+                    lOne: this.agency? this.fPrice : this.levelOne,
+                    lTwo: this.levelTwo,
+                    lastPaid: 0,
+                    lastMarg: 0, 
+                    docDate: 'First Purchase', 
+                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
+                    Cost__c: this.unitCost,
+                    displayCost: this.agency ? 'Agency' : this.unitCost,
+                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                    Discount: this.lineDiscount ? this.lineDiscount : '',
+                    wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                    showLastPaid: true,
+                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
+                    flrText: 'flr price $'+ this.fPrice,
+                    lOneText: 'lev 1 $'+this.levelOne, 
+                    companyLastPaid: this.companyLastPaid,
+                    palletConfig: this.palletConfig,
+                    sgn: this.sgn,
+                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
+                    goodPrice: true,
+                    resUse: this.resUse,
+                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
+                    Line_Order__c: this.lineOrderNumber,
+                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                    OpportunityId: this.recordId
+                }
+            ]
+        }    
+            //console.log(JSON.stringify(this.selection));
+            let totals =  getTotals(this.selection);
+            this.tPrice = roundNum(totals.TotalPrice, 2);
+            this.tQty = totals.Quantity;
+            this.tCost = getCost(this.selection) 
+            if(!this.agency){
+                let margin = setMargin(this.tCost, this.tPrice)
+                this.tMargin = roundNum(margin, 2);
+            }
+            this.lineOrderNumber ++;
+            this.unsavedProducts = true; 
+            this.startEventListener()
+            this.loaded = true; 
+            const end = performance.now();
+            console.log(`Execution time: ${end - start} ms`);
+    }
     async handleNewProd(){
         const start = performance.now();
         //get last paid only works on new adding product
         let totalPrice;
         let totalQty; 
-        this.loaded = false; 
+        this.loaded = false;
+
         let singleProd = await selectedProducts({productIds: this.productId, priceBookId: this.pbId});
         this.setFieldValues(singleProd); 
-        this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
-        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
+        if(this.accountId){
+            this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
+            this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
+        }
         
         if(this.newProd != null){
 

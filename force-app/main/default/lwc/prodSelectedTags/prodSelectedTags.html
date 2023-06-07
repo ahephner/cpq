@@ -8,11 +8,11 @@
     <template if:true={loaded}>
         <template if:false={wasSubmitted}>
         <div class='slds-grid'>
-            <span class='slds-col slds-size_7-of-12'>
+            <div class='slds-col slds-size_7-of-12'>
                 <template if:true={unsavedProducts}>
                     <p class="changedProduct">You have unsaved changes!</p>
                 </template>
-            </span>
+            </div>
 
             <span class='slds-col slds-size_5-of-12 slds-m-bottom_x-small'>
                 <div class='slds-float_right slds-m-right_medium'>
@@ -116,7 +116,7 @@
                                 <!-- <lightning-helptext content={sp.tips}></lightning-helptext> -->
                                  
                                     
-                                        <span class="innerInfo">
+                                        <div class="innerInfo">
                                             <p>{sp.name}</p>
                                             <p>{sp.ProductCode}</p>
                                             <p>Pallet Qty: {sp.palletConfig}</p>
@@ -129,7 +129,7 @@
                                             <p>Last Quoted Price: ${sp.lastQuoteAmount}</p>
                                             <p>Last Quoted Margin: {sp.lastQuoteMargin}%</p>
                                             <p>Last Quoted Date: {sp.lastQuoteDate}</p>
-                                        </span>
+                                        </div>
                                     </div>        
                         </div>
 
@@ -309,12 +309,12 @@
     <template if:false={wasSubmitted}>
             <template if:true={dropShip}>
                 <div class='slds-grid'>
-                    <span class='slds-col slds-size_2-of-3'>
+                    <div class='slds-col slds-size_2-of-3'>
                         <!-- <p class="totals">Ship Weight: {shpWeight}--></p><p class="totals">Total Qty: {tQty}</p><p class="totals">Total Price: ${tPrice}</p><p class="totals">Total Margin: {tMargin}%</p>
                         <template if:true={unsavedProducts}>
                             <p class="changedProduct bottomChangedProduct">You have unsaved changes!</p>
                         </template> 
-                    </span>
+                    </div>
                     <!-- Button Group to save -->
                     <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
                         <div class='slds-float_right slds-m-right_medium'>
@@ -330,9 +330,9 @@
             <template if:false={dropShip}>
             <template if:true={goodPricing}>
                 <div class='slds-grid'>
-                    <span class='slds-col slds-size_2-of-3'>
+                    <div class='slds-col slds-size_2-of-3'>
                         <!-- <p class="totals">Ship Weight: {shpWeight}--></p><p class="totals">Total Qty: {tQty}</p><p class="totals">Total Price: ${tPrice}</p><p class="totals">Total Margin: {tMargin}%</p> 
-                    </span>
+                    </div>
                     <!-- Button Group to save -->
                     <span class='slds-col slds-size_1-of-3 slds-m-bottom_x-small'>
                         <div class='slds-float_right slds-m-right_medium'>

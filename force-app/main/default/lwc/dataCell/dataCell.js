@@ -5,7 +5,7 @@ export default class DataCell extends LightningDatatable {
         customName:{
             template: custName,
             standardCellLayout: true,
-            typeAttributes: ['prodName', 'atsScore', 'classValue' ]
+            typeAttributes: ['prodName', 'atsScore', 'classValue', 'profitability', 'progScore', 'invScore', 'focusProd' ]
         }
     }
 }

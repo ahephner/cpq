@@ -45,7 +45,11 @@ export default class ProdSearchTags extends LightningElement {
         {label:'Name', type:'customName',
         typeAttributes:{prodName:{fieldName:'Name'},
                         atsScore:{fieldName: 'Score'},
-                        classValue:{fieldName: 'classV'}
+                        classValue:{fieldName: 'classV'},
+                        profitability:{fieldName: 'profit'},
+                        progScore:{fieldName: 'progScore'},
+                        invScore:{fieldName: 'invScore'},
+                        focusProd:{fieldName: 'fp'}
                         },
                         cellAttributes:{alignment:'left'}, "initialWidth": 625
         },
@@ -144,7 +148,12 @@ export default class ProdSearchTags extends LightningElement {
                                     Floor: item.Product__r.Floor_Type__c,
                                     qtyOnHand: item.Product__r.Total_Product_Items__c, 
                                     Score: item.ATS_Score__c,
-                                    classV: index <= 3 ? 'topRow' : 'innerInfo'
+                                    classV: index <= 1 ? 'topRow' : 'innerInfo',
+                                    progScore: item.W_Program_Score__c ?? 'not set',
+                                    profit: item.W_Product_Profitability__c,
+                                    invScore: item.W_Inventory_Score__c ?? 'not set',
+                                    fp: item.W_Focus_Product__c ?? 0
+                                    
                 }))
                 console.log(this.prod)
                 this.loaded = true;
@@ -161,7 +170,7 @@ export default class ProdSearchTags extends LightningElement {
                 const rowId = e.detail.row.Id; 
                 //get that row button so we can update it  
                 let index = this.prod.find((item) => item.Id === rowId);
-
+console.log(1, rowProduct, 2, rowCode)
                 if(rowAction === 'unavailable'){
                     //need to update
                     alert('Sorry '+index.Product__r.Temp_Mess__c)

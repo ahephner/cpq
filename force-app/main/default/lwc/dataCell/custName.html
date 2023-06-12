@@ -1,15 +1,22 @@
 <template>
-    <div class="line">{typeAttributes.prodName}
-        <!-- <lightning-helptext content={sp.tips}></lightning-helptext> -->
-        <div class='pName  hasInfo hover'>
-            &#10169;
-            <span class={typeAttributes.classValue}>
-                <p>ATS Score:{typeAttributes.atsScore}</p>
-                <p>Profit:{typeAttributes.atsScore}</p>
-                <p>Inventory:{typeAttributes.atsScore}</p>
-                <p>Program Score:{typeAttributes.atsScore}</p>
-                <p>Works:{typeAttributes.atsScore}</p>
-            </span>
-        </div>
-    </div>       
+        <div class="line">{typeAttributes.prodName}
+            <div class='pName  hasInfo hover'>
+                &#10169;
+                <span class='topRow'>
+                    <p>ATS Score:{typeAttributes.atsScore}</p>
+                    <br/>
+                    <p>Profit: {typeAttributes.profitability}</p>
+                    <p>Inventory: {typeAttributes.invScore}</p>
+                    <p>Program Score: {typeAttributes.progScore}</p>
+                    <p>Focus Product: {typeAttributes.focusProd}</p>
+                </span>
+            </div>
+        </div>       
+        <!-- <c-data-template
+                        name={typeAttributes.prodName}
+                        ats-score={typeAttributes.atsScore}
+                        profitability={typeAttributes.profitability}
+                        inv-score={typeAttributes.invScore}
+                        prog-score={typeAttributes.progScore}
+                        focus-product={typeAttributes.focusProd}></c-data-template> -->
 </template>

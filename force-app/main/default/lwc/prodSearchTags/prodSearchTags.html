@@ -55,29 +55,29 @@
                             <lightning-button variant="brand" label="Search" title="Search" onclick={handleSearch}></lightning-button>
                         </div>
                     </div>
-                    <div class="slds-scrollable_y" style="min-height:40rem;width:100%">
-                    <div class='slds-grid'>
-                        <div class='slds-col'>
-                            <!-- <lightning-datatable
-                                key-field="Id"
-                                data={prod}
-                                hide-checkbox-column
-                                columns={columnsList}
-                                sorted-by={sortBy}
-                                sorted-direction={sortDirection}
-                                onsort={handleSortdata}
-                                onrowaction={handleRowAction}>
-                            </lightning-datatable> -->
-
-                            <c-data-cell
-                            key-field="Id"
-                            data={prod}
-                            hide-checkbox-column
-                            columns={columnsList}
-                            onrowaction={quickCheck}></c-data-cell>
-                        </div>
-                        </div>
-                    </div>             
+                    <div  style="height:40rem;width:100%">
+                        <div class='slds-grid'>
+                            <!-- <div class='slds-col'>
+                                <lightning-datatable
+                                    key-field="Id"
+                                    data={prod}
+                                    hide-checkbox-column
+                                    columns={columnsList}
+                                    sorted-by={sortBy}
+                                    sorted-direction={sortDirection}
+                                    onsort={handleSortdata}
+                                    onrowaction={handleRowAction}>
+                                </lightning-datatable> -->
+                                
+                                <c-data-cell
+                                    key-field="Id"
+                                    data={prod}
+                                    hide-checkbox-column
+                                    columns={columnsList}
+                                    onrowaction={handleRowAction}></c-data-cell>
+                            </div>
+                            </div>
+                        </div>    
                 </template>
                 </lightning-card>
             </div>
@@ -86,6 +86,6 @@
             </footer>
         </div>
     </section>
-<div class="'slds-backdrop slds-backdrop_open"></div>
+    <div class="slds-backdrop slds-backdrop_open"></div>
 </template>
 </template>

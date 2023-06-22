@@ -1,9 +1,11 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import searchTag from '@salesforce/apex/quickPriceSearch.cpqSearchTag';
+import searchPromos from '@salesforce/apex/quickPriceSearch.searchPromos';
 //import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';
 import { MessageContext, publish} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import { getObjectInfo, getPicklistValues} from 'lightning/uiObjectInfoApi';
+import LightningAlert from 'lightning/alert';
 import PRODUCT_OBJ from '@salesforce/schema/Product2';
 import SUB_CAT from '@salesforce/schema/Product2.Subcategory__c';
 import PROD_FAM from '@salesforce/schema/Product2.Product_Family__c';
@@ -149,10 +151,10 @@ export default class ProdSearchTags extends LightningElement {
                                     qtyOnHand: item.Product__r.Total_Product_Items__c, 
                                     Score: item.ATS_Score__c,
                                     classV: index <= 1 ? 'topRow' : 'innerInfo',
-                                    progScore: item.W_Program_Score__c ?? 'not set',
-                                    profit: item.W_Product_Profitability__c,
-                                    invScore: item.W_Inventory_Score__c ?? 'not set',
-                                    fp: item.W_Focus_Product__c ?? 0
+                                    progScore: item?.W_Program_Score__c ?? 'not set',
+                                    profit: item?.W_Product_Profitability__c,
+                                    invScore: item?.W_Inventory_Score__c ?? 'not set',
+                                    fp: item?.W_Focus_Product__c ?? 0
                                     
                 }))
                 console.log(this.prod)
@@ -170,7 +172,7 @@ export default class ProdSearchTags extends LightningElement {
                 const rowId = e.detail.row.Id; 
                 //get that row button so we can update it  
                 let index = this.prod.find((item) => item.Id === rowId);
-console.log(1, rowProduct, 2, rowCode)
+
                 if(rowAction === 'unavailable'){
                     //need to update
                     alert('Sorry '+index.Product__r.Temp_Mess__c)
@@ -196,6 +198,34 @@ console.log(1, rowProduct, 2, rowCode)
                     this.prod= [...this.prod]
                 }
             }
+
+//SHOW PROMOS
+            promoBTN = 'Show Promo'; 
+            promo
+            handlePromo(list){
+                let name =''; 
+                let count = 0; 
+                for(let i=0; i<list.length; i++){
+                    name += `promo name ${list[i].Name} Expires: ${list[i].Expiration_Date__c}`; 
+                    count ++; 
+                }
+                return [name, count]; 
+            }
+           async showPromo(){
+                    this.promoBTN =  this.promoBTN === 'Show Promo' ? 'Show Search' : 'Show Promo';
+                    this.promo = await searchPromos();
+                    let promoNames
+                    if(this.promo.length>=0 && this.promoBTN != 'Show Promo'){
+                         promoNames = await this.handlePromo(this.promo)    
+                    }
+                    await LightningAlert.open({
+                        message: promoNames[0], 
+                        theme: 'shade', // a red theme intended for error states
+                        label: `current # of promos ${promoNames[1]}`, // this is the header text
+                    });
+
+            }
+
 //Handle sort features
           handleSortdata(event) {
             // field name

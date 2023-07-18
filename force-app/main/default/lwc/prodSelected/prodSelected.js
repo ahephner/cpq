@@ -1,9 +1,7 @@
 //Goes with prodSeach!!!!!
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
-import wrapSearch from '@salesforce/apex/cpqApexTags.getDetails';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
-import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';  
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
@@ -54,7 +52,6 @@ export default class ProdSelected extends LightningElement {
     agency;
     sId; 
     productName; 
-    soldLastNDays; 
     prodFound = false
     accountId;
     deliveryDate; 
@@ -188,17 +185,6 @@ priceCheck(){
             }
         
     }
-
-//fired from search check if the product is already on the order if not set the id and call the function to load it's info.  
-   handleTagProduct(mess){
-    this.productCode = mess.detail[1]
-    let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
-    
-    if(alreadyThere<0){
-        this.productId = mess.detail[0]
-        this.searchWrap();  
-    }
-}
     unsubscribeToMessageChannel() {   
         unsubscribe(this.subscription);
         this.subscription = null;
@@ -223,161 +209,13 @@ priceCheck(){
                 
             }
         }
-        setFieldValues(mess){
-            this.productName = mess.Product2.Name;
-            this.productId = mess.Product2Id; 
-            this.pbeId = mess.Id;
-            this.unitCost = mess.Product_Cost__c ?? 0.00;
-            this.unitWeight = mess.Product2.Ship_Weight__c ?? 0.00;
-            this.agency = mess.Agency_Product__c ?? 0.00;
-            this.fPrice = mess.Floor_Price__c ?? 0.00;
-            this.levelOne = mess.Level_1_UserView__c ?? 0.00;
-            this.levelOneMargin = mess.Level_1_Margin__c ?? 0.00;
-            this.levelTwo = mess.Level_2_UserView__c ?? 0.00;  
-            this.levelTwoMargin = mess.Level_2_Margin__c ?? 0.00; 
-            this.companyLastPaid = mess.Product2.Last_Purchase_Price__c ?? 0.00;  
-            this.prodFound = true;
-        }
-    async searchWrap(){
-            //get last paid only works on new adding product
-            const start = performance.now(); 
-            let totalPrice;
-            let totalQty; 
-            let result; 
-            this.loaded = false;
-            if(this.accountId){
-                result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:this.accountId , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
-            }else{
-                
-                result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
-            }
-            console.log(result);
-            this.setFieldValues(result[0].selectedProduct);
-            this.invCount = result[0].inventory; 
-            this.newProd = result[0].lastPaid;
-            this.lastQuote = result[0].lastQuote; 
-                    
-        if(this.newProd != null){
-
-            this.selection = [
-                ...this.selection, {
-                    sObjectType: 'OpportunityLineItem',
-                    Id: '',
-                    PricebookEntryId: this.pbeId,
-                    Product2Id: this.productId,
-                    agency: this.agency,
-                    name: this.productName,
-                    ProductCode: this.productCode,
-                    Ship_Weight__c: this.unitWeight,
-                    Quantity: 1,
-                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
-                    floorPrice: this.fPrice,
-                    lOne: this.agency? this.fPrice : this.levelOne,
-                    lTwo: this.levelTwo, 
-                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
-                    Cost__c: this.unitCost,
-                    displayCost: this.agency ? 'Agency' : this.unitCost,
-                    lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
-                    lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
-                    docDate: this.newProd.Doc_Date__c,
-                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    Discount: this.lineDiscount ? this.lineDiscount : '',
-                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
-                    showLastPaid: true,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
-                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
-                    flrText: 'flr price $'+ this.fPrice,
-                    lOneText: 'lev 1 $'+this.levelOne,
-                    companyLastPaid: this.companyLastPaid,
-                    palletConfig: this.palletConfig,
-                    sgn: this.sgn, 
-                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
-                    goodPrice: true,
-                    resUse: this.resUse,
-                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
-                    Line_Order__c: this.lineOrderNumber,
-                    lastThirty: result[0].lastThirty ? result[0].lastThirty : '0',
-                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
-                    OpportunityId: this.recordId
-                }
-            ]
-            
-        }else{
-            this.selection = [
-                ...this.selection, {
-                    sObjectType: 'OpportunityLineItem',
-                    PricebookEntryId: this.pbeId,
-                    Id: '',
-                    Product2Id: this.productId,
-                    agency: this.agency,
-                    name: this.productName,
-                    ProductCode: this.productCode,
-                    Ship_Weight__c: this.unitWeight,
-                    Quantity: 1,
-                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
-                    floorPrice: this.fPrice,
-                    lOne: this.agency? this.fPrice : this.levelOne,
-                    lTwo: this.levelTwo,
-                    lastPaid: 0,
-                    lastMarg: 0, 
-                    docDate: 'First Purchase', 
-                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
-                    Cost__c: this.unitCost,
-                    displayCost: this.agency ? 'Agency' : this.unitCost,
-                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    Discount: this.lineDiscount ? this.lineDiscount : '',
-                    wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
-                    showLastPaid: true,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
-                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
-                    flrText: 'flr price $'+ this.fPrice,
-                    lOneText: 'lev 1 $'+this.levelOne, 
-                    companyLastPaid: this.companyLastPaid,
-                    palletConfig: this.palletConfig,
-                    sgn: this.sgn,
-                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
-                    goodPrice: true,
-                    resUse: this.resUse,
-                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
-                    Line_Order__c: this.lineOrderNumber,
-                    lastThirty: result[0].lastThirty ? result[0].lastThirty : '0',
-                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
-                    OpportunityId: this.recordId
-                }
-            ]
-        }    
-            //console.log(JSON.stringify(this.selection));
-            let totals =  getTotals(this.selection);
-            this.tPrice = roundNum(totals.TotalPrice, 2);
-            this.tQty = totals.Quantity;
-            this.tCost = getCost(this.selection) 
-            if(!this.agency){
-                let margin = setMargin(this.tCost, this.tPrice)
-                this.tMargin = roundNum(margin, 2);
-            }
-            this.lineOrderNumber ++;
-            this.unsavedProducts = true; 
-            this.startEventListener()
-            this.loaded = true; 
-            const end = performance.now();
-            console.log(`Execution time: ${end - start} ms`);
-    }
     async handleNewProd(){
-        const start = performance.now();
         //get last paid only works on new adding product
         let totalPrice;
         let totalQty; 
-        this.loaded = false;
-
-        let singleProd = await selectedProducts({productIds: this.productId, priceBookId: this.pbId});
-        this.setFieldValues(singleProd); 
+        this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
-        if(this.accountId){
-            this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
-            this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
-        }
+        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
         
         if(this.newProd != null){
 
@@ -480,9 +318,6 @@ priceCheck(){
             this.lineOrderNumber ++;
             this.unsavedProducts = true; 
             this.startEventListener()
-            this.loaded = true; 
-            const end = performance.now();
-            console.log(`Execution time: ${end - start} ms`);
     }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 
@@ -491,6 +326,9 @@ priceCheck(){
         const atsShip = {
             sObjectType: 'OpportunityLineItem',
             Id: '',
+            //PricebookEntryId: '01u2M00000ZBLn5QAH',
+            //Product2Id: '01t2M0000062XwhQAE',
+            //Sandbox
             PricebookEntryId: '01u2M00000ZBLn5QAH',
             Product2Id: '01t2M0000062XwhQAE',
             agency: false,
@@ -520,16 +358,21 @@ priceCheck(){
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
-            resUse: 'false',
+            resUse: false,
             manLine: false,
+            Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
         }
+        this.lineOrderNumber ++; 
         const atsShipNT = {
             sObjectType: 'OpportunityLineItem',
             Id: '',
-            PricebookEntryId: '01u6T00000H6GNQQA3',
-            Product2Id: '01t6T000006OzAyQAK',
+            //PricebookEntryId: '01u6T00000H6GNQQA3',
+            //Product2Id: '01t6T000006OzAyQAK',
+            //Sandbox
+            PricebookEntryId: '01u7500000BY6SaAAL',
+            Product2Id: '01t75000000rTHPAA2',
             agency: false,
             name: 'ATS SHIPPING - SPLIT SHIPMENTS',
             ProductCode: 'ATS SHIPPING-SPLIT',
@@ -557,8 +400,9 @@ priceCheck(){
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
-            resUse: 'false',
+            resUse: false,
             manLine: false,
+            Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
         }
@@ -569,14 +413,19 @@ priceCheck(){
             return; 
         }else if(checkShip < 0 && checkNT < 0){
             this.selection = [...this.selection, atsShip, atsShipNT]; 
+            this.lineOrderNumber ++
         }else if(checkShip < 0 && checkNT >=0){
             this.selection = [...this.selection, atsShip ];
+            this.lineOrderNumber --;
         }else if(checkShip >= 0 && checkNT < 0){
             this.selection = [...this.selection, atsShipNT ];
+            this.lineOrderNumber --;
         }else{
             return; 
         }
         
+        this.unsavedProducts = true; 
+        this.startEventListener()
     }
 
     addManualLine(){
@@ -1347,7 +1196,7 @@ priceCheck(){
     }
     //open price book search
     openProdSearch(){
-        this.template.querySelector('c-prod-search-tags').openPriceScreen(); 
+        this.template.querySelector('c-prod-search').openPriceScreen(); 
     }
 
     // congaTest(){

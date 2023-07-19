@@ -1,4 +1,4 @@
-//Goes with prodSeach!!!!!
+//IMPORTANT this branch is the most up to date branch prior to search tag was used 5/25/2023
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
@@ -328,6 +328,9 @@ priceCheck(){
             Id: '',
             PricebookEntryId: '01u2M00000ZBLn5QAH',
             Product2Id: '01t2M0000062XwhQAE',
+            //Sandbox
+            // PricebookEntryId: '01u2M00000ZBLn5QAH',
+            // Product2Id: '01t2M0000062XwhQAE',
             agency: false,
             name: 'ATS SHIPPING',
             ProductCode: 'ATS SHIPPING',
@@ -355,16 +358,21 @@ priceCheck(){
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
-            resUse: 'false',
+            resUse: false,
             manLine: false,
+            Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
         }
+        this.lineOrderNumber ++;
         const atsShipNT = {
             sObjectType: 'OpportunityLineItem',
             Id: '',
             PricebookEntryId: '01u6T00000H6GNQQA3',
             Product2Id: '01t6T000006OzAyQAK',
+            //Sandbox
+            // PricebookEntryId: '01u7500000BY6SaAAL',
+            // Product2Id: '01t75000000rTHPAA2',
             agency: false,
             name: 'ATS SHIPPING - SPLIT SHIPMENTS',
             ProductCode: 'ATS SHIPPING-SPLIT',
@@ -392,8 +400,9 @@ priceCheck(){
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
-            resUse: 'false',
+            resUse: false,
             manLine: false,
+            Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
         }
@@ -404,13 +413,19 @@ priceCheck(){
             return; 
         }else if(checkShip < 0 && checkNT < 0){
             this.selection = [...this.selection, atsShip, atsShipNT]; 
+            this.lineOrderNumber ++
         }else if(checkShip < 0 && checkNT >=0){
             this.selection = [...this.selection, atsShip ];
+            this.lineOrderNumber --;
         }else if(checkShip >= 0 && checkNT < 0){
             this.selection = [...this.selection, atsShipNT ];
+            this.lineOrderNumber --;
         }else{
             return; 
         }
+        
+        this.unsavedProducts = true; 
+        this.startEventListener()
         
     }
 

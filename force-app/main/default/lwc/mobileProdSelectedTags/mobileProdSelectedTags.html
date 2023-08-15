@@ -1,0 +1,45 @@
+<template>
+    <lightning-card  variant="base">
+      <div slot="title">
+          Static none of these are wired
+          <lightning-button-group>
+            <lightning-button label="Refresh"></lightning-button>
+            <lightning-button label="Edit"></lightning-button>
+            <lightning-button label="Save"></lightning-button>
+          </lightning-button-group>
+      </div>
+      <div slot="actions">
+    
+      </div>
+      <div slot="footer">
+    
+      </div>
+      <!-- Card Body  style='height:40rem; width:100%'-->
+      <div class='slds-scrollable_y ' >
+            <div class="cardClass">
+            <lightning-layout multiple-rows="true">
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" padding="around-small">
+                    
+                    <div class="header-column">
+                        <p class="field-title" title="Field 1">Quicksilver</p>
+                        <p class="slds-p-top_xxx-small prodCode">FMC1091-8oz</p>
+                    </div>
+
+<!-- Individual products more info -->
+                <div class="pricing">
+                    <lightning-dynamic-icon 
+                    type="waffle" 
+                    alternative-text="Application launcher">
+                </lightning-dynamic-icon>
+                    <div class="additional">
+
+                        <p>Inventory info </p>
+                    </div>
+                </div>
+                </lightning-layout-item>
+            </lightning-layout>
+        </div>
+        
+      </div>
+    </lightning-card>
+</template>

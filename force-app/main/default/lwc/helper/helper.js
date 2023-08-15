@@ -68,7 +68,7 @@
             floorPrice: x.Floor_Price__c,
             UnitPrice:x.Product2.Agency_Pricing__c ? x.Floor_Price__c: x.CPQ_Unit_Price__c,
             //MinPrice: x.UnitPrice, 
-            CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : x.CPQ_Margin__c,
+            CPQ_Margin__c: x.Product2.Agency_Pricing__c? '' : roundNum(x.CPQ_Margin__c,2), 
             Cost__c: x.Product_Cost__c,
             displayCost: x.Product2.Agency_Pricing__c ? 'Agency' : x.Product_Cost__c, 
             agency: x.Product2.Agency_Pricing__c ,

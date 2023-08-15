@@ -150,6 +150,7 @@ export default class ProdSearchTags extends LightningElement {
                                     Floor: item.Product__r.Floor_Type__c,
                                     qtyOnHand: item.Product__r.Total_Product_Items__c, 
                                     Score: item.ATS_Score__c,
+                                    //css to set the pop up box on table
                                     classV: index <= 1 ? 'topRow' : 'innerInfo',
                                     progScore: item?.W_Program_Score__c ?? 'not set',
                                     profit: item?.W_Product_Profitability__c,

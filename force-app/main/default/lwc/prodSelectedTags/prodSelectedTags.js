@@ -402,7 +402,7 @@ priceCheck(){
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
-            resUse: 'false',
+            resUse: false,
             manLine: false,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId
@@ -439,7 +439,7 @@ priceCheck(){
             palletConfig: 0.00,
             //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
             goodPrice: true,
-            resUse: 'false',
+            resUse: false,
             manLine: false,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
             OpportunityId: this.recordId

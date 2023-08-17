@@ -526,33 +526,19 @@ handleOrderSort(item){
     //New product selected from mobile search
     //!!Unit Cost is Unit Price on pbe. That is the api name. 
     //The lable is list price. 
-    handleNewProduct(prodx){
-        this.productCode = prodx.detail.ProductCode;
-        this.productName = prodx.detail.Name;
-        this.productId = prodx.detail.Product2Id;
-        this.pbeId = prodx.detail.Id;
-        this.unitCost = prodx.detail.Product_Cost__c;
-        this.agProduct = prodx.detail.agency;
-        this.floorPrice = prodx.detail.Floor_Price__c;
-        this.floorType = prodx.detail.Product2.Floor_Type__c;
-        this.levelOne = prodx.detail.Level_1_UserView__c; 
-        this.levelTwo = prodx.detail.Level_2_UserView__c;
-        this.levelTwoMargin = prodx.detail.Level_2_Margin__c; 
-        this.shipWeight = prodx.detail.Product2.Ship_Weight__c;
-        this.palletConfig = prodx.detail.Product2.Pallet_Qty__c;
-        this.sgn = prodx.detail.Product2.SGN__c; 
-        this.rupProd = prodx.detail.rup; 
-      // console.log('selected rup? '+this.rupProd);
+    handleNewProduct(prod){
+        
+      this.productCode = prod.detail[0]; 
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
-        //console.log('already there '+ alreadyThere)
-        if(alreadyThere < 0){
-            this.getPrevSale();
-            this.wasEdited = true; 
-        }else{
-            return; 
-        }
+        console.log('already there '+ alreadyThere)
+        // if(alreadyThere < 0){
+        //     this.getPrevSale();
+        //     this.wasEdited = true; 
+        // }else{
+        //     return; 
+        // }
     }
 
     addShip(){

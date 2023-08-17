@@ -7,7 +7,7 @@ const REGEX_SOSL_RESERVED = /(\?|&|\||!|\{|\}|\[|\]|\(|\)|\^|~|\*|:|"|\+|\\)/g;
 const REGEX_STOCK_RES = /(stock|sock|limited|limted|lmited|limit|close-out|close out|closeout|close  out|exempt|exmpet|exemept|southern stock|southernstock|southner stock)/g; 
 const REGEX_COMMA = /(,)/g;
 
-import {spellCheck, cpqSearchString, uniqVals} from 'c/tagHelper';
+import {spellCheck, cpqSearchStringMobile, uniqVals} from 'c/tagHelper';
 
 export default class MobileSearchTags extends LightningElement{
     queryTerm;
@@ -83,9 +83,9 @@ export default class MobileSearchTags extends LightningElement{
         this.loaded = false; 
         if(this.stock){
             this.stock = spellCheck(this.stock[0])
-            this.searchQuery = cpqSearchString(this.queryTerm, this.stock);
+            this.searchQuery = cpqSearchStringMobile(this.queryTerm, this.stock);
         }else{
-            this.searchQuery = cpqSearchString(this.queryTerm, this.stock);   
+            this.searchQuery = cpqSearchStringMobile(this.queryTerm, this.stock);   
         }
         this.search();  
         }
@@ -102,18 +102,18 @@ export default class MobileSearchTags extends LightningElement{
                 this.prod = await once.map((item, index)=>({
                     ...item, 
                     Name: item.Product__r.Temp_Unavailable__c ? item.Product_Name__c + ' - ' +item.Product__r.Temp_Mess__c : item.Product_Name__c,
-                    ProductCode: item.Product_Code__c,
+                    ProductCode: item.Product_Code__c + ' - '+item.ATS_Score__c,
                     Floor_Price__c: item?.Floor_Price__c ?? 0, 
-                   // agency: item.Agency_Product__c,
-                    //onhand: item.Product2.Total_Product_Items__c,
+                    agency: item.Product__r.Agency_Product__c,
+                    onhand: item.Product__r.Total_Product_Items__c,
                     icon: item.Product__r.Temp_Unavailable__c ? 'action:freeze_user':'action:new',
-                    //title: '',
-                    //weight: item.Product2.Ship_Weight__c,
+                    title: '',
+                    weight: item.Product__r.Ship_Weight__c,
                     status: item.Stock_Status__c,
-                    //palletConfig: item.Product2.Pallet_Qty__c,
+                    palletConfig: item.Product__r.Pallet_Qty__c,
                     msg: item.Product__r.Temp_Mess__c,
-                    //sgn: item.Product2.SGN__c,
-                    rup: item.RUP__c,
+                    sgn: item.Product__r.SGN__c,
+                    rup: item.Product__r.RUP__c,
                     Score: item.ATS_Score__c,
                     progScore: item?.W_Program_Score__c ?? 'not set',
                     profit: item?.W_Product_Profitability__c,
@@ -148,11 +148,10 @@ export default class MobileSearchTags extends LightningElement{
         
     }
     addProduct(product){
-        
-        const pd = product;
-        //console.log(JSON.stringify(pd))
+        const rowProduct = product.Product__c;
+        const rowCode = product.Product_Code__c;
         this.dispatchEvent(new CustomEvent('newprod',{
-            detail: pd
+            detail: [rowProduct, rowCode]
         }))
     }
 

@@ -1,6 +1,7 @@
 import { LightningElement,api, track, wire } from 'lwc';
 import {getRecord, updateRecord, deleteRecord, getFieldValue } from 'lightning/uiRecordApi';
 import createProducts from '@salesforce/apex/cpqApex.createProducts';
+import wrapSearch from '@salesforce/apex/cpqApexTags.getDetails';
 import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
@@ -64,6 +65,7 @@ export default class MobileProdSelected extends LightningElement {
     shipWeight;
     total; 
     lastQuote; 
+    lp; 
     sgn; 
     rupProd;
     //for ordering products on the order. This will be set to the last Line_Order__c # on load or set at 0 on new order;
@@ -523,22 +525,152 @@ handleOrderSort(item){
                 return; 
             }    
     }
+      //set individual fields  
+      setFieldValues(mess){
+        this.productName = mess.Product2.Name;
+        this.productId = mess.Product2Id; 
+        this.pbeId = mess.Id;
+        this.unitCost = mess.Product_Cost__c ?? 0.00;
+        
+        this.shipWeight  = mess.Product2.Ship_Weight__c ?? 0.00;
+        this.agProduct = mess.Agency_Product__c;
+        this.floorPrice  = mess.Floor_Price__c ?? 0.00;
+        this.levelOne = mess.Level_1_UserView__c ?? 0.00;
+        this.levelOneMargin = mess.Level_1_Margin__c ?? 0.00;
+        this.levelTwo = mess.Level_2_UserView__c ?? 0.00;  
+        this.levelTwoMargin = mess.Level_2_Margin__c ?? 0.00; 
+        this.companyLastPaid = mess.Last_Purchase_Price__c ?? 0.00;
+        this.rupProd = mess.RUP__c;
+        this.sgn = mess.Product2.SGN__c ?? 0;
+        this.floorType = mess.Floor_Type__c;
+        this.palletConfig = mess.Pallet_Qty__c; 
+        this.prodFound = true;
+    }
+
+    async searchWrap(){
+        let totalPrice;
+        let totalQty;
+        let result; 
+
+        this.showSpinner = false;
+        try {
+            if(this.accountId){
+                result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:this.accountId , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
+            }else{
+                
+                result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
+            }
+            
+            this.setFieldValues(result[0].selectedProduct);
+            this.invCount = result[0].inventory;
+//these vars may not return if its first time purchasing or quoting 
+            this.lp = result[0].lastPaid;
+            this.lastQuote = result[0].lastQuote;
+            
+            if(this.lp){
+                this.prod =[
+                    ...this.prod,{
+                        sObjectType: 'OpportunityLineItem',
+                        Id: '',
+                        PricebookEntryId: this.pbeId,
+                        Product2Id: this.productId,
+                        name: this.productName,
+                        Product_Name__c: this.productName,
+                        ProductCode: this.productCode,
+                        Quantity: 1,
+                        UnitPrice:this.agProduct ? this.floorPrice: this.levelTwo,
+                        lOne: this.agProduct ? this.floorPrice : this.levelOne,
+                        lTwo: this.agProduct ? this.floorPrice : this.levelTwo,
+                        CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
+                        Cost__c: this.unitCost,
+                        displayCost: this.agProduct ? 'Agency' : this.unitCost,
+                        prevPurchase: true,
+                        lastPaid: this.lp.Unit_Price__c,
+                        lastMarg: this.agProduct ? '' : this.lp.Margin__c,
+                        lastPaidDate: this.lp.Unit_Price__c ? '$'+this.lp.Unit_Price__c +' '+this.lp.Doc_Date__c : '',
+                        TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
+                        Floor_Price__c: this.floorPrice,
+                        Floor_Type__c: this.floorType,
+                        Agency__c: this.agProduct,
+                        palletConfig: this.palletConfig, 
+                        Description: '', 
+                        wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                        readOnly: this.agProduct ? true : false,
+                        editQTY: false,
+                        lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
+                        lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                        Ship_Weight__c: this.shipWeight,
+                        sgn: this.sgn,
+                        resUse: this.rupProd,
+                        levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
+                        goodPrice: true,
+                        Line_Order__c: this.lineOrderNumber,
+                        OpportunityId: this.recordId
+                    }
+                ]
+            }else{
+                this.prod = [
+                    ...this.prod, {
+                        sObjectType: 'OpportunityLineItem',
+                        PricebookEntryId: this.pbeId,
+                        Id: '',
+                        Product2Id: this.productId,
+                        name: this.productName,
+                        Product_Name__c: this.productName,
+                        ProductCode: this.productCode,
+                        Quantity: 1,
+                        UnitPrice: this.agProduct ? this.floorPrice : this.levelTwo,
+                        lOne: this.agProduct ? this.unitCost : this.levelOne,
+                        lTwo: this.agProduct ? this.unitCost : this.levelTwo,
+                        prevPurchase: false,
+                        lastPaid: 0,
+                        lastMarg: this.agProduct ? 0: '', 
+                        CPQ_Margin__c: this.agProduct? 0 : this.levelTwoMargin,
+                        Cost__c: this.agProduct ? '': this.unitCost,
+                        displayCost: this.agProduct ? 'Agency' : this.unitCost,
+                        TotalPrice: this.agProduct ? this.floorPrice: this.levelTwo,
+                        Floor_Price__c: this.floorPrice,
+                        Floor_Type__c: this.floorType,
+                        Agency__c: this.agProduct,
+                        palletConfig: this.palletConfig,
+                        Description: '',
+                        wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                        readOnly: this.agProduct ? true : false,
+                        editQTY: false,
+                        lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c + ' '+ this.lastQuote.Quote_Date__c,
+                        lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                        Ship_Weight__c: this.shipWeight,
+                        sgn: this.sgn,
+                        resUse: this.rupProd,
+                        levels:'Lvl 1 $'+this.levelOne + ' Lvl 2 $'+ this.levelTwo,
+                        goodPrice: true,
+                        Line_Order__c: this.lineOrderNumber,
+                        OpportunityId: this.recordId
+                    }
+                ]  
+            }
+        } catch (error) {
+            console.error(error); 
+        }
+        
+    }
     //New product selected from mobile search
     //!!Unit Cost is Unit Price on pbe. That is the api name. 
     //The lable is list price. 
     handleNewProduct(prod){
         
-      this.productCode = prod.detail[0]; 
+      this.productCode = prod.detail[1]; 
         
         //check if they already have it on the order. We can't have multiple same sku's on a bill
         let alreadyThere = this.prod.findIndex(prod => prod.ProductCode === this.productCode);
-        console.log('already there '+ alreadyThere)
-        // if(alreadyThere < 0){
-        //     this.getPrevSale();
-        //     this.wasEdited = true; 
-        // }else{
-        //     return; 
-        // }
+        //console.log('already there '+ alreadyThere)
+        if(alreadyThere < 0){
+            this.productId = prod.detail[0]; 
+            this.searchWrap();
+            this.wasEdited = true; 
+        }else{
+            return; 
+        }
     }
 
     addShip(){

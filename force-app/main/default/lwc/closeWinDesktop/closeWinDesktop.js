@@ -181,8 +181,9 @@ get payOptions(){
         {label:'Set Due Date',value:'Set Due Date'},
         {label:'See Split Terms', value:'See Split Terms'},
         {label:'BASF', value:'BASF'},
-        {label:'Bayer', value:'Bayer'},
-        {label:'FMC', value:'FMC'}
+        {label:'Envu', value:'Envu'},
+        {label:'FMC', value:'FMC'},
+        {label:'SePRO', value:'SePRO'}
     ]
 }
 
@@ -271,9 +272,10 @@ handlePay(event){
     this.firstPayDate = this.handleSetPayDate(this.eopPayType); 
 }
 handleSetPayDate(payType){
-    return payType === 'BASF' ? '2023-06-07' :
-    payType === 'Bayer' ? '2023-06-02' :
-    payType === 'FMC' ? '2023-07-02' : ''; 
+    return payType === 'BASF' ? '2024-06-10' :
+    payType === 'Envu' ? '2024-06-07' :
+    payType === 'FMC' ? '2024-07-02' :
+    payType ==='SePRO' ? '2024-07-01' :  ''; 
 }
 handleEarlyPay(event){
     this.earlyPay = event.detail.value; 

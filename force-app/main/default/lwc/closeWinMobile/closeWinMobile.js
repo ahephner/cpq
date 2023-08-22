@@ -111,8 +111,8 @@ export default class CloseWinMobile extends LightningElement {
                                     today: this.today,
                                     billHoldSigned: this.billHoldSigned}
                         
-                        let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
-                        
+                        //let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
+                        let loadMore = validate(check, rules, rupRules, this.rupSelected);  
                         if(loadMore.isValid){
                             this.name = getFieldValue(data, NAME);
                             this.quoteNumb = getFieldValue(data, QUOTENUM);

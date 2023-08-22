@@ -117,9 +117,9 @@ export default class CloseWinDesktop extends LightningElement {
                                 today: this.today,
                                 billHoldSigned: this.billHoldSigned}
                     
-                    
-                    let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
-                   
+                    //IF YOU NEED BILL AND HOLD UNCOMMENT BELOW CHECK HELPER TOO
+                    //let loadMore = validate(check, rules, rupRules, this.rupSelected, bhRules, this.billHold);
+                    let loadMore = validate(check, rules, rupRules, this.rupSelected);
                     if(loadMore.isValid){
                     this.name = getFieldValue(data, NAME);
                     this.quoteNumb = getFieldValue(data, QUOTENUM);

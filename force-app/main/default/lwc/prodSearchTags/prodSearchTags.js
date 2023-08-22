@@ -202,29 +202,11 @@ export default class ProdSearchTags extends LightningElement {
 
 //SHOW PROMOS
             promoBTN = 'Show Promo'; 
-            promo
-            handlePromo(list){
-                let name =''; 
-                let count = 0; 
-                for(let i=0; i<list.length; i++){
-                    name += `promo name ${list[i].Name} Expires: ${list[i].Expiration_Date__c}`; 
-                    count ++; 
-                }
-                return [name, count]; 
-            }
-           async showPromo(){
-                    this.promoBTN =  this.promoBTN === 'Show Promo' ? 'Show Search' : 'Show Promo';
-                    this.promo = await searchPromos();
-                    let promoNames
-                    if(this.promo.length>=0 && this.promoBTN != 'Show Promo'){
-                         promoNames = await this.handlePromo(this.promo)    
-                    }
-                    await LightningAlert.open({
-                        message: promoNames[0], 
-                        theme: 'shade', // a red theme intended for error states
-                        label: `current # of promos ${promoNames[1]}`, // this is the header text
-                    });
+            promo = false; 
 
+            showPromo(){
+                this.promoBTN =  this.promoBTN === 'Show Promo' ? 'Show Search' : 'Show Promo';
+                this.promo = true
             }
 
 //Handle sort features

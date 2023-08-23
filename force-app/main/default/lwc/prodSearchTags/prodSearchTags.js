@@ -41,7 +41,8 @@ export default class ProdSearchTags extends LightningElement {
             variant: { fieldName: 'rowVariant' },
         }, 
         cellAttributes: {
-            style: 'transform: scale(0.75)'}
+            //style: 'transform: scale(0.75)'
+        }
         },
         //{label: 'Name', fieldName:'Name', cellAttributes:{alignment:'left'}, "initialWidth": 625},
         {label:'Name', type:'customName',
@@ -108,16 +109,34 @@ export default class ProdSearchTags extends LightningElement {
           handleKeys(evt){
             let eventKey = evt.keyCode === 13;
               if(eventKey){
-                  //console.log('enter')
-                  this.search();  
+                  if(!this.promo){
+                      this.search();  
+                  }else{
+                    this.searchPromo(); 
+                  }
               }
             }
             
             handleSearch(evt){
-                evt.preventDefault(); 
-                this.search(); 
+                evt.preventDefault();
+                if(!this.promo){
+                    this.search(); 
+                }else{
+                    this.searchPromo(); 
+                }
             }
 
+///search promos
+            searchPromo(){
+                this.searchTerm = this.template.querySelector('[data-value="searchInput"]').value.toLowerCase().replace(REGEX_COMMA,' and ').replace(REGEX_SOSL_RESERVED,'?').replace(REGEX_STOCK_RES,'').trim();
+                console.log('sending', this.searchTerm)    
+                if(this.searchTerm.length<3){
+                        //add lwc alert here
+                        return;
+                    }
+                this.template.querySelector('c-prod-search-promo').promoSearch(this.searchTerm);
+            }
+//search tags
         async search(){
                 
                 this.stock = this.template.querySelector('[data-value="searchInput"]').value.trim().toLowerCase().match(REGEX_STOCK_RES); 
@@ -134,7 +153,7 @@ export default class ProdSearchTags extends LightningElement {
                 }else{
                     this.searchQuery = cpqSearchString(this.searchTerm, this.stock); 
                 }
-                console.log(this.searchQuery);
+                //console.log(this.searchQuery);
                 
                 let data = await searchTag({searchKey: this.searchQuery}) 
                 let once = data.length> 1 ? await uniqVals(data) : data;
@@ -158,7 +177,7 @@ export default class ProdSearchTags extends LightningElement {
                                     fp: item?.W_Focus_Product__c ?? 0
                                     
                 }))
-                console.log(this.prod)
+               
                 this.loaded = true;
                 this.error = undefined;
                 
@@ -206,7 +225,7 @@ export default class ProdSearchTags extends LightningElement {
 
             showPromo(){
                 this.promoBTN =  this.promoBTN === 'Show Promo' ? 'Show Search' : 'Show Promo';
-                this.promo = true
+                this.promo = !this.promo ? true :false; 
             }
 
 //Handle sort features

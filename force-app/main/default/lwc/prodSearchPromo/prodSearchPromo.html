@@ -1,0 +1,48 @@
+<template>
+    <div class='slds-grid header'>
+
+                
+        <div class='slds-col slds-size_7-of-12 slds-align_absolute-center'>
+            <p class='header'>Promo Info</p>
+        </div>
+
+        <!-- <div class="slds-col slds-size_4-of-12 slds-align_absolute-center">
+            <p class='header'>Products</p>
+        </div> -->
+        <div class="slds-col slds-size_5-of-12 slds-align_absolute-center">
+            <p class='header'>Products</p>
+        </div>
+
+    
+    </div>
+    <template if:false={loaded}>
+        <lightning-spinner 
+            alternative-text="Loading" 
+            size="large"></lightning-spinner>
+    </template>
+    <template if:true={loaded}>
+        <lightning-layout multiple-rows="true">
+            <template if:false={loading} for:each={data} for:item='item'>
+                <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
+                    slds-m-horizontal_none pcCard slds-m-top_small" 
+                    name={item.Id}>
+                    <div class="card">
+                        <div>
+                            {item.Name} 
+                        </div>
+                        <div>
+                            Expires: {item.experDate} - {item.experDays} days left
+                        </div>
+                        <div>
+                            <b>Comments:</b>
+                        </div>
+                        <div>
+                            
+                            {item.Description__c}
+                        </div>
+                    </div>
+                </lightning-layout-item>
+            </template>
+        </lightning-layout>
+    </template>
+</template>

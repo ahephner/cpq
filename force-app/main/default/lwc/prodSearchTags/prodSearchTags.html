@@ -55,15 +55,15 @@
                             <lightning-button variant="brand" label="Search" title="Search" onclick={handleSearch}></lightning-button>
                         </div>
                         <div class="slds-col slds-size_1-of-8 slds-m-top_large slds-m-left_x-small">
-                            Searched Term: {searchTerm }
+                            Searched Term: {searchTerm}
                         </div>
                         <div class="slds-col slds-size_1-of-8 slds-m-top_large slds-m-left_x-small">
                             <lightning-input type="toggle" label={promoBTN} name="input1" onchange={showPromo}></lightning-input>
                         </div>
                     </div>
                     <div  style="height:40rem;width:100%">
-                        <div class='slds-grid'>
-                            <!-- <div class='slds-col'>
+                       <!-- <div class='slds-grid'>
+                             <div class='slds-col'>
                                 <lightning-datatable
                                     key-field="Id"
                                     data={prod}
@@ -74,15 +74,20 @@
                                     onsort={handleSortdata}
                                     onrowaction={handleRowAction}>
                                 </lightning-datatable> -->
-                                
+                            <template if:false={promo}>    
                                 <c-data-cell
                                     key-field="Id"
                                     data={prod}
                                     hide-checkbox-column
                                     columns={columnsList}
                                     onrowaction={handleRowAction}></c-data-cell>
+                            </template>
+                            <template if:true={promo}>
+                                <c-prod-search-promo
+                                    term={searchTerm}></c-prod-search-promo>
+                            </template>
                             </div>
-                            </div>
+                            <!-- </div> -->
                         <!-- </div>     -->
                 </template>
                 </lightning-card>

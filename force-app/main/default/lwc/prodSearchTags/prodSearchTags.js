@@ -222,10 +222,13 @@ export default class ProdSearchTags extends LightningElement {
 //SHOW PROMOS
             promoBTN = 'Show Promo'; 
             promo = false; 
-
+            searchBoxLabel = 'Search Product';
+            searchBoxPlace = 'Search for products...'
             showPromo(){
                 this.promoBTN =  this.promoBTN === 'Show Promo' ? 'Show Search' : 'Show Promo';
-                this.promo = !this.promo ? true :false; 
+                this.promo = !this.promo ? true :false;
+                this.searchBoxLabel = this.promo ? 'Search Promos': 'Search Product';
+                this.searchBoxPlace = this.promo ? 'Search for promos...': 'Search for products...';    
             }
 
 //Handle sort features

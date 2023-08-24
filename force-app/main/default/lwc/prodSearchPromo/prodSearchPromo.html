@@ -26,20 +26,29 @@
                 <lightning-layout-item size="12" key={item.Id} class="slds-box slds-p-around_none 
                     slds-m-horizontal_none pcCard slds-m-top_small" 
                     name={item.Id}>
-                    <div class="card">
-                        <div>
-                            {item.Name} 
+                    <div class="slds-grid card slds-m-left_small">
+    <!-- Promo INFO -->
+                        <div class="slds-col slds-size_7-of-12">
+                            <div class="btn-name slds-text-heading_medium">
+                                <div class="btn slds-m-right_medium">
+                                    <lightning-button-icon icon-name={item.btnName}  variant={item.btnVariant} size="small" 
+                                    alternative-text="add" name={item.Id} onclick={addPromo}></lightning-button-icon>
+                                </div>
+                                    {item.Name} 
+                                </div>
+                            <div class="expDate">
+                                Expires: {item.experDate} -&nbsp; <span class={item.dayClass}>{item.experDays} days left</span> 
+                            </div>
+                            <div class="commentHeader">
+                                <b>Comments:</b>
+                            </div>
+                            <div class="comments">
+                                
+                                {item.Description__c}
+                            </div>
                         </div>
-                        <div>
-                            Expires: {item.experDate} - {item.experDays} days left
-                        </div>
-                        <div>
-                            <b>Comments:</b>
-                        </div>
-                        <div>
-                            
-                            {item.Description__c}
-                        </div>
+    <!-- Product Info here -->
+                        <div class="slds-col slds-size_5-of-12 slds-align_absolute-center"></div>
                     </div>
                 </lightning-layout-item>
             </template>

@@ -27,6 +27,9 @@
                         <div class='slds-col slds-size_1-of-8'>
                             <p>Default Margin</p>
                         </div>
+                        <div class='slds-col slds-size_1-of-8'>
+                            <p>EOP Pricebook</p>
+                        </div>
                     </div>
             <!-- Table Cells Here -->
                 <div class="slds-scrollable_y" style="height:40rem;width:100%">
@@ -88,6 +91,14 @@
                                             <lightning-input  type="number"  
                                             label="" name={item.Id} value={item.Level_2_Editable_Margin__c} onchange={changeMarTwo} 
                                             step="0.01" read-only={item.Agency_Product__c} ></lightning-input>
+                                        </div>
+                                    </div>
+                                    <!-- EOP CHECKBOX -->
+                                    <div class="slds-col slds-size_1-of-8 slds-m-left_small slds-m-top_small">
+                                        <div data-twomargin={item.Id}>
+                                            <lightning-input  type="checkbox"  
+                                                label="" name={item.Id} checked={item.Early_Order__c} onchange={eopPriceBook} 
+                                             ></lightning-input>
                                         </div>
                                     </div>
                                 </div>

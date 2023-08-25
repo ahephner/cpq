@@ -50,6 +50,8 @@ export default class ProductMaintFlow extends LightningElement{
            let x = {...i}
             x.Level_1_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_1_Editable_Margin__c;
             x.Level_2_Editable_Margin__c = i.Agency_Product__c ? '' : i.Level_2_Editable_Margin__c;
+            console.log(i.Early_Order__c); 
+
             rowClass = 'innerInfo';
             goodPrice = true; 
             return {...x, rowClass, goodPrice};
@@ -130,11 +132,16 @@ export default class ProductMaintFlow extends LightningElement{
             this.handleWarningTwo(targetName, levelTwo, floor, index)
         }, 500)
     }
-
+    eopPriceBook(m){
+        let index = this.items.findIndex(prod => prod.Id === m.target.name);
+        this.items[index].isChanged__c = true;
+        this.items[index].Early_Order__c = m.target.checked; 
+    }
     handleSave(){
         this.loaded = false;
         
         const recordInputs = this.items.slice().map(draft=>{
+            
             let Id = draft.Id;
             let Level_1_Price__c = draft.Level_1_Price__c;
             let Level_2_Price__c = draft.Level_2_Price__c;
@@ -146,20 +153,20 @@ export default class ProductMaintFlow extends LightningElement{
             return {fields};
         })
         //here update product2
-        // const productInputs = this.items.slice().map(draft=>{
-        //     let Id = draft.Product2_Real_Id__c;
-        //     let Floor_Price__c = draft.Floor_Price__c;
+        const productInputs = this.items.slice().map(draft=>{
+            let Id = draft.Product2Id;
+            let Early_Order__c = draft.Early_Order__c; 
 
-        //     const fields = {Id, Floor_Price__c}
-        //     return {fields}; 
-        // })
-        //console.log(JSON.stringify(productInputs));
-        //console.log('promise 1');
+            const fields = {Id, Early_Order__c}
+            return {fields}; 
+        })
+        console.log(JSON.stringify(productInputs));
+        console.log('promise 1');
         const promises = recordInputs.map(recordInput => updateRecord(recordInput));
         //here if you want to update the product card
-       // const promise2 = productInputs.map(ri => updateRecord(ri));
+        const promise2 = productInputs.map(ri => updateRecord(ri));
        //If you want to add another promise use this ==> [promises, promise2]
-        Promise.all(promises).then(prod => {
+        Promise.all([promises, promise2]).then(prod => {
             console.log(prod);
         }).catch(error => {
             console.log(error);

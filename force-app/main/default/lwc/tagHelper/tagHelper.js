@@ -41,12 +41,17 @@ const uniqVals = (arr, track = new Set())=>{
   return  arr.filter(({Product__c})=>track.has(Product__c)? false: track.add(Product__c))
  
 }
+
+const uniqPromo = (arr, track = new Map())=>{
+  return arr.filter(({Search_Label__c})=>track.has(Search_Label__c)? false: track.set(Search_Label__c))
+}
 export{
        spellCheck,
        quickSearchString,
        cpqSearchString,
        uniqVals, 
-       cpqSearchStringMobile
+       cpqSearchStringMobile,
+       uniqPromo
       }
 
 

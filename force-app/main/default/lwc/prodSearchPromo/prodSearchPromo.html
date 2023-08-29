@@ -34,17 +34,17 @@
                                     <lightning-button-icon icon-name={item.btnName}  variant={item.btnVariant} size="small" 
                                     alternative-text="add" name={item.Id} onclick={addPromo}></lightning-button-icon>
                                 </div>
-                                    {item.Name} 
+                                    {item.Search_Label__r.Name} 
                                 </div>
                             <div class="expDate">
-                                Expires: {item.experDate} -&nbsp; <span class={item.dayClass}>{item.experDays} days left</span> 
+                                Expires: {item.Search_Label__r.experDate} -&nbsp; <span class={item.dayClass}>{item.experDays} days left</span> 
                             </div>
                             <div class="commentHeader">
                                 <b>Comments:</b>
                             </div>
                             <div class="comments">
                                 
-                                {item.Description__c}
+                                {item.Search_Label__r.Description__c}
                             </div>
                         </div>
     <!-- Product Info here -->

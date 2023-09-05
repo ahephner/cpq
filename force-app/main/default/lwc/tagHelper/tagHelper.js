@@ -43,8 +43,10 @@ const uniqVals = (arr, track = new Set())=>{
 }
 
 const uniqPromo = (arr, track = new Map())=>{
-  return arr.filter(({Search_Label__c})=>track.has(Search_Label__c)? false: track.set(Search_Label__c))
+  return arr.filter(({Search_Label__c})=>track.has(Search_Label__c)? false : track.set(Search_Label__c))
 }
+
+
 export{
        spellCheck,
        quickSearchString,

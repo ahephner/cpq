@@ -2,11 +2,8 @@
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
 import wrapSearch from '@salesforce/apex/cpqApexTags.getDetails';
-import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
-import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';  
+import promoAdd from '@salesforce/apex/cpqApexTags.promoDetails';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
-import getInventory from '@salesforce/apex/cpqApex.getInventory';
-import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
@@ -366,6 +363,12 @@ priceCheck(){
             console.log(`Execution time: ${end - start} ms`);
     }
 
+//FOR PROMO SELECTION
+
+    async  handlePromoSelection(mess){
+            let promoId = mess.detail; 
+            let results = await promoAdd({pId: promoId})
+        }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 
 //Make Sure ID's are correct

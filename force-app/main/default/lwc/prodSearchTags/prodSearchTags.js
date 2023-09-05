@@ -230,6 +230,15 @@ export default class ProdSearchTags extends LightningElement {
                 this.searchBoxLabel = this.promo ? 'Search Promos': 'Search Product';
                 this.searchBoxPlace = this.promo ? 'Search for promos...': 'Search for products...';    
             }
+//Kick Promos up to selection
+            handlePromo(mess){
+                let promo = mess.detail; 
+                
+                this.dispatchEvent(new CustomEvent('promoselected', {
+                    detail: promo
+                }))
+                
+            }
 
 //Handle sort features
           handleSortdata(event) {

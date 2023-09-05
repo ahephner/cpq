@@ -32,7 +32,7 @@
                             <div class="btn-name slds-text-heading_medium">
                                 <div class="btn slds-m-right_medium">
                                     <lightning-button-icon icon-name={item.btnName}  variant={item.btnVariant} size="small" 
-                                    alternative-text="add" name={item.Id} onclick={addPromo}></lightning-button-icon>
+                                    alternative-text="add" name={item.Search_Label__c} onclick={addPromo}></lightning-button-icon>
                                 </div>
                                     {item.Search_Label__r.Name} 
                                 </div>
@@ -48,7 +48,9 @@
                             </div>
                         </div>
     <!-- Product Info here -->
-                        <div class="slds-col slds-size_5-of-12 slds-align_absolute-center"></div>
+                        <div class="slds-col slds-size_5-of-12 slds-align_absolute-center">
+                            {item.prodNames}
+                        </div>
                     </div>
                 </lightning-layout-item>
             </template>

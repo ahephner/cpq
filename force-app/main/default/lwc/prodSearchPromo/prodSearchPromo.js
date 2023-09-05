@@ -35,13 +35,14 @@ export default class ProdSearchPromo extends LightningElement{
             try {
                 let pros = await onLoadPromos()
                 let once = pros.length> 1 ? await uniqPromo(pros) : pros;
+
                     this.data = await once.map((item, index)=>({
                         ...item,
                         experDate: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).prettyDate,
                         experDays: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff,
                         btnName: "utility:add",
                         btnVariant: "brand",
-                        dayClass: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': ''
+                        dayClass: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': '' 
                     }))
                 this.loadedBefore =true; 
                 this.loaded = true; 
@@ -69,11 +70,12 @@ export default class ProdSearchPromo extends LightningElement{
             console.error(error)
         }
     }
-
+//export get products add to order
     addPromo(e){
-        let targetId = e.target.name
-        console.log('id ' ,targetId);
+        const rowId = e.target.name; 
+        this.dispatchEvent(new CustomEvent('promoid', {
+            detail: rowId
+        }))
         
-        //export get products add to order
     }
 }

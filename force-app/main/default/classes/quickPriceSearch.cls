@@ -51,12 +51,43 @@ public class quickPriceSearch {
     }
     
     @auraEnabled(cacheable = true)
-    public static list<Search_Label__c> searchPromos(){
+    public static list<Tag__c> searchPromos(string query){
         date today = date.today();
-        list<Search_Label__c> currentPromos = [select id,Name, Expiration_Date__c from Search_Label__c
-                             				  where Expiration_Date__c >= :today and Label_Category__c= 'Promotional' order by Expiration_Date__c DESC]; 
+        string searchTerm = '%'+query+'%';
+        //IF I give up on the idea of being able to display products on the promo card and onlly search labels
+        //list<Search_Label__c> currentPromos = [select id,Name, Expiration_Date__c, Description__c from Search_Label__c
+          //                   				  where Expiration_Date__c >= :today and Label_Category__c= 'Promotional' 
+          //                                    and Name like : searchTerm order by Expiration_Date__c DESC]; 
+        
+        list<Tag__c> searchRes = [select id, name, Product_Name__c, Product__c, Search_Label__r.Name,
+                                     Search_Label__c, Search_Label__r.Expiration_Date__c, Search_Label__r.Description__c
+                                     from Tag__c
+                                     where Search_Label__r.Expiration_Date__c >= :today and Search_Label__r.Label_Category__c = 'Promotional'
+                                     and Search_Label__r.Name like : searchTerm order by Search_Label__r.Expiration_Date__c DESC limit 10];
+        return searchRes; 
+    }
+    
+    //@auraEnabled(cacheable = true)
+    //public static list<Search_Label__c> onLoadPromos(){
+        //date today = date.today();
+        
+        //list<Search_Label__c> currentPromos = [select id,Name, Expiration_Date__c, Description__c from Search_Label__c
+          //                   				  where Expiration_Date__c >= :today and Label_Category__c= 'Promotional' 
+        //                                      order by Expiration_Date__c DESC limit 10]; 
+      //  return currentPromos; 
+    //}
+    @auraEnabled(cacheable = true)
+    public static list<Tag__c> onLoadPromos(){
+        date today = date.today();
+        
+        list<Tag__c> currentPromos = [select id, name, Product_Name__c, Product__c, Search_Label__r.Name,
+                                     Search_Label__c, Search_Label__r.Expiration_Date__c, Search_Label__r.Description__c
+                                     from Tag__c
+                                     where Search_Label__r.Expiration_Date__c >= :today and Search_Label__r.Label_Category__c = 'Promotional'
+                                     order by Search_Label__r.Expiration_Date__c DESC limit 10];
         return currentPromos; 
     }
+    
     //Search with just the filters buttons
     @AuraEnabled(cacheable=true)
     public static list <tag__c> cpqFilterSearch(string cat, string family){

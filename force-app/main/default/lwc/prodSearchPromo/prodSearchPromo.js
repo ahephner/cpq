@@ -1,7 +1,7 @@
 import { LightningElement, api } from 'lwc';
 import searchPromos from '@salesforce/apex/quickPriceSearch.searchPromos';
 import onLoadPromos from '@salesforce/apex/quickPriceSearch.onLoadPromos';
-
+import LightningAlert from 'lightning/alert';
 import { uniqPromo, uniqVals} from 'c/tagHelper';
 export default class ProdSearchPromo extends LightningElement{
     @api term; 
@@ -48,7 +48,11 @@ export default class ProdSearchPromo extends LightningElement{
                 this.loaded = true; 
                 //console.log(JSON.stringify(this.data))
             } catch (error) {
-                console.error(error)
+                await LightningAlert.open({
+                    message: error,
+                    theme: 'error', // a red theme intended for error states
+                    label: 'Error!', // this is the header text
+                });
             }
         }
     }
@@ -57,17 +61,25 @@ export default class ProdSearchPromo extends LightningElement{
         this.loaded = false
         try {
             let pros = await searchPromos({query:searchString})
-           
-                this.data = await pros.map((item, index)=>({
+            let once = pros.length> 1 ? await uniqPromo(pros) : pros;
+
+                this.data = await once.map((item, index)=>({
                     ...item,
-                    experDate: this.getFormattedDate(item.Expiration_Date__c, this.today).prettyDate,
-                    experDays: this.getFormattedDate(item.Expiration_Date__c, this.today).diff
+                    experDate: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).prettyDate,
+                    experDays: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff,
+                    btnName: "utility:add",
+                    btnVariant: "brand",
+                    dayClass: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': '' 
                 }))
             
             this.loaded = true; 
             console.log(JSON.stringify(this.data))
         } catch (error) {
-            console.error(error)
+            await LightningAlert.open({
+                message: error,
+                theme: 'error', // a red theme intended for error states
+                label: 'Error!', // this is the header text
+            });
         }
     }
 //export get products add to order

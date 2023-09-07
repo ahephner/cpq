@@ -196,6 +196,12 @@ priceCheck(){
         this.searchWrap();  
     }
 }
+//Check for duplicate products on promo adds
+    promoDupCheck(x){
+        let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === x);
+        return alreadyThere; 
+    }
+
     unsubscribeToMessageChannel() {   
         unsubscribe(this.subscription);
         this.subscription = null;
@@ -233,9 +239,15 @@ priceCheck(){
             this.levelOneMargin = mess.Level_1_Margin__c ?? 0.00;
             this.levelTwo = mess.Level_2_UserView__c ?? 0.00;  
             this.levelTwoMargin = mess.Level_2_Margin__c ?? 0.00; 
-            this.companyLastPaid = mess.Product2.Last_Purchase_Price__c ?? 0.00;  
+            this.companyLastPaid = mess.Product2.Last_Purchase_Price__c ?? 0.00;
+            this.productCode = mess.productCode != undefined ? mess.productCode : mess.Product2.ProductCode;  
+            this.companyLastPaid = mess.lastPaid            
+            this.palletConfig = mess.palletQty;
+            this.sgn = mess.size; 
+            this.resUse = mess.rup;
             this.prodFound = true;
         }
+
     async searchWrap(){
             //get last paid only works on new adding product
             const start = performance.now(); 
@@ -249,7 +261,6 @@ priceCheck(){
                 
                 result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
             }
-            
             this.setFieldValues(result[0].selectedProduct);
             this.invCount = result[0].inventory; 
             this.newProd = result[0].lastPaid;
@@ -367,7 +378,65 @@ priceCheck(){
 
     async  handlePromoSelection(mess){
             let promoId = mess.detail; 
-            let results = await promoAdd({pId: promoId})
+            try {
+                let results = await promoAdd({pId: promoId, locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
+                
+                for(let i=0; i < results.length; i++){
+                    let dupCheck = this.promoDupCheck(results[i].Product2.ProductCode);
+                    if(dupCheck>=0){
+                        continue; 
+                    }else{
+                        let ind = await this.setFieldValues(results[i]);
+                        this.selection = [
+                            ...this.selection, {
+                                sObjectType: 'OpportunityLineItem',
+                                PricebookEntryId: this.pbeId,
+                                Id: '',
+                                Product2Id: this.productId,
+                                agency: this.agency,
+                                name: this.productName,
+                                ProductCode: this.productCode,
+                                Ship_Weight__c: this.unitWeight,
+                                Quantity: 1,
+                                UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                                floorPrice: this.fPrice,
+                                lOne: this.agency? this.fPrice : this.levelOne,
+                                lTwo: this.levelTwo,
+                                lastPaid: 0,
+                                lastMarg: 0, 
+                                docDate: 'First Purchase', 
+                                CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
+                                Cost__c: this.unitCost,
+                                displayCost: this.agency ? 'Agency' : this.unitCost,
+                                TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                                Discount: this.lineDiscount ? this.lineDiscount : '',
+                                wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                                showLastPaid: true,
+                                lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                                lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                                lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
+                                flrText: 'flr price $'+ this.fPrice,
+                                lOneText: 'lev 1 $'+this.levelOne, 
+                                companyLastPaid: this.companyLastPaid,
+                                palletConfig: this.palletConfig,
+                                sgn: this.sgn,
+                                //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
+                                goodPrice: true,
+                                resUse: this.resUse,
+                                manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
+                                Line_Order__c: this.lineOrderNumber,
+                                lastThirty:  '0',
+                                url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                                OpportunityId: this.recordId
+                            }
+                        ]
+                        this.lineOrderNumber ++; 
+                    }
+                }
+            } catch (error) {
+                console.error(error)
+            }
+            
         }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 

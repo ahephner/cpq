@@ -72,7 +72,8 @@ export default class ProdSearchTags extends LightningElement {
 
     closePriceScreen(){
         this.productsSelected = 0; 
-        this.openPricing = false; 
+        this.openPricing = false;
+        this.promo = false;  
     }
 
         //Subscribe to Message Channel

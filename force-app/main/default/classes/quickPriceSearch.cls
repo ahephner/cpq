@@ -18,6 +18,14 @@ public class quickPriceSearch {
         return results; 
       
     }
+    
+	@AuraEnabled(cacheable = true)
+    public static List<Schema.Location> getWarehouse(){
+        List<Schema.Location> warehouse = [select id, name from Location 
+                                           where IsInventoryLocation =true and LocationType = 'ATS'  ];
+        
+        return warehouse; 
+    }
     @AuraEnabled(cacheable = true)
     public static list<tag__c> searchTag(string searchKey){
          string searchterm = '%' + searchKey + '%'; 
@@ -84,7 +92,7 @@ public class quickPriceSearch {
                                      Search_Label__c, Search_Label__r.Expiration_Date__c, Search_Label__r.Description__c
                                      from Tag__c
                                      where Search_Label__r.Expiration_Date__c >= :today and Search_Label__r.Label_Category__c = 'Promotional'
-                                     order by Search_Label__r.Expiration_Date__c DESC limit 10];
+                                     order by Search_Label__r.Expiration_Date__c ASC limit 10];
         return currentPromos; 
     }
     

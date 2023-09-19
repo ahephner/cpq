@@ -27,8 +27,8 @@
               return a1;
             }   
    }
-  //sum an array of objects based on key and values; 
-  const sumByKey = (arr, key, value) => {
+//sum an array of objects based on key and values; 
+   const sumByKey = (arr, key, value) => {
     const map = new Map();
     //iterate the array and set key with value
     for(const obj of arr) {

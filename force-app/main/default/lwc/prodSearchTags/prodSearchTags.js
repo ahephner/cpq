@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
-import searchTag from '@salesforce/apex/quickPriceSearch.cpqSearchTag';
-import searchPromos from '@salesforce/apex/quickPriceSearch.searchPromos';
+import searchTag from '@salesforce/apex/cpqTagsSearch.cpqSearchTag';
+import searchPromos from '@salesforce/apex/cpqTagsSearch.searchPromos';
 //import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';
 import { MessageContext, publish} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
@@ -28,6 +28,8 @@ export default class ProdSearchTags extends LightningElement {
     pf = 'All';
     cat = 'All';
     productsSelected = 0;
+    //number of items returned by search string. Designed to give metrics to ATS
+    searchSize; 
     @track selection = [];
     newProd; 
     @track columnsList = [
@@ -158,6 +160,7 @@ export default class ProdSearchTags extends LightningElement {
                 
                 let data = await searchTag({searchKey: this.searchQuery}) 
                 let once = data.length> 1 ? await uniqVals(data) : data;
+                this.searchSize = once.length; 
                 this.prod = await once.map((item, index) =>({
                                     ...item, 
                                     rowVariant: item.Product__r.Temp_Unavailable__c ? 'border-filled' : 'brand',
@@ -175,7 +178,8 @@ export default class ProdSearchTags extends LightningElement {
                                     progScore: item?.W_Program_Score__c ?? 'not set',
                                     profit: item?.W_Product_Profitability__c,
                                     invScore: item?.W_Inventory_Score__c ?? 'not set',
-                                    fp: item?.W_Focus_Product__c ?? 0
+                                    fp: item?.W_Focus_Product__c ?? 0,
+                                    searchIndex: index + 1
                                     
                 }))
                
@@ -191,6 +195,8 @@ export default class ProdSearchTags extends LightningElement {
                 const rowProduct = e.detail.row.Product__c; 
                 const rowCode = e.detail.row.ProductCode; 
                 const rowId = e.detail.row.Id; 
+                const rowIndex = e.detail.row.searchIndex; 
+                const rowScore = e.detail.row.ATS_Score__c;
                 //get that row button so we can update it  
                 let index = this.prod.find((item) => item.Id === rowId);
 
@@ -200,7 +206,15 @@ export default class ProdSearchTags extends LightningElement {
                 }else if(rowAction === 'Add'){
                     this.productsSelected ++; 
                     this.dispatchEvent(new CustomEvent('addprod',{
-                        detail: [rowProduct,rowCode ]
+                        //detail: [rowProduct,rowCode, rowIndex,this.searchSize, this.searchTerm ]
+                        detail: {prodId: rowProduct,
+                                prodCode: rowCode,
+                                searchedTerm: this.searchTerm,
+                                searchSize: this.searchSize,
+                                searchIndex: rowIndex,
+                                tagId: rowId,
+                                tagScore: rowScore
+                                }
                     }))
                         //update the button
                     index.rowVariant = 'success';

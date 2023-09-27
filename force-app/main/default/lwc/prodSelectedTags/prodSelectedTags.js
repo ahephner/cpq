@@ -3,6 +3,7 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import wrapSearch from '@salesforce/apex/cpqApexTags.getDetails';
 import promoAdd from '@salesforce/apex/cpqApexTags.promoDetails';
+import createQueries from '@salesforce/apex/cpqApexTags.createQueries';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
@@ -28,7 +29,7 @@ import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
 import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, 
-    checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP, sortArray,removeLineItem, loadCheck} from 'c/helper'
+    checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, setOPMetric, checkRUP, sortArray,removeLineItem, loadCheck} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
@@ -187,13 +188,17 @@ priceCheck(){
     }
 
 //fired from search check if the product is already on the order if not set the id and call the function to load it's info.  
-   handleTagProduct(mess){
-    this.productCode = mess.detail[1]
+  async handleTagProduct(mess){
+   
+     this.productCode = mess.detail.prodCode;
     let alreadyThere = this.selection.findIndex(prod => prod.ProductCode === this.productCode);
     
-    if(alreadyThere<0){
-        this.productId = mess.detail[0]
-        this.searchWrap();  
+    if(alreadyThere>0){
+        return
+    }else{
+        this.productId = mess.detail.prodId; 
+        let one = await this.searchWrap();
+        let two = await this.handleMetrics(mess.detail)  
     }
 }
 //Check for duplicate products on promo adds
@@ -919,19 +924,19 @@ priceCheck(){
         let shipTotal = this.selection.filter(y => y.ProductCode.includes('SHIPPING'));
         //check if there are Restricted Use Products on the order list
         let rupProds = checkRUP(this.selection);
-        console.log('sending '+JSON.stringify(this.selection))
+        
         
         //createProducts({newProds: newProduct, upProduct: alreadyThere, oppId: this.recordId})
         createProducts({olList: this.selection, oppId: this.recordId, accId: this.accountId})
         .then(result=>{
             //need to map over return values and save add in non opp line item info 
             let back = updateNewProducts(newProduct, result);
+            this.metricsArray = setOPMetric(this.metricsArray, back)
             
             this.selection =[...alreadyThere, ...back];
             //sort based on line item for pdf
             this.selection = sortArray(this.selection)
             //console.log(JSON.stringify(this.selection));
-            
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Success',
@@ -941,6 +946,9 @@ priceCheck(){
             );
             //this is throwing errors on save. Not letting the remove
             getRecordNotifyChange([{recordId: this.recordId}])
+        }).then(()=>{
+            let saveQ = createQueries({queryList: this.metricsArray})
+            this.metricsArray = []
         }).then(()=>{
             let shipCharge = getShipping(shipTotal);
             if(shipCharge >0 && !rupProds){
@@ -1295,15 +1303,28 @@ priceCheck(){
         }
     }
     hideMarge(){
-        console.log('click ' +this.pryingEyes);
-        
         this.pryingEyes = this.pryingEyes ? false : true; 
     }
     //open price book search
     openProdSearch(){
         this.template.querySelector('c-prod-search-tags').openPriceScreen(); 
     }
-
+    metricsArray = []
+    //will be moved to a mixins or helper
+    handleMetrics(x){
+        this.metricsArray = [
+            ...this.metricsArray, {
+            sObjectType: 'Query__c',
+            recordTypeId: '012Ec0000002BozIAE',
+            Opportunity__c: this.recordId,
+            Term__c: x.searchedTerm,
+            Query_Size__c: x.searchSize,
+            Search_Index__c: x.searchIndex,
+            Product: x.prodId,
+            Tag__c: x.tagId,
+            ATS_Score__c: x.tagScore
+        }] 
+    }    
     // congaTest(){
     //    // https://advancedturf--c.vf.force.com/services/Soap/u/37.0/00D41000002Fly1
     //     let url ="https://advancedturf.lightning.force.com/apex/APXTConga4__Conga_Composer?ServerURL=/Soap/u/37.0/00D41000002Fly1&solmgr=1" +

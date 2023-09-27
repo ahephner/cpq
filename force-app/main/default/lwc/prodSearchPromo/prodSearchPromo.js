@@ -1,6 +1,6 @@
 import { LightningElement, api } from 'lwc';
-import searchPromos from '@salesforce/apex/quickPriceSearch.searchPromos';
-import onLoadPromos from '@salesforce/apex/quickPriceSearch.onLoadPromos';
+import searchPromos from '@salesforce/apex/cpqTagsSearch.searchPromos';
+import onLoadPromos from '@salesforce/apex/cpqTagsSearch.onLoadPromos';
 import LightningAlert from 'lightning/alert';
 import { uniqPromo, uniqVals} from 'c/tagHelper';
 export default class ProdSearchPromo extends LightningElement{

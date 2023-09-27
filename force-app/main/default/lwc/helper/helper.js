@@ -28,6 +28,29 @@
             }   
    }
 
+    //sum an array of objects based on key and values; 
+    const sumByKey = (arr, key, value) => {
+      const map = new Map();
+      //iterate the array and set key with value
+      for(const obj of arr) {
+        const currSum = map.get(obj[key]) || 0;
+        map.set(obj[key], currSum + obj[value]);
+      }
+      //create array with values
+      const res = Array.from(map, ([k, v]) => ({[key]: k, [value]: v}));
+      return res;
+    }
+
+    const reNameKey = (obj, oldValue, newValue)=> {
+      let ov = oldValue;
+      let nv = newValue;
+      for(let key of obj){
+        key[nv] = key[ov];
+        delete key[ov]; 
+      }
+      let back = [...obj]
+      return back; 
+    }
    //merge last quote amount
    const mergeLastQuote = (a1, a3) =>{
     // console.log(JSON.stringify(a1))
@@ -316,12 +339,22 @@ const checkRUP = (items)=>{
   return isRup; 
 }
 
-
+//set the opportunity product id to the metrics object for reporting purposes. 
+const setOPMetric = (metrics, salesLines)=>{
+  for(let i=0; i<metrics.length; i++){
+    let lineitem = salesLines.find(x => x.Product2Id === metrics[i].Product);
+        metrics[i].Opportunity_Product__c = lineitem.Id; 
+        
+  }
+  return metrics
+}
 // make it so functions can be used other pages
 export{ validate, 
         mergeInv, 
         lineTotal, 
-        onLoadProducts, 
+        onLoadProducts,
+        sumByKey,
+        reNameKey, 
         mergeLastPaid, 
         newInventory,
         updateNewProducts, 
@@ -339,5 +372,6 @@ export{ validate,
         checkRUP,
         sortArray,
         removeLineItem,
-        loadCheck
+        loadCheck,
+        setOPMetric
       }

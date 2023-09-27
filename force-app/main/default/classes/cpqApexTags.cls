@@ -34,7 +34,8 @@ public class cpqApexTags {
       String query = 'Select Id,'
                 + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c, Product2.Pallet_Qty__c,'
                 + '  Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c, Product2.Temp_Unavailable__c,'
-          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c, Product2.Temp_Mess__c, Product2.SGN__C'
+          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c, Product2.Temp_Mess__c, Product2.SGN__c,'
+          		+ ' Product2.RUP__c'
                 + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND Product2Id =:productId' ; 
      	list<PricebookEntry> results = Database.query(query);
          
@@ -64,7 +65,7 @@ public class cpqApexTags {
             for(pricebookentry pb:results){
                 prodWrapper pw = new prodWrapper();
                 pw.selectedProduct = results[0];
-                pw.inventory = countList[0];
+                pw.inventory = countList.size() > 0 ? countList[0] : null;
                 pw.lastPaid = orderList.size() > 0 ? orderList[0] : null; 
                 pw.lastQuote = quoteList.size() > 0 ? quoteList[0] : null;
                 pw.lastThirty = result[0].get('ttt'); 
@@ -73,5 +74,69 @@ public class cpqApexTags {
         }
         
         return prodList; 
+    }
+    
+    //For Promo Adding products
+    @AuraEnabled(cacheable = true)
+    public static list<PricebookEntry> promoDetails(string pId, string locationId, string accId, string pc, string recId,string priceBookId){
+      string pbId = priceBookId;
+      string labelId = pId; 
+      string pClass = 'Simple';
+      string locId = locationId;
+      string accountId = accId; 
+      string code = pc; 
+      string opportunityId = recId; 
+      list <string> prodIds = new list<string>();    
+        
+      list<Tag__c> tags = [select id,  Product__c from Tag__c where Search_Label__c =:labelId ];
+        
+        for(Tag__c x :tags){
+            prodIds.add(x.Product__c);
+        }
+        
+ 
+      String query = 'Select Id,'
+                + '  Product2.ProductCode, Product2.Name, Product2.Product_Status__c, Product2.Product_Family__c, Product2.Subcategory__c, Product2.Ship_Weight__c, Product2.Pallet_Qty__c,'
+                + '  Product2.Floor_Type__c, Product2.Floor_Price__c, Product2.Last_Purchase_Price__c, Agency_Product__c, product2.Total_Product_Items__c, Product2.Temp_Unavailable__c,'
+          		+ ' Floor_Price__c, Level_1_UserView__c, Level_One_Margin__c, Level_2_UserView__c, Level_2_Margin__c, Product_Cost__c, Product2.Temp_Mess__c, Product2.SGN__c,'
+          		+ ' Product2.RUP__c'
+                + ' From PricebookEntry Where IsActive = True and Pricebook2Id =: pbId AND Product2.ProductClass =:pClass AND Product2Id in :prodIds' ; 
+     	list<PricebookEntry> results = Database.query(query);
+        system.debug('****res-->');
+        system.debug(results);
+        return results; 
+    }
+    //save queries
+    @AuraEnabled
+    public static string createQueries(List<Query__c> queryList){
+        string mess; 
+        list<Query__c> toUpsert = new list<Query__c>();
+
+            for(Query__c x : queryList){
+                system.debug(x);
+            	Query__c ol = new Query__c();
+                ol.recordtypeId = '012Ec0000002BozIAE';
+                ol.Opportunity__c = x.Opportunity__c;
+                ol.Term__c = x.Term__c;
+                ol.Query_Size__c = x.Query_Size__c;
+                ol.Search_Index__c = x.Search_Index__c;
+        		ol.Opportunity_Product__c = x.Opportunity_Product__c;
+                ol.ATS_Score__c = x.ATS_Score__c;
+                ol.Tag__c = x.Tag__c;
+      
+            toUpsert.add(ol);
+        }
+      		
+            
+        
+        try{
+           Database.UpsertResult[] res = Database.upsert(toUpsert);
+            
+            mess = 'success';
+        }catch(exception e){
+            mess = string.valueOf(e);
+            system.debug(e); 
+        }
+        return mess; 
     }
 }

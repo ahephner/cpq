@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import LightningAlert from 'lightning/alert';
-import searchTag from '@salesforce/apex/quickPriceSearch.cpqSearchTag';
-import searchPromos from '@salesforce/apex/quickPriceSearch.searchPromos';
+import searchTag from '@salesforce/apex/cpqTagsSearch.cpqSearchTag';
+import searchPromos from '@salesforce/apex/cpqTagsSearch.searchPromos';
 
 const REGEX_SOSL_RESERVED = /(\?|&|\||!|\{|\}|\[|\]|\(|\)|\^|~|\*|:|"|\+|\\)/g;
 const REGEX_STOCK_RES = /(stock|sock|limited|limted|lmited|limit|close-out|close out|closeout|close  out|exempt|exmpet|exemept|southern stock|southernstock|southner stock)/g; 

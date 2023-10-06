@@ -106,37 +106,5 @@ public class cpqApexTags {
         system.debug(results);
         return results; 
     }
-    //save queries
-    @AuraEnabled
-    public static string createQueries(List<Query__c> queryList){
-        string mess; 
-        list<Query__c> toUpsert = new list<Query__c>();
-
-            for(Query__c x : queryList){
-                system.debug(x);
-            	Query__c ol = new Query__c();
-                ol.recordtypeId = '012Ec0000002BozIAE';
-                ol.Opportunity__c = x.Opportunity__c;
-                ol.Term__c = x.Term__c;
-                ol.Query_Size__c = x.Query_Size__c;
-                ol.Search_Index__c = x.Search_Index__c;
-        		ol.Opportunity_Product__c = x.Opportunity_Product__c;
-                ol.ATS_Score__c = x.ATS_Score__c;
-                ol.Tag__c = x.Tag__c;
-      
-            toUpsert.add(ol);
-        }
-      		
-            
-        
-        try{
-           Database.UpsertResult[] res = Database.upsert(toUpsert);
-            
-            mess = 'success';
-        }catch(exception e){
-            mess = string.valueOf(e);
-            system.debug(e); 
-        }
-        return mess; 
-    }
+    
 }

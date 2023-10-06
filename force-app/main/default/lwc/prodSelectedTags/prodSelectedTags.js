@@ -3,13 +3,14 @@
 import { LightningElement, api, wire, track } from 'lwc';
 import wrapSearch from '@salesforce/apex/cpqApexTags.getDetails';
 import promoAdd from '@salesforce/apex/cpqApexTags.promoDetails';
-import createQueries from '@salesforce/apex/cpqApexTags.createQueries';
+import createQueries from '@salesforce/apex/searchQueries.createQueries';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
+import wareHouses from '@salesforce/apex/quickPriceSearch.getWarehouse';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
@@ -30,7 +31,7 @@ import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c';
 import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
 import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateNewProducts, getTotals, getCost,roundNum, allInventory, 
     checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, setOPMetric, checkRUP, sortArray,removeLineItem, loadCheck} from 'c/helper'
-
+import {addSingleKey} from 'c/tagHelper'
 const FIELDS = [ACC, STAGE, WAREHOUSE];
 export default class ProdSelected extends LightningElement {
     @api recordId; 
@@ -91,6 +92,25 @@ export default class ProdSelected extends LightningElement {
 
     @wire(MessageContext)
     messageContext;
+
+    //get warehouse
+    @wire(wareHouses)
+    wiredWarehouse({ error, data }) {
+        if (data) {
+            let back  = data.map((item, index) =>({
+                ...item, 
+                label:item.Name, 
+                value:item.Id
+            
+            }))
+            back.unshift({label:'All', value:'All'})
+            this.warehouseOptions = [...back]; 
+            
+        } else if (error) {
+            this.error = error;
+            console.error(this.error)
+        }
+    } 
     // Standard lifecycle hooks used to subscribe and unsubsubscribe to the message channel
     connectedCallback() {
         this.loaded = false; 
@@ -198,7 +218,7 @@ priceCheck(){
     }else{
         this.productId = mess.detail.prodId; 
         let one = await this.searchWrap();
-        let two = await this.handleMetrics(mess.detail)  
+        let two = await this.handleTagMetrics(mess.detail)  
     }
 }
 //Check for duplicate products on promo adds
@@ -380,18 +400,23 @@ priceCheck(){
     }
 
 //FOR PROMO SELECTION
-
+            discountPercent; 
     async  handlePromoSelection(mess){
-            let promoId = mess.detail; 
+            let promoId = mess.detail.promoId;
+            this.discountPercent = mess.detail.discount; 
+             
+             
             try {
-                let results = await promoAdd({pId: promoId, locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
                 
-                for(let i=0; i < results.length; i++){
-                    let dupCheck = this.promoDupCheck(results[i].Product2.ProductCode);
+                let results = await promoAdd({pId: promoId, locationId: this.warehouse, accId:undefined , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
+                let merged = await addSingleKey(results.promoProduct,"Product2Id", results.qtyTag, "Product__c", "Quantity__c" )
+                
+                for(let i=0; i < merged.length; i++){
+                    let dupCheck = this.promoDupCheck(merged[i].Product2.ProductCode);
                     if(dupCheck>=0){
                         continue; 
                     }else{
-                        let ind = await this.setFieldValues(results[i]);
+                        let ind = await this.setFieldValues(merged[i]);
                         this.selection = [
                             ...this.selection, {
                                 sObjectType: 'OpportunityLineItem',
@@ -402,7 +427,7 @@ priceCheck(){
                                 name: this.productName,
                                 ProductCode: this.productCode,
                                 Ship_Weight__c: this.unitWeight,
-                                Quantity: 1,
+                                Quantity: merged[i].Qty > 0 ? merged[i].Qty : 1,
                                 UnitPrice: this.agency ? this.fPrice: this.levelTwo,
                                 floorPrice: this.fPrice,
                                 lOne: this.agency? this.fPrice : this.levelOne,
@@ -438,6 +463,7 @@ priceCheck(){
                         this.lineOrderNumber ++; 
                     }
                 }
+                this.handlePromoMetrics(promoId);
             } catch (error) {
                 console.error(error)
             }
@@ -845,42 +871,7 @@ priceCheck(){
             },500);
         }
     }
-    //get warehouse options
-//these are hardcoded to full NEED TO GET DYNAMIC
 
-    get warehouseOptions(){
-        return [
-            {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
-            {label:'115 | ATS Ingalls', value:'1312M00000001nsQAA'},
-            {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
-            {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
-            {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
-            {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
-            {label:'310 | ATS Tomball', value:'1312M000000PB6AQAW'},
-            {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
-            {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
-            {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
-            {label:'440 | ATS Lewis Center', value:'1312M00000001o0QAA'},
-            {label:'450 | ATS Brecksville', value:'1312M00000001o1QAA'},
-            {label:'470 | ATS Boardman', value:'1312M00000001o2QAA'},
-            {label:'510 | ATS Travis City', value:'1312M00000001o3QAA'},
-            {label:'520 | ATS Farmington Hills', value:'1312M00000001o4QAA'},
-            {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},
-            {label:'710 | ATS - St. Peters', value:'1312M00000001o6QAA'},
-            {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
-            {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
-            {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
-            {label:'790 | ATS - Springfield', value:'1312M0000004D7IQAU'},
-            {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
-            {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
-            {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
-            {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
-            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'},
-            {label:'999 | ATS - Fishers', value:'1312M000000PB3FQAW'}
-
-        ];
-    }
 
     //check other inventory
     async checkInventory(locId){
@@ -931,7 +922,7 @@ priceCheck(){
         .then(result=>{
             //need to map over return values and save add in non opp line item info 
             let back = updateNewProducts(newProduct, result);
-            this.metricsArray = setOPMetric(this.metricsArray, back)
+            this.metricsArray = [...setOPMetric(this.metricsArray, back), ...this.metricsPromo]
             
             this.selection =[...alreadyThere, ...back];
             //sort based on line item for pdf
@@ -945,10 +936,11 @@ priceCheck(){
                 }),
             );
             //this is throwing errors on save. Not letting the remove
-            getRecordNotifyChange([{recordId: this.recordId}])
+            getRecordNotifyChange([{recordId: this.recordId}]); 
         }).then(()=>{
-            let saveQ = createQueries({queryList: this.metricsArray})
-            this.metricsArray = []
+            let saveQ = createQueries({queryList: this.metricsArray});
+            this.metricsArray = [];
+            this.metricsPromo = [];
         }).then(()=>{
             let shipCharge = getShipping(shipTotal);
             if(shipCharge >0 && !rupProds){
@@ -1157,12 +1149,14 @@ priceCheck(){
             
             //MERGE the inventory and saved products. 
             let mergedInven = await mergeInv(results,invenCheck);
+            
             if(lastQuote.length>0){
                 //console.log('running mergeLastQuote');
                 mergedInven = await mergeLastQuote(mergedInven, lastQuote);
             }
             //merge last paid saved products
             let mergedLastPaid = await mergeLastPaid(mergedInven,lastPaid);            
+            
             //MERGE the price levels and saved products
             let mergedLevels = await mergeInv(mergedLastPaid, priceLevels);
             
@@ -1311,7 +1305,7 @@ priceCheck(){
     }
     metricsArray = []
     //will be moved to a mixins or helper
-    handleMetrics(x){
+    handleTagMetrics(x){
         this.metricsArray = [
             ...this.metricsArray, {
             sObjectType: 'Query__c',
@@ -1324,7 +1318,18 @@ priceCheck(){
             Tag__c: x.tagId,
             ATS_Score__c: x.tagScore
         }] 
-    }    
+    } 
+    metricsPromo = []
+    handlePromoMetrics(x){
+        this.metricsPromo = [
+            ...this.metricsPromo,{
+                sObjectType: "Query__c",
+                recordTypeId: '012Ec0000002BozIAE',
+                Opportunity__c: this.recordId,
+                Search_Label__c: x
+            }
+        ]
+    }   
     // congaTest(){
     //    // https://advancedturf--c.vf.force.com/services/Soap/u/37.0/00D41000002Fly1
     //     let url ="https://advancedturf.lightning.force.com/apex/APXTConga4__Conga_Composer?ServerURL=/Soap/u/37.0/00D41000002Fly1&solmgr=1" +

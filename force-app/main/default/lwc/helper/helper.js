@@ -1,4 +1,4 @@
-  //used to merge inventory and selected products on load
+//used to merge inventory and selected products on load
   const mergeInv = (a1, a2) =>{
     
     let merge

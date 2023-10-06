@@ -34,15 +34,15 @@ export default class ProdSearchPromo extends LightningElement{
             this.loaded = false
             try {
                 let pros = await onLoadPromos()
-                let once = pros.length> 1 ? await uniqPromo(pros) : pros;
+                //let once = pros.length> 1 ? await uniqPromo(pros) : pros;
 
-                    this.data = await once.map((item, index)=>({
+                    this.data = await pros.map((item, index)=>({
                         ...item,
-                        experDate: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).prettyDate,
-                        experDays: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff,
+                        experDate: this.getFormattedDate(item.Expiration_Date__c, this.today).prettyDate,
+                        experDays: this.getFormattedDate(item.Expiration_Date__c, this.today).diff,
                         btnName: "utility:add",
                         btnVariant: "brand",
-                        dayClass: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': '' 
+                        dayClass: this.getFormattedDate(item.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': '' 
                     }))
                 this.loadedBefore =true; 
                 this.loaded = true; 
@@ -61,19 +61,19 @@ export default class ProdSearchPromo extends LightningElement{
         this.loaded = false
         try {
             let pros = await searchPromos({query:searchString})
-            let once = pros.length> 1 ? await uniqPromo(pros) : pros;
+            //let once = pros.length> 1 ? await uniqPromo(pros) : pros;
 
-                this.data = await once.map((item, index)=>({
+                this.data = await pros.map((item, index)=>({
                     ...item,
-                    experDate: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).prettyDate,
-                    experDays: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff,
+                    experDate: this.getFormattedDate(item.Expiration_Date__c, this.today).prettyDate,
+                    experDays: this.getFormattedDate(item.Expiration_Date__c, this.today).diff,
                     btnName: "utility:add",
                     btnVariant: "brand",
-                    dayClass: this.getFormattedDate(item.Search_Label__r.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': '' 
+                    dayClass: this.getFormattedDate(item.Expiration_Date__c, this.today).diff<= 7 ? 'redClass': '' 
                 }))
             
             this.loaded = true; 
-            console.log(JSON.stringify(this.data))
+            //console.log(JSON.stringify(this.data))
         } catch (error) {
             await LightningAlert.open({
                 message: error,
@@ -84,9 +84,16 @@ export default class ProdSearchPromo extends LightningElement{
     }
 //export get products add to order
     addPromo(e){
-        const rowId = e.target.name; 
+        const rowId = e.target.name;
+        const dp =  Number(e.currentTarget.dataset.label); 
+        const discountPercent = isNaN(dp) ? 1 : dp/100;  
+        
+        const promoDetail = {
+            promoId: rowId,
+            discount: discountPercent
+        }
         this.dispatchEvent(new CustomEvent('promoid', {
-            detail: rowId
+            detail: promoDetail
         }))
         
     }

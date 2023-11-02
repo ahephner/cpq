@@ -13,6 +13,7 @@ import PROD_FAM from '@salesforce/schema/Product2.Product_Family__c';
 const REGEX_SOSL_RESERVED = /(\?|&|\||!|\{|\}|\[|\]|\(|\)|\^|~|\*|:|"|\+|\\)/g;
 const REGEX_STOCK_RES = /(stock|sock|limited|limted|lmited|limit|close-out|close out|closeout|close  out|exempt|exmpet|exemept|southern stock|southernstock|southner stock)/g; 
 const REGEX_COMMA = /(,)/g;
+const REGEX_24D = /2,4-D|2 4-d|2, 4-D/gi
 
 import {spellCheck, cpqSearchString, uniqVals} from 'c/tagHelper';
 export default class ProdSearchTags extends LightningElement {
@@ -143,7 +144,7 @@ export default class ProdSearchTags extends LightningElement {
         async search(){
                 
                 this.stock = this.template.querySelector('[data-value="searchInput"]').value.trim().toLowerCase().match(REGEX_STOCK_RES); 
-                this.searchTerm = this.template.querySelector('[data-value="searchInput"]').value.toLowerCase().replace(REGEX_COMMA,' and ').replace(REGEX_SOSL_RESERVED,'?').replace(REGEX_STOCK_RES,'').trim();
+                this.searchTerm = this.template.querySelector('[data-value="searchInput"]').value.toLowerCase().replace(REGEX_24D, '2 4-D').replace(REGEX_COMMA,' and ').replace(REGEX_SOSL_RESERVED,'?').replace(REGEX_STOCK_RES,'').trim();
                 if(this.searchTerm.length<3){
                     //add lwc alert here
                     return;

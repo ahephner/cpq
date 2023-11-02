@@ -217,7 +217,9 @@ priceCheck(){
         return
     }else{
         this.productId = mess.detail.prodId; 
+        //add product to the order
         let one = await this.searchWrap();
+        //add tag to create query entry for metrics
         let two = await this.handleTagMetrics(mess.detail)  
     }
 }
@@ -279,7 +281,8 @@ priceCheck(){
             let totalPrice;
             let totalQty; 
             let result; 
-            this.loaded = false;
+            try {
+                this.loaded = false;
             if(this.accountId){
                 result = await wrapSearch({pId:this.productId , locationId: this.warehouse, accId:this.accountId , pc:this.productCode , recId: this.recordId, priceBookId: this.pbId});
             }else{
@@ -397,6 +400,11 @@ priceCheck(){
             this.loaded = true; 
             const end = performance.now();
             console.log(`Execution time: ${end - start} ms`);
+            } catch (error) {
+                alert(error);
+                this.loaded = true;  
+            }
+            
     }
 
 //FOR PROMO SELECTION
@@ -463,9 +471,24 @@ priceCheck(){
                         this.lineOrderNumber ++; 
                     }
                 }
+                 //console.log(JSON.stringify(this.selection));
+            let totals =  getTotals(this.selection);
+            this.tPrice = roundNum(totals.TotalPrice, 2);
+            this.tQty = totals.Quantity;
+            this.tCost = getCost(this.selection) 
+            if(!this.agency){
+                let margin = setMargin(this.tCost, this.tPrice)
+                this.tMargin = roundNum(margin, 2);
+            }
+            this.lineOrderNumber ++;
+            this.unsavedProducts = true; 
+            this.startEventListener()
+            this.loaded = true; 
+            console.log(`The discount to apply ${this.discountPercent}%`)
                 this.handlePromoMetrics(promoId);
             } catch (error) {
                 console.error(error)
+                alert(error); 
             }
             
         }
@@ -1309,7 +1332,7 @@ priceCheck(){
         this.metricsArray = [
             ...this.metricsArray, {
             sObjectType: 'Query__c',
-            recordTypeId: '012Ec0000002BozIAE',
+            //recordTypeId: '012Ec0000002BozIAE',
             Opportunity__c: this.recordId,
             Term__c: x.searchedTerm,
             Query_Size__c: x.searchSize,
@@ -1324,7 +1347,7 @@ priceCheck(){
         this.metricsPromo = [
             ...this.metricsPromo,{
                 sObjectType: "Query__c",
-                recordTypeId: '012Ec0000002BozIAE',
+                //recordTypeId: '012Ec0000002BozIAE',
                 Opportunity__c: this.recordId,
                 Search_Label__c: x
             }

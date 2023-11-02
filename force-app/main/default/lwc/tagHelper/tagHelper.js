@@ -50,6 +50,63 @@ const uniqPromo = (arr, track = new Map())=>{
   return arr.filter(({Search_Label__c})=>track.has(Search_Label__c)? false : track.set(Search_Label__c))
 }
 
+const promoProductNames = (info)=>{
+  const names = info.reduce((acc, {Search_Label__c, Product_Name__c}) => {
+    acc[Search_Label__c] ??= {Search_Label__c: Search_Label__c, pn: []};
+      
+      acc[Search_Label__c].pn.push({id: Search_Label__c, name: Product_Name__c});
+    
+  //console.log(typeof acc)
+    return acc;
+  }, {});
+
+return names; 
+}
+
+const setNames = (arr) =>{
+  let backArr
+  if(arr.length > 3){
+    backArr = arr.slice(0,3);
+    let realSize = arr.length + 1;
+    let left = arr.length -2
+    let lastLine = {id:realSize, name:`Plus ${left} more products`}
+    backArr.push(lastLine)
+    return backArr
+  }
+  return arr; 
+}
+const promoLoad = (arr, singles)=>{
+  const prods = singles; 
+  console.log(1, arr)
+  let combo = arr.map(x=>({
+    ...x,
+    prodNames: setNames(prods[x.Search_Label__c].pn),
+    btnName: "utility:add",
+    btnVariant: "brand",
+    experDate: getFormattedDate(x.Search_Label__r.Expiration_Date__c).prettyDate,
+    experDays: getFormattedDate(x.Search_Label__r.Expiration_Date__c).diff,
+    dayClass:  getFormattedDate(x.Search_Label__r.Expiration_Date__c).diff<= 7 ? 'redClass': '',
+  }))
+
+  return combo; 
+}
+
+
+const getFormattedDate = (stringDateIn) =>{
+  let dateNow = new Date();
+  let today = dateNow.getFullYear()+'-'+(dateNow.getMonth()+1)+'-'+dateNow.getDate();
+  let date = new Date(stringDateIn)
+  let date2 = new Date(today)
+  let year = date.getFullYear();
+  let month = (1 + date.getMonth()).toString().padStart(2, '0');
+  let day = date.getDate().toString().padStart(2, '0');
+  let prettyDate = month + '/' + day + '/' + year;
+  let diff = Math.ceil(((date.getTime() - date2.getTime())/ (1000 * 3600 * 24))) //-1;
+  return {
+          prettyDate,
+          diff
+  }
+      }
 //If you need to add a single key value from one object to another object. 
 //Pass in arry1 = main array of data what is being returned and accepting the value
 //arry2 = array of obj that contain field you want share
@@ -77,6 +134,9 @@ export{
        uniqVals, 
        cpqSearchStringMobile,
        uniqPromo,
+       promoProductNames,
+       promoLoad,
+       getFormattedDate,
        addSingleKey
       }
 

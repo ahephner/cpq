@@ -1,6 +1,6 @@
 import { LightningElement, api, track, wire } from 'lwc';
 import searchTag from '@salesforce/apex/cpqTagsSearch.cpqSearchTag';
-import searchPromos from '@salesforce/apex/cpqTagsSearch.searchPromos';
+//import searchPromos from '@salesforce/apex/cpqTagsSearch.searchPromos';
 //import selectedProducts from '@salesforce/apex/quickPriceSearch.selectedProducts';
 import { MessageContext, publish} from 'lightning/messageService';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';

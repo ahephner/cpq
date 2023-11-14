@@ -10,7 +10,7 @@ import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
-import wareHouses from '@salesforce/apex/quickPriceSearch.getWarehouse';
+import wareHouses from '@salesforce/apex/lwcHelper.getWarehouse';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';

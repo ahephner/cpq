@@ -1,8 +1,8 @@
 @isTest
-public class test_cpaApexTags {
- @isTest
-    static void Test_getDetails(){
-//odds and ends
+public class test_cpqApexTags {
+
+        static{
+ //odds and ends
 		Date myDate = Date.newInstance(2040, 1, 4);
 //account
 		Account cust = new Account();
@@ -81,8 +81,6 @@ public class test_cpaApexTags {
         insert ats1;
         insert ats2; 
 //sales doc and details
- account ques = [select id, Type,Name   from account where id =: cust.id limit 1];
-        system.debug('###'+ques);
 		Sales_Document__c header = new Sales_Document__c();
         	header.Sales_Doc_Num__c = 'SO132';
         	header.Customer__c = cust.Id; 
@@ -102,12 +100,90 @@ public class test_cpaApexTags {
         	detail2.Name = 'detail 1'; 
         	detail2.Quantity__c  = 1;
         	detail2.Product__c = ats2.Id;
-//Test
-		test.startTest();
-        	//prodWrapper take1 = cpqApexTags.prodWrapper();  
-        	list<cpqApexTags.prodWrapper> detail = cpqApexTags.getDetails(r1.Id, warehouse.Id, cust.Id, r1.ProductCode,opp.Id, pricebookId);
+        insert detail1;
+        insert detail2;
+            
+//Label
+		Search_Label__c sl2 = new Search_Label__c(); 
+        sl2.Name = 'EOP';
+        sl2.Label_Category__c = 'Promotional';
+        sl2.Expiration_Date__c = myDate.addDays(20); 
+        insert sl2; 
+//Tags
+		Tag__c t1 = new Tag__c();
+        Tag__c t2 = new Tag__c(); 
+            
+        t1.Product__c = r1.Id;
+        t1.Search_Label__c = sl2.Id;
+        t1.Search_Slug_2__c = r1.ProductCode + ' '+ r1.Name + ' '+ sl2.Name;
+        t1.Tag_Status__c = 'Active';
+        
+        t2.Product__c = r2.Id;
+        t2.Search_Label__c = sl2.Id;
+        t2.Search_Slug_2__c = r2.ProductCode + ' '+ r2.Name + ' '+ sl2.Name;
+        t2.Tag_Status__c = 'Active';
+        
+       insert t1;
+       insert t2; 
+    }
+        @isTest
+        static void testGetDetails(){
+ 			Product2 prod = [select id, ProductCode from product2 where name = 'Product 1' ];
+            string prodId = prod.Id;
+            string prodCode = prod.ProductCode;
+            string warehouse = [select id from location where Name = 'ATS Warehouse' and Location_Number__c = '2'].Id;
+            string cust = [select id from account where Customer_Name__c = 'Test Customer 123456' ].Id; 
+            string opp = [select id from opportunity where name = 'test name'].Id;
+            Id pricebookId = Test.getStandardPricebookId();
+   //Test
+		test.startTest(); 
+        	list<cpqApexTags.prodWrapper> detail = cpqApexTags.getDetails(prodId, warehouse, cust, prodCode, opp,  pricebookId);
         test.stopTest(); 
 //Verify
-	system.assertNotEquals(detail, null); 
+	system.assertNotEquals(detail, null);   
+        }
+    
+    @isTest
+    static void testPromoDetails(){
+        Id pricebookId = Test.getStandardPricebookId();
+        string opp = [select id from opportunity where name = 'test name'].Id;
+        Product2 prod = [select id, ProductCode from product2 where name = 'Product 1' ];
+        string prodId = prod.Id;
+        string prodCode = prod.ProductCode;
+        string cust = [select id from account where Customer_Name__c = 'Test Customer 123456' ].Id;
+        string warehouse = [select id from location where Name = 'ATS Warehouse' and Location_Number__c = '2'].Id;
+        string searchLabel = [select id from Search_Label__c where Name = 'EOP'].Id; 
+        test.StartTest();
+        	cpqApexTags.promoWrapper wrap = cpqApexTags.promoDetails(searchLabel, warehouse, cust, prodCode, opp, pricebookId); 
+        test.StopTest();
     }
+    
+    //Process of saving search queries for backend metrics in opportunity process.
+    @isTest
+    static void testSearchQueries(){
+        //sit up tag info 
+        string prodCode = [select id from product2 where name = 'Product 1'].Id; 
+        Tag__c singleTag = [select id, ATS_Score__c, Product__c from Tag__c where Product__r.Id =: prodCode];
+        string oppId = [select id from opportunity where name = 'test name'].Id;
+        string oppProd = [select id from opportunitylineitem where product2Id = :prodCode].Id;
+        
+        //build query list
+        List<Query__c> tagList = new List<Query__c>();
+        Query__c oneTag = new Query__c();
+        oneTag.ATS_Score__c = singleTag.ATS_Score__c;
+        oneTag.Opportunity_Product__c = oppProd; 
+        oneTag.Opportunity__c = oppId;
+        oneTag.Query_Size__c = 23;
+        oneTag.Search_Index__c = 2;
+        oneTag.Tag__c = singleTag.Id; 
+        oneTag.Term__c = 'stuff';
+       	
+        tagList.add(oneTag);
+        test.startTest();
+        	string back = searchQueries.createQueries(tagList); 
+        test.stopTest(); 
+        
+    }
+
+    
 }

@@ -11,6 +11,7 @@ import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import wareHouses from '@salesforce/apex/lwcHelper.getWarehouse';
+import queryType from '@salesforce/apex/lwcHelper.getRecordTypeId';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { APPLICATION_SCOPE,MessageContext, publish, subscribe,  unsubscribe} from 'lightning/messageService';
@@ -83,6 +84,7 @@ export default class ProdSelected extends LightningElement {
     pryingEyes = false
     numbOfManLine = 0
     eventListening = false; 
+    queryRecordType; 
     @track selection = [];
     
     //for ordering products on the order. This will be set to the last Line_Order__c # on load or set at 0 on new order;
@@ -111,6 +113,13 @@ export default class ProdSelected extends LightningElement {
             console.error(this.error)
         }
     } 
+
+    @wire(queryType, ({objectName: 'Query__c', recTypeName: 'Opportunity'}))
+    wiredRec({error, data}){
+        if(data){
+            this.queryRecordType = data;
+        }
+    }
     // Standard lifecycle hooks used to subscribe and unsubsubscribe to the message channel
     connectedCallback() {
         this.loaded = false; 
@@ -484,7 +493,7 @@ priceCheck(){
             this.unsavedProducts = true; 
             this.startEventListener()
             this.loaded = true; 
-            console.log(`The discount to apply ${this.discountPercent}%`)
+            //console.log(`The discount to apply ${this.discountPercent}%`)
                 this.handlePromoMetrics(promoId);
             } catch (error) {
                 console.error(error)
@@ -1328,11 +1337,13 @@ priceCheck(){
     }
     metricsArray = []
     //will be moved to a mixins or helper
+    //ok with hardcoding Device_Type__c as this will only ever be used for desktop. 
     handleTagMetrics(x){
         this.metricsArray = [
             ...this.metricsArray, {
             sObjectType: 'Query__c',
-            //recordTypeId: '012Ec0000002BozIAE',
+            recordTypeId: this.queryRecordType,
+            Device_Type__c: 'Desktop',
             Opportunity__c: this.recordId,
             Term__c: x.searchedTerm,
             Query_Size__c: x.searchSize,

@@ -1339,10 +1339,12 @@ priceCheck(){
     //will be moved to a mixins or helper
     //ok with hardcoding Device_Type__c as this will only ever be used for desktop. 
     handleTagMetrics(x){
+        //console.log(this.queryRecordType, 'aj');
+        
         this.metricsArray = [
             ...this.metricsArray, {
             sObjectType: 'Query__c',
-            recordTypeId: this.queryRecordType,
+            RecordTypeId: this.queryRecordType,
             Device_Type__c: 'Desktop',
             Opportunity__c: this.recordId,
             Term__c: x.searchedTerm,

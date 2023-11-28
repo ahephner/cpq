@@ -342,6 +342,7 @@ const checkRUP = (items)=>{
 //set the opportunity product id to the metrics object for reporting purposes. 
 const setOPMetric = (metrics, salesLines)=>{
   for(let i=0; i<metrics.length; i++){
+    //console.log(metrics[i])
     let lineitem = salesLines.find(x => x.Product2Id === metrics[i].Product);
         metrics[i].Opportunity_Product__c = lineitem.Id; 
         

@@ -116,13 +116,13 @@ export default class ProdSearchPromo extends LightningElement{
     addPromo(e){
         const rowId = e.target.name;
         let index = this.data.find((tar)=> tar.Id === rowId); 
-
+       
 
         const dp =  Number(e.currentTarget.dataset.label); 
-        const discountPercent = isNaN(dp) ? 1 : dp/100;  
+        const discountPercent = isNaN(dp) || dp===null ? 1 : dp/100;  
         
         const promoDetail = {
-            promoId: rowId,
+            promoId: index.Search_Label__c,
             discount: discountPercent
         }
         this.dispatchEvent(new CustomEvent('promoid', {

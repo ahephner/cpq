@@ -10,6 +10,7 @@ export default class ProductMaintFlowMath extends LightningElement {
     name; 
     @track updatedRecords= [];
     beforePricing = [];
+    prodEOPUpdate = [];
     badRecords = [];
     agencyCount = 0;
     badRecordCount = 0;
@@ -59,7 +60,7 @@ export default class ProductMaintFlowMath extends LightningElement {
             return {...el, bLevOne, bLevTwo, difOne, difTwo, warnOne, warnTwo}
         })
         //console.log(JSON.stringify(this.toUpdate));
-        
+     
         for(let i=0; i<this.toUpdate.length; i++){
             if(this.toUpdate[i].Agency_Product__c){
                 //console.log('agency '+this.toUpdate[i].Name);
@@ -68,6 +69,7 @@ export default class ProductMaintFlowMath extends LightningElement {
                 this.updatedRecordCount ++; 
                 let before ={...this.toUpdate[i]}
                 this.beforePricing.push(before);
+                this.prodEOPUpdate.push(this.toUpdate[i].Product2Id);
                 this.toUpdate[i].Level_1_Price__c = this.roundNum(this.toUpdate[i].Product_Cost__c /(1- this.levelOne/100),2);
                 this.toUpdate[i].Level_2_Price__c = this.roundNum(this.toUpdate[i].Product_Cost__c /(1- this.levTwoMarg/100),2);
                 this.toUpdate[i].difOne = this.roundNum(this.toUpdate[i].Level_1_Price__c - this.toUpdate[i].bLevOne, 2);
@@ -84,6 +86,7 @@ export default class ProductMaintFlowMath extends LightningElement {
                 this.badRec = true; 
             }
         }
+        
         console.log('before');
         console.log(JSON.stringify(this.beforePricing));
         
@@ -98,31 +101,72 @@ export default class ProductMaintFlowMath extends LightningElement {
         this.defLevel2 = this.roundNum(this.afterPriceLevel2 - this.beforeLevel2,2);
 
     }
-
-    save(){
-        this.loaded = false; 
-        const inputs = this.updatedRecords.slice().map(draft=>{
-            let Id = draft.Id
-            let Level_1_Price__c = draft.Level_1_Price__c
-            let Level_2_Price__c = draft.Level_2_Price__c
-            let isChanged__c = true; 
-            const fields = {Id, Level_1_Price__c, Level_2_Price__c, isChanged__c}
+    updateProductEOP(){
+        this.loaded = false;
+        const inputs = this.prodEOPUpdate.slice().map(draft=>{
+            let Id = draft;
+            let Early_Order__c = true
+            const fields = {Id, Early_Order__c}
             return {fields}
         })
-        console.log(inputs);
-        const promises = inputs.map(rec =>updateRecord(rec));
-        Promise.all(promises).then(x=>{
-            let mess = 'success';
-            const attributeChange = new FlowAttributeChangeEvent('label', mess);
-             this.dispatchEvent(attributeChange);
-             this.next(); 
-        }).catch(err=>{
-            this.error = err;
-            const attributeChange = new FlowAttributeChangeEvent('label', this.error);
-            this.dispatchEvent(attributeChange)
-        }).finally(()=>{
-            this.loaded = true; 
-        })
+            const promises = inputs.map(rec =>updateRecord(rec));
+            Promise.all(promises).then(x=>{
+                let mess = 'success';
+                return mess
+            }).catch(err=>{
+                this.error = err;
+                const attributeChange = new FlowAttributeChangeEvent('label', this.error);
+                this.dispatchEvent(attributeChange)
+            }).finally(()=>{
+                 
+            })
+        
+    }
+    async save(){
+        this.loaded = false; 
+
+            const inputs = this.updatedRecords.slice().map(draft=>{
+                let Id = draft.Id
+                let Level_1_Price__c = draft.Level_1_Price__c
+                let Level_2_Price__c = draft.Level_2_Price__c
+                let isChanged__c = true; 
+                const fields = {Id, Level_1_Price__c, Level_2_Price__c, isChanged__c}
+                return {fields}
+            })
+           
+            const promises = inputs.map(rec =>updateRecord(rec));
+            Promise.all(promises).then(x=>{
+                let mess = 'success';
+                const attributeChange = new FlowAttributeChangeEvent('label', mess);
+                 this.dispatchEvent(attributeChange);
+                 this.next(); 
+            }).catch(err=>{
+                this.error = err;
+                const attributeChange = new FlowAttributeChangeEvent('label', this.error);
+                this.dispatchEvent(attributeChange)
+            }).finally(()=>{
+                const inputs = this.prodEOPUpdate.slice().map(draft=>{
+                    let Id = draft;
+                    let Early_Order__c = true
+                    const fields = {Id, Early_Order__c}
+                    return {fields}
+                })
+                    const promises = inputs.map(rec =>updateRecord(rec));
+                    Promise.all(promises).then(x=>{
+                        let mess = 'success';
+                        return mess
+                    }).catch(err=>{
+                        this.error = err;
+                        const attributeChange = new FlowAttributeChangeEvent('label', this.error);
+                        this.dispatchEvent(attributeChange)
+                    }).finally(()=>{
+                        let mess = 'success';
+                        const attributeChange = new FlowAttributeChangeEvent('label', mess);
+                         this.dispatchEvent(attributeChange);
+                         this.next(); 
+                    }) 
+            })
+
         
     }
     next(){

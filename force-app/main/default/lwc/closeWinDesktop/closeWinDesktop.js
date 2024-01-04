@@ -32,10 +32,12 @@ import NUM_PAYMENTS from '@salesforce/schema/Opportunity.Number_of_Payments__c';
 import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 import DISCOUNT from '@salesforce/schema/Opportunity.Discount_Percentage__c'
-import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
 import BH_SIGNED from '@salesforce/schema/Opportunity.Bill_Hold_Signed__c';
+//apex
+import getAddress from '@salesforce/apex/cpqApex.getAddress';
+import getPickListValues from '@salesforce/apex/lwcHelper.getPickListValues';
  
 import {validate} from 'c/helper'
 const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, BH_SIGNED, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD];
@@ -140,10 +142,11 @@ export default class CloseWinDesktop extends LightningElement {
                     this.invoiceDate = getFieldValue(data, INVOICE_DATE); 
                     //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
                     this.findAddress(this.accountId);
+                    this.findShipTypes(); 
                     this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                     this.loaded = true; 
                     this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
-                   
+                    this.shipType = this.shipType === 'FG'  ? 'UG': this.shipType;
                 }else{
                     this.passVal = loadMore.isValid; 
                     this.valErrs = loadMore.errors;
@@ -198,21 +201,29 @@ get numOptions(){
     ]
 }
 //Stage Options
-get shipOptions() {
-    return [
-        { label: 'FG - FedEx Ground', value: 'FG' },
-        { label: 'Rep - Sales Rep Deliver', value: 'REP' },
-        { label: 'TR - Truck', value: 'TR' },
-        { label: 'WI - Walk-In/Will Call', value: 'WI' },
-        { label: 'DS-Direct Ship', value: 'DS' },
-        { label: 'PC', value: 'PC' },
-        { label: 'PSL', value: 'PSL' },
-        { label: 'PU', value: 'PU' },
-        { label: 'LT', value: 'LT' },
-        { label: 'UG', value: 'UG' },
-        { label: 'T4', value: 'T4' }
-    ];
-}
+// get shipOptions() {
+//     return [
+//         // { label: 'FG - FedEx Ground', value: 'FG' },
+//         { label: 'Rep - Sales Rep Deliver', value: 'REP' },
+//         { label: 'TR - Truck', value: 'TR' },
+//         { label: 'WI - Walk-In/Will Call', value: 'WI' },
+//         { label: 'DS-Direct Ship', value: 'DS' },
+//         { label: 'PC', value: 'PC' },
+//         { label: 'PSL', value: 'PSL' },
+//         { label: 'PU', value: 'PU' },
+//         { label: 'LT', value: 'LT' },
+//         { label: 'UG', value: 'UG' },
+//         { label: 'T4', value: 'T4' }
+//     ];
+// }
+shipOptions
+    findShipTypes(){
+         getPickListValues({objName: 'Opportunity', fieldAPI:'Ship_Type__c'})
+            .then((x)=>{
+                this.shipOptions = x; 
+                
+            })
+    }
     //get address stuff
     //get the avaliable ship to options
     findAddress(rec){

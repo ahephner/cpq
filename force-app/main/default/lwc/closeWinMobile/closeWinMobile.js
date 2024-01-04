@@ -29,9 +29,12 @@ import FIRST_DATE from '@salesforce/schema/Opportunity.First_Due_Date__c';
 import BILL_HOLD from '@salesforce/schema/Opportunity.BH_Yes_No__c';
 import EARLY_PAY from '@salesforce/schema/Opportunity.Early_Pay__c';
 import INVOICE_DATE from '@salesforce/schema/Opportunity.Invoice_Date__c';
-import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import BH_SIGNED from '@salesforce/schema/Opportunity.Bill_Hold_Signed__c';
+//HELP
 import {validate} from 'c/helper'
+//APEX
+import getAddress from '@salesforce/apex/cpqApex.getAddress';
+import getPickListValues from '@salesforce/apex/lwcHelper.getPickListValues';
 const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY, FIRST_DATE, BILL_HOLD, BH_SIGNED, NUM_PAYMENTS, EOP_PAYTYPE, INVOICE_DATE, PEST_DATE, RUP_PROD];
 const rules =[
     {test: (o) => o.accId.length === 18,
@@ -132,9 +135,11 @@ export default class CloseWinMobile extends LightningElement {
                             this.earlyPay = getFieldValue(data, EARLY_PAY);
                             this.invoiceDate = getFieldValue(data, INVOICE_DATE);
                             this.findAddress(this.accountId);
+                            this.findShipTypes();
                             this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
                             this.loaded = true; 
-                            this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true; 
+                            this.shipReq = this.shipType === 'REP' || this.shipType === 'WI' ? false : true;
+                            this.shipType = this.shipType === 'FG'  ? 'UG': this.shipType; 
                         }else{
                             this.passVal = loadMore.isValid; 
                             this.valErrs = loadMore.errors;
@@ -188,21 +193,14 @@ get numOptions(){
 }
 
 //get ship types
-get shipOptions() {
-    return [
-        { label: 'FG - FedEx Ground', value: 'FG' },
-        { label: 'Rep - Sales Rep Deliver', value: 'REP' },
-        { label: 'TR - Truck', value: 'TR' },
-        { label: 'WI - Walk-In/Will Call', value: 'WI' },
-        { label: 'DS-Direct Ship', value: 'DS' },
-        { label: 'PC', value: 'PC' },
-        { label: 'PSL', value: 'PSL' },
-        { label: 'PU', value: 'PU' },
-        { label: 'LT', value: 'LT' },
-        { label: 'UG', value: 'UG' },
-        { label: 'T4', value: 'T4' }
-    ];
-}
+ shipOptions
+    findShipTypes(){
+        getPickListValues({objName: 'Opportunity', fieldAPI:'Ship_Type__c'})
+        .then((x)=>{
+            this.shipOptions = x; 
+            
+        })
+    }
     //get address stuff
     //get the avaliable ship to options
     findAddress(rec){
@@ -247,11 +245,11 @@ selectChange(event){
 }
 updateAddress(event){
     let value = event.detail.value;
-    console.log('evt detail '+value);
+    //console.log('evt detail '+value);
     let label = event.detail.label;
     let x = {value, label}
     this.options.push(x);
-    console.log(2, this.options);
+    //console.log(2, this.options);
     
     this.info = true;
     const evt = new ShowToastEvent({

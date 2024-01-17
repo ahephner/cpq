@@ -26,7 +26,6 @@ public class test_cpqOppClone {
         product2 widget = new product2(name ='widget', IsActive= True, Agency_Pricing__c=true); 
         insert widget; 
         
-        
         PricebookEntry widgetpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=widget.id,
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert widgetpbe; 
@@ -44,16 +43,9 @@ public class test_cpqOppClone {
         PricebookEntry shovelpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=shovel.id,
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert shovelpbe; 
-//shipping charge
-        product2 ship = new product2(name='ATS SHIPPING', IsActive=True);
-        insert ship; 
-        
-        PricebookEntry shipPBE = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=ship.id,
-                                                 unitprice=4, IsActive = True, UseStandardPrice=False); 
-        insert shipPBE; 
         //create test opportunity
         opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,
-                                         stagename='Estimate(10%)', job_type__c = 'Construction', closedate = myDate);
+                                         stagename='Estimate(10%)', job_type__c = 'Construction', closedate = myDate, Order_Type__c='EOP');
        
         //insert w/o synced quote
         insert opp; 
@@ -72,18 +64,14 @@ public class test_cpqOppClone {
         
         opportunitylineitem shovelli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=shovelpbe.id,
                                                           unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0.00); 
-        insert shovelli;
-                
-        opportunitylineitem shipli = new opportunitylineitem(opportunityid = opp.id, product2id = widget.Id, PricebookEntryId=shipPBE.id,
-                                                          unitprice= 4, quantity= 3, CPQ_Unit_Price__c = 4, CPQ_Margin__c=0.00); 
-        insert shipli;
+        insert shovelli;  
         //construct standard controller
         ApexPages.StandardController con = new ApexPages.StandardController(opp);
         
         //create the controller
         cpqOppClone clone = new cpqOppClone(con);
         
-        Test.startTest();
+		Test.startTest();
             //call the clonemethod
             PageReference method = clone.cloneOpp();
             widget.IsActive = false; 
@@ -94,6 +82,6 @@ public class test_cpqOppClone {
 			system.debug('eopClone ===> '+eopClone); 
             system.assertNotEquals(clonedOp, null); 
 
-         test.stopTest();        
+         test.stopTest();       
     }
 }

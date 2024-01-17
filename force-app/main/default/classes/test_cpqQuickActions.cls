@@ -35,6 +35,7 @@ public class test_cpqQuickActions {
         Sales_Rep__c rep = new Sales_Rep__c(
         					   Name='Test Rep',
         					   Sales_Rep_Num__c = '954',
+            				   Fiscal_Year__c = 'Sales',
         					   Salesforce_User__c = u1.Id);
         insert rep;
         //insert account
@@ -50,23 +51,32 @@ public class test_cpqQuickActions {
         
         test.startTest();
         	System.runAs(u1){
+                list<sales_rep__c> testMeth = [select id from sales_rep__c where Salesforce_User__c =: u1.id];
+                system.debug('testMeth' + testMeth);
+                system.debug(u1);
             	PageReference method = ext.newOpp();
-
+					method.getParameters().put('AccountId', '');
+            		method.getParameters().put('IsEOP', '0');
+            		test.setCurrentPage(method); 
         	}
         	System.runAs(u2){
             	PageReference method2 = ext.newOpp(); 
-
+            	method2.getParameters().put('AccountId', cust.Id);
+            	method2.getParameters().put('IsEOP', '1');
+            	test.setCurrentPage(method2);
         	}
         
         System.runAs(u1){
             PageReference pageRef = Page.cpqListNewOpp;
             pageRef.getParameters().put('AccountId', '');
+            pageRef.getParameters().put('IsEOP', '0');
             test.setCurrentPage(pageRef); 
         }
         
         System.runAs(u2){
             PageReference pageRef = Page.cpqListNewOpp;
             pageRef.getParameters().put('AccountId', cust.Id);
+            pageRef.getParameters().put('IsEOP', '1');
             test.setCurrentPage(pageRef);  
 
         }

@@ -20,14 +20,15 @@ public class cpqOppClone {
        
         //Rollback point
         Savepoint sp = Database.setSavepoint();
-        //new Opportunity Var
+        //new Opportunity Variable
         Opportunity newOp;
         List<OpportunityLineItem> opli = new List<OpportunityLineItem>(); 
        Date cd = System.today() + 14; 
        String nameDate = String.valueOf(System.today());  
         try{
          opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, account.name,
-                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c FROM Opportunity where id = :opp.Id]; 
+                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c, Internal_Order_Comments__c
+                FROM Opportunity where id = :opp.Id]; 
   
             newOp = opp.clone(false);
             
@@ -68,7 +69,7 @@ public class cpqOppClone {
     }
 //EOP CLONE!!
 	@AuraEnabled(cacheable=false)
-    public static string cloneOppEOP(string recId, string EOP){
+    public static string cloneOppEOP(string recId, string orderType){
         ID newOppID; 
     	string nonActiveItem = '';
         //Rollback point
@@ -81,14 +82,20 @@ public class cpqOppClone {
        String nameDate = String.valueOf(System.today());  
         try{
          opp = [SELECT Id, Name, AccountId, CloseDate, Warehouse__c, StageName,  Sales_Rep__r.OwnerId, Pay_Type__c, Ship_Type__c, account.name,
-                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c FROM Opportunity where id = :recId]; 
+                Shipping_Address__c, RecordType.Id, Contact__c, pricebook2.id,Type, Order_Comments__c, Internal_Order_Comments__c
+                FROM Opportunity where id = :recId]; 
   
             newOp = opp.clone(false);
             
             newOp.Name = newOp.Account.Name+ ' '+ nameDate;
             newOp.StageName = 'Working';
             newOp.CloseDate = cd;
-            newOp.EOP_Order__c = EOP; 
+            newOp.Order_Type__c = orderType; 
+            if(newOp.Order_Type__c == 'EOP'){
+                newOp.EOP_Order__c = 'Yes';
+            }else{
+                newOp.EOP_Order__c = 'No'; 
+            }
             //newOp.Warehouse__c = opp.Warehouse__c;
          //   newOp.CloseDate = cd;  
             insert newOp; 
@@ -177,7 +184,11 @@ public class cpqOppClone {
                 }else if(ol.CPQ_Margin__c == 0.00){
                 	    salesPrice = pbeMap.get(ol.Product2Id).Level_2_UserView__c; 
                 }else{
-                     salesCal = ( pbeMap.get(ol.Product2Id).Product_Cost__c / (1 - ol.CPQ_Margin__c/100));
+                     salesCal = ( pbeMap.get(ol.Product2Id).Product_Cost__c / (1 - (ol.CPQ_Margin__c/100)));
+                    system.debug('name '+ol.Product_Name__c);
+                    system.debug('cost '+ pbeMap.get(ol.Product2Id).Product_Cost__c);
+                    system.debug('margin '+ol.CPQ_Margin__c);
+                    system.debug('calc '+(1 - ol.CPQ_Margin__c/100) );
                 	 salesPrice = salesCal.setScale(2, RoundingMode.HALF_UP);
                 }
                 

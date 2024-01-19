@@ -1,6 +1,7 @@
 import { LightningElement,wire,api } from 'lwc';
 import { getRecord, getFieldValue, updateRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { CloseActionScreenEvent } from 'lightning/actions';
 import NAME from '@salesforce/schema/Opportunity.Name';
 import QUOTENUM from '@salesforce/schema/Opportunity.Quote_Number__c';
 import CLOSEDATE from '@salesforce/schema/Opportunity.CloseDate';
@@ -10,10 +11,12 @@ import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Request
 import DELIVERDATE2 from '@salesforce/schema/Opportunity.To__c';
 import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
+import WH_NUMB from '@salesforce/schema/Opportunity.Warehouse_Numb__c';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import PEST_DATE from '@salesforce/schema/Opportunity.Pest_Expiration_Date__c';
 import RUP_PROD from '@salesforce/schema/Opportunity.RUP_Selected__c'; 
+import ACC_NAME from '@salesforce/schema/Opportunity.Account_Name_Text__c'
 //import SALESPAD_READY from '@salesforce/schema/Opportunity.Ready_for_Salespad__c';
 import SHIPTYPE from '@salesforce/schema/Opportunity.Ship_Type__c';
 import HASITEMS from '@salesforce/schema/Opportunity.HasOpportunityLineItem';
@@ -35,7 +38,8 @@ import {validate} from 'c/helper'
 //APEX
 import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import getPickListValues from '@salesforce/apex/lwcHelper.getPickListValues';
-const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, EARLY_PAY, FIRST_DATE, BILL_HOLD, BH_SIGNED, NUM_PAYMENTS, EOP_PAYTYPE, INVOICE_DATE, PEST_DATE, RUP_PROD];
+const FIELDS = [EOP_ORDER, NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO,  SHIPTYPE, HASITEMS, 
+    EARLY_PAY, FIRST_DATE, BILL_HOLD, BH_SIGNED, NUM_PAYMENTS, EOP_PAYTYPE, INVOICE_DATE, PEST_DATE, RUP_PROD, ACC_NAME, WH_NUMB];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`},
@@ -74,6 +78,8 @@ export default class CloseWinMobile extends LightningElement {
     shipType;
     options;
     shipReq;
+    whNumb; 
+    accName; 
     pestExp;
     rupSelected; 
     errorMsg = {};
@@ -94,8 +100,10 @@ export default class CloseWinMobile extends LightningElement {
     invoiceDate;
     earlyPay;
     showEOPInfo = false;
+    showConfirm = false; 
     //for evaluating time
     today = new Date().toJSON().substring(0,10);
+    orderHeaders ={}
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
@@ -127,6 +135,7 @@ export default class CloseWinMobile extends LightningElement {
                             this.shipTo = getFieldValue(data, SHIPTO); 
                             this.shipType = getFieldValue(data, SHIPTYPE);
                             this.reqPO = getFieldValue(data, REQPO);
+                            this.accName = getFieldValue(data, ACC_NAME);
                             this.eopOrder = getFieldValue(data, EOP_ORDER) ? getFieldValue(data, EOP_ORDER): '';
                             this.showEOPInfo = this.eopOrder === 'Yes' ? true : false; 
                             this.eopPayType = getFieldValue(data, EOP_PAYTYPE);
@@ -134,6 +143,7 @@ export default class CloseWinMobile extends LightningElement {
                             this.firstPayDate = getFieldValue(data, FIRST_DATE);
                             this.earlyPay = getFieldValue(data, EARLY_PAY);
                             this.invoiceDate = getFieldValue(data, INVOICE_DATE);
+                            this.whNumb = getFieldValue(data, WH_NUMB); 
                             this.findAddress(this.accountId);
                             this.findShipTypes();
                             this.custPOLabel = this.reqPO ? 'This account requires a PO' : 'Customer PO#' 
@@ -460,22 +470,29 @@ submit(event) {
         fields[INVOICE_DATE.fieldApiName] = this.invoiceDate;  
         fields[ID_Field.fieldApiName] = this.recordId; 
         const opp = {fields}
+        this.orderHeaders.deliveryDate = this.deliveryDate;
+        this.orderHeaders.shipType = this.shipType
+        this.orderHeaders.po = this.po
+        this.orderHeaders.accName = this.accName; 
+        this.orderHeaders.whNumb = this.whNumb; 
         console.log(JSON.stringify(opp))
-        updateRecord(opp)
-            .then(()=>{
-                alert('New Order Submitted!');
-            })
-            .then(()=>{
-                this.passVal = true; 
-                this.showLicenseUpLoad = false; 
-                this.loaded = true; 
-                this.dispatchEvent(new CustomEvent('close'));
-            })
-            .catch(error=>{ 
-                console.log(JSON.stringify(error));
-                alert(error.body.output.errors[0].message)
-                this.loaded = true; 
-            })
+        this.loaded = true; 
+        this.showConfirm = true; 
+        // updateRecord(opp)
+        //     .then(()=>{
+        //         this.showConfirm = true; 
+        //     })
+        //     .then(()=>{
+        //         this.passVal = true; 
+        //         this.showLicenseUpLoad = false; 
+        //         this.loaded = true; 
+        //         this.dispatchEvent(new CustomEvent('close'));
+        //     })
+        //     .catch(error=>{ 
+        //         console.log(JSON.stringify(error));
+        //         alert(error.body.output.errors[0].message)
+        //         this.loaded = true; 
+        //     })
         
     }else if(ok.isValid && !ok.validShip){
         console.log('in here')
@@ -486,9 +503,14 @@ submit(event) {
     //this.dispatchEvent(new CustomEvent('close'));
   }
   cancel() {
+    this.passVal = true; 
+    this.showLicenseUpLoad = false; 
+    this.loaded = true; 
     this.dispatchEvent(new CustomEvent('close'));
    
   }
+
+ 
   isInputValid() {
     let isValid = true;
     let validShip = true; 

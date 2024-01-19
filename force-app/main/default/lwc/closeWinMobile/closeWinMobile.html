@@ -94,6 +94,7 @@
         </template>
     
     <template if:true={passVal}>
+        <template if:false={showConfirm}>
         <lightning-quick-action-panel header="Make Order">
         <div class="slds-scrollable_y">
             <div class="slds-grid">
@@ -232,24 +233,33 @@
                         </div>
             <!-- end of scroll -->
                     </div>
+            <!--Footer-->
             <div slot="footer">
                 <lightning-button
-                    variant="neutral"
-                    label="Cancel"
-                    onclick={cancel}
+                variant="neutral"
+                label="Cancel"
+                onclick={cancel}
                 ></lightning-button>
                 <lightning-button
-                    variant="brand"
-                    label="Submit Order"
-                    class="slds-m-left_x-small"
-                    disabled={disabledBtn}
-                    onclick={submit}
+                variant="brand"
+                label="Submit Order"
+                class="slds-m-left_x-small"
+                disabled={disabledBtn}
+                onclick={submit}
                 ></lightning-button>
             </div>
             <template if:true={localError}>
                 <p style="color: red;">{errorMsg}</p>
             </template>
         </lightning-quick-action-panel>
+                    <!--end of capture order info-->
+    </template>
+
+    <template if:true={showConfirm}>
+        <c-confirmation-screen onclose={cancel}
+                               rec={recordId}
+                               info={orderHeaders}></c-confirmation-screen>
+    </template>
     </template>
     <template if:false={info}>
         

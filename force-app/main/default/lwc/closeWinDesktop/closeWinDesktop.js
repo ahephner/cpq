@@ -12,8 +12,10 @@ import STAGE from '@salesforce/schema/Opportunity.StageName';
 import PO from '@salesforce/schema/Opportunity.Customer_PO__c';
 import DELIVERYDATE from '@salesforce/schema/Opportunity.Delivery_Date_s_Requested__c';
 import DELIVERDATE2 from '@salesforce/schema/Opportunity.To__c';
-import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c'
+import SHIPTO from '@salesforce/schema/Opportunity.Shipping_Address__c';
+import WH_NUMB from '@salesforce/schema/Opportunity.Warehouse_Numb__c';
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
+import ACC_NAME from '@salesforce/schema/Opportunity.Account_Name_Text__c';
 import ID_Field from '@salesforce/schema/Opportunity.Id';
 import REQPO from '@salesforce/schema/Opportunity.Requires_PO_Number__c';
 import PEST_DATE from '@salesforce/schema/Opportunity.Pest_Expiration_Date__c';
@@ -40,7 +42,8 @@ import getAddress from '@salesforce/apex/cpqApex.getAddress';
 import getPickListValues from '@salesforce/apex/lwcHelper.getPickListValues';
  
 import {validate} from 'c/helper'
-const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, BH_SIGNED, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD];
+const FIELDS = [NAME, QUOTENUM, CLOSEDATE, STAGE, PO,DELIVERYDATE, DELIVERDATE2, SHIPTO, ACCID, REQPO, SHIPTYPE, HASITEMS, EOP_ORDER, EOP_PAYTYPE, 
+    NUM_PAYMENTS, FIRST_DATE, BILL_HOLD, BH_SIGNED, DISCOUNT, EARLY_PAY, INVOICE_DATE, PEST_DATE, RUP_PROD, WH_NUMB, ACC_NAME];
 const rules =[
     {test: (o) => o.accId.length === 18,
      message:`Didn't find an account with this order. Close this screen and select and account and hit SAVE`,
@@ -77,7 +80,9 @@ export default class CloseWinDesktop extends LightningElement {
     deliverDate2;
     accountId;
     shipTo;
-    shipType; 
+    shipType;
+    whNumb;  
+    accName; 
     options;
     shipReq; 
     pestExp;
@@ -99,6 +104,8 @@ export default class CloseWinDesktop extends LightningElement {
     passVal = true; 
     rupError; 
     showLicenseUpLoad = false; 
+    showConfirm = false;
+    orderHeaders ={}
     //for evaluating time
     today = new Date().toJSON().substring(0,10);
     connectedCallback(){
@@ -140,6 +147,8 @@ export default class CloseWinDesktop extends LightningElement {
                     this.firstPayDate = getFieldValue(data, FIRST_DATE);
                     this.earlyPay = getFieldValue(data, EARLY_PAY);
                     this.invoiceDate = getFieldValue(data, INVOICE_DATE); 
+                    this.whNumb = getFieldValue(data, WH_NUMB);
+                    this.accName = getFieldValue(data, ACC_NAME); 
                     //this.firstPayDate = this.firstPayDate === '' ? this.handleSetPayDate(this.eopPayType) : '';
                     this.findAddress(this.accountId);
                     this.findShipTypes(); 
@@ -371,20 +380,26 @@ newDevDate2(e){
             fields[INVOICE_DATE.fieldApiName] = this.invoiceDate; 
             fields[ID_Field.fieldApiName] = this.recordId; 
             const opp = {fields}
+            this.orderHeaders.deliveryDate = this.deliveryDate;
+            this.orderHeaders.shipType = this.shipType
+            this.orderHeaders.po = this.po
+            this.orderHeaders.accName = this.accName; 
+            this.orderHeaders.whNumb = this.whNumb; 
             console.log(JSON.stringify(opp))
             updateRecord(opp)
-                .then(()=>{
-                    this.dispatchEvent(
-                        new ShowToastEvent({
-                            title: 'Submitted',
-                            message: 'Order Sent In!',
-                            variant: 'success'
-                        })
+            .then(()=>{
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Submitted',
+                        message: 'Order Sent In!',
+                        variant: 'success'
+                    })
                     )
                 })
                 .then(()=>{
                     this.loaded = true; 
-                    this.dispatchEvent(new CloseActionScreenEvent());
+                    this.showConfirm = true; 
+                    //this.dispatchEvent(new CloseActionScreenEvent());
                 })
                 .catch(error=>{ 
                     console.log(JSON.stringify(error));

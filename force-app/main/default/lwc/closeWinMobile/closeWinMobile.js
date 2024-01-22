@@ -476,23 +476,21 @@ submit(event) {
         this.orderHeaders.accName = this.accName; 
         this.orderHeaders.whNumb = this.whNumb; 
         console.log(JSON.stringify(opp))
-        this.loaded = true; 
-        this.showConfirm = true; 
-        // updateRecord(opp)
-        //     .then(()=>{
-        //         this.showConfirm = true; 
-        //     })
-        //     .then(()=>{
-        //         this.passVal = true; 
-        //         this.showLicenseUpLoad = false; 
-        //         this.loaded = true; 
-        //         this.dispatchEvent(new CustomEvent('close'));
-        //     })
-        //     .catch(error=>{ 
-        //         console.log(JSON.stringify(error));
-        //         alert(error.body.output.errors[0].message)
-        //         this.loaded = true; 
-        //     })
+         
+        
+        updateRecord(opp)
+            .then(()=>{
+                this.passVal = true; 
+                this.showLicenseUpLoad = false; 
+                this.loaded = true; 
+                this.showConfirm = true; 
+                //this.dispatchEvent(new CustomEvent('close'));
+            })
+            .catch(error=>{ 
+                console.log(JSON.stringify(error));
+                alert(error.body.output.errors[0].message)
+                this.loaded = true; 
+            })
         
     }else if(ok.isValid && !ok.validShip){
         console.log('in here')

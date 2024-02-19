@@ -288,6 +288,7 @@ handleExpDate(evt){
 cancelUpload(){
     this.showLicenseUpLoad = false; 
     this.rupError = true;
+    this.dispatchEvent(new CustomEvent('close'));
 }
 //Handle File upload
 handleUploadFinished(event) {

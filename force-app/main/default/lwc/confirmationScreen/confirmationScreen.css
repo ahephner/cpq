@@ -1,0 +1,27 @@
+.atsColor{
+    color:#006225; 
+}
+
+.weight{
+    font-weight: 700;
+}
+
+.showGreen{
+    background-color: lightgreen;
+}
+
+table {
+    border-collapse: collapse;
+    text-align: left;
+}
+
+tr {
+    border-bottom: 1px solid black;
+}
+.textInfo{
+    font-size: smaller;
+}
+
+.nameSize{
+    width: 50%;
+}

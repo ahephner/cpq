@@ -7,7 +7,7 @@ public class cpqQuickActions {
     public PageReference newOpp(){
          
         string url;
-              
+        string orderType = 'Standard';     
         Date dToday = System.Today();   
         Date cd = System.today() + 14;
         try{
@@ -21,26 +21,29 @@ public class cpqQuickActions {
             String paramEOPYesNo = System.currentPageReference().getParameters().get('IsEOP');  
             String sEOPYesNo = 'No';
             
-            IF(paramEOPYesNo == '1')
+             if(paramEOPYesNo == '1')
               sEOPYesNo = 'Yes';
-             
+             if(sEOPYesNo == 'Yes')
+                orderType = 'EOP';
 
              
-            List<Sales_Rep__c> rep = [select id, Warehouse__c from Sales_Rep__c where Salesforce_User__c =: userID limit 1];
-            
+            List<Sales_Rep__c> rep = [select id, Warehouse__c from Sales_Rep__c where Salesforce_User__c =: userID and id != 'a002M000017Ro5zQAC' limit 1];
+
             if(rep.size()>0){
                 //for deployment need to get the right recordtypeid for full: 01275000000CgcYAAS
-                //for cpq: 0121D000003qH6eQAE
+                //for cpq: 01275000000CgcYAAS
                 //production:0122M000001ElAYQA0
-                   Opportunity opp = new Opportunity(name=accountName + ' ' + dToday,CloseDate=cd,Expiration_Date_Editable__c=cd, RecordTypeId = '0122M000001ElAYQA0',Warehouse__c = rep[0].Warehouse__c,
+                   Opportunity opp = new Opportunity(name=accountName + ' ' + dToday,CloseDate=cd,Expiration_Date_Editable__c=cd, 
+                                                     RecordTypeId = '0122M000001ElAYQA0',Warehouse__c = rep[0].Warehouse__c,
                          Sales_Rep__c = rep[0].Id,Pricebook2Id = '01s410000077vSKAAY', Stagename='Working', AccountId = accountId, 
-                         EOP_Order__c = sEOPYesNo); 
+                         EOP_Order__c = sEOPYesNo, Order_Type__c = orderType); 
                     insert opp;
                     url = opp.Id;
             }else{
                 system.debug('no rep');
-                Opportunity nonRep = new Opportunity(name=Account.Name + ' ' + cd,CloseDate=cd, Expiration_Date_Editable__c=cd, RecordTypeId = '0122M000001ElAYQA0',
-                                                     Pricebook2Id = '01s410000077vSKAAY', Stagename='Working');
+                Opportunity nonRep = new Opportunity(name=Account.Name + ' ' + cd,CloseDate=cd, Expiration_Date_Editable__c=cd, 
+                                                     RecordTypeId = '0122M000001ElAYQA0',
+                                                     Pricebook2Id = '01s410000077vSKAAY', Stagename='Working', Order_Type__c = orderType);
                 insert nonRep; 
                 url = nonRep.Id; 
              }
@@ -51,18 +54,23 @@ public class cpqQuickActions {
                 //for deployment need to get the right recordtypeid for full: 01275000000CgcYAAS
                 //for cpq: 0121D000003qH6eQAE
                 //production:0122M000001ElAYQA0
-                   Opportunity opp = new Opportunity(name='New Quote '+ cd,CloseDate=cd,Expiration_Date_Editable__c=cd, RecordTypeId = '0122M000001ElAYQA0',Warehouse__c = rep[0].Warehouse__c,
-                         							Sales_Rep__c = rep[0].Id,Pricebook2Id = '01s410000077vSKAAY', Stagename='Working'); 
+                   Opportunity opp = new Opportunity(name='New Quote '+ cd,CloseDate=cd,Expiration_Date_Editable__c=cd, 
+                                                     RecordTypeId = '0122M000001ElAYQA0',Warehouse__c = rep[0].Warehouse__c,
+                         							Sales_Rep__c = rep[0].Id,Pricebook2Id = '01s410000077vSKAAY', Stagename='Working', 
+                                                     Order_Type__c=orderType); 
                     insert opp;
                     url = opp.Id;
             }else{
                 system.debug('no rep');
-                Opportunity nonRep = new Opportunity(name='New Quote ' + cd,CloseDate=cd, Expiration_Date_Editable__c=cd, RecordTypeId = '0122M000001ElAYQA0',
-                                                     Pricebook2Id = '01s410000077vSKAAY', Stagename='Working', Warehouse__c = '1312M00000001nsQAA');
+                Opportunity nonRep = new Opportunity(name='New Quote ' + cd,CloseDate=cd, Expiration_Date_Editable__c=cd, 
+                                                     RecordTypeId = '0122M000001ElAYQA0',
+                                                     Pricebook2Id = '01s410000077vSKAAY', Stagename='Working', 
+                                                     Warehouse__c = '1312M00000001nsQAA',Order_Type__c=orderType);
                 insert nonRep; 
                 url = nonRep.Id; 
              }
             }
+           
         }catch(Exception e){
             ApexPages.addMessages(e); 
             return null;

@@ -1,0 +1,143 @@
+<template>
+    <lightning-quick-action-panel header="Confirmation Screen">
+      <div>
+        <div class="slds-text-heading_medium slds-align_absolute-center atsColor">Congrats your order has been submitted!</div>
+        <div class="slds-grid slds-m-top_x-small">
+            <div class="slds-col">
+                <p>Order For: <span class="weight">{info.accName}</span></p>
+                <p>First Delivery Date: <span class="weight">{showDate}</span></p>
+            </div>
+            <div class="slds-col">
+                <p>Warehouse: <span class="weight">{info.whNumb}</span></p>
+                <p>ShipType: <span class="weight">{info.shipType}</span></p>
+            </div>
+        </div>
+    </div>
+    <div class="slds-text-heading_medium slds-m-top_x-small">Products Ordered</div>
+<!--DESKTOP TABLE-->
+    <template lwc:if={formSize}>
+    <div class="products slds-scrollable_y" style="height:15rem; width:100%">
+        <table>
+            <th>Product</th>
+            <th>QTY</th>
+            <th>Price</th>
+            <th>Margin</th>
+            <tbody >
+                <template if:true={prods} for:each={prods} for:item="x" for:index="index">
+                    <tr key={x.Id}>
+                        <td>
+                            {x.shortName}
+                        </td>
+                        <td>
+                            {x.Quantity}
+                        </td>
+                        <td>
+                            ${x.CPQ_Unit_Price__c}
+                        </td>
+                        <!-- <td style={x.marginCheck}>
+                            {x.margin}%
+                        </td> -->
+                        <template lwc:if={x.goodMargin}>
+                            <td class="showGreen">
+                                {x.shownMargin}%
+                            </td>
+                        </template>
+                        <template lwc:else>
+                            <td>
+                                {x.shownMargin}%
+                            </td>
+                        </template>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        
+            <div class="slds-grid slds-m-top_small">
+                <div class="slds-col">Total Units: <span class='weight'>{totalUnits}</span></div>
+                <div class="slds-col">Total Price: <span class='weight'>${totalPrice}</span></div> 
+                <div class="slds-col">
+                    <lightning-helptext content="No agency or shipping"></lightning-helptext>
+                    Average Margin: <span class='weight'>{avgMargin}%</span> 
+                    <template lwc:if={fireMargin}>
+                        🔥🔥🚀🚀🚀
+                    </template>  
+                    <template lwc:elseif={greatmargin}>
+                        🔥🔥🔥
+                    </template>  
+                    <template lwc:elseif={goodMargin}>
+                            🔥
+                        </template>
+                </div>
+
+            </div>
+</div>
+        </template>
+<!--!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!PHONE TABLE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+        <template lwc:else>
+            <div class="products slds-scrollable_y" style="height:18rem; width:100%">
+            <table>
+                <th>Product</th>
+                <th>QTY</th>
+                <th>Price</th>
+                <th>Margin</th>
+                <tbody >
+                    <template if:true={prods} for:each={prods} for:item="x" for:index="index">
+                        <tr key={x.Id}>
+                            <td class="textInfo nameSize">
+                                {x.mobileName}
+                            </td>
+                            <td class="textInfo">
+                                {x.Quantity}
+                            </td>
+                            <td class="textInfo">
+                                ${x.CPQ_Unit_Price__c}
+                            </td>
+                            <!-- <td style={x.marginCheck}>
+                                {x.margin}%
+                            </td> -->
+                            <template lwc:if={x.goodMargin}>
+                                <td class="showGreen textInfo">
+                                    {x.shownMargin}%
+                                </td>
+                            </template>
+                            <template lwc:else>
+                                <td class="textInfo">
+                                    {x.shownMargin}%
+                                </td>
+                            </template>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <div class="slds-grid slds-m-top_small slds-wrap">
+                <div class="slds-col slds-size_1-of-1">Total Units: <span class='weight'>{totalUnits}</span></div>
+                <div class="slds-col slds-size_1-of-1">Total Price: <span class='weight'>${totalPrice}</span></div> 
+                <div class="slds-col slds-size_1-of-1">
+                    Average Margin: <span class='weight'>{avgMargin}%</span> 
+                    <template lwc:if={fireMargin}>
+                        🔥🔥🚀🚀🚀
+                    </template>  
+                    <template lwc:elseif={greatmargin}>
+                        🔥🔥🔥
+                    </template>  
+                    <template lwc:elseif={goodMargin}>
+                        🔥
+                    </template>
+                    <lightning-helptext content="No agency or shipping"></lightning-helptext>
+                </div>
+
+            </div>
+            </div>
+        </template>
+      
+      <div slot="footer">
+          <!-- define custom footer actions here -->
+          <lightning-button
+                variant="brand"
+                label="Close Screen"
+                class="slds-m-left_x-small"
+                onclick={handleConfirm}
+                ></lightning-button>
+      </div>
+    </lightning-quick-action-panel>
+</template>

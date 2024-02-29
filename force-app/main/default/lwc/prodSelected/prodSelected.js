@@ -5,6 +5,10 @@ import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
+//get avaliable price books for this account 
+import getPriceBooks from '@salesforce/apex/getPriceBooks.getPriceBookIds';
+//best price. Looks at multiple price books returns single entry depending on best price
+import getBestPrice from '@salesforce/apex/getPriceBooks.getBestPrice'; 
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
@@ -32,6 +36,7 @@ import {mergeInv,mergeLastPaid, lineTotal, onLoadProducts , newInventory,updateN
     checkPricing ,getShipping, getManLines, setMargin, mergeLastQuote, roundRate, checkRUP, sortArray,removeLineItem, loadCheck} from 'c/helper'
 
 const FIELDS = [ACC, STAGE, WAREHOUSE];
+const standardPriceBook = '01s410000077vSKAAY'; 
 export default class ProdSelected extends LightningElement {
     @api recordId; 
     pbeId; 
@@ -209,6 +214,23 @@ priceCheck(){
                 
             }
         }
+//Get avaliable price books;
+//Will Refire if new account is picked
+priceBooks = []
+    @wire(getPriceBooks,{accountId:'$accountId'})
+        wiredBooks({data,error}){
+            if(data){
+                let list = new Set(["01s410000077vSKAAY"])
+                for(let i=0; i<data.length; i++){
+                    list.add(data[i].Pricebook2Id);
+                }
+                this.priceBooks = [...list]; 
+            }else if(error){
+                this.priceBooks = [...this.standardPriceBook]
+                console.error(error)
+            }
+        }
+bestPrice;
     async handleNewProd(){
         //get last paid only works on new adding product
         let totalPrice;
@@ -216,12 +238,13 @@ priceCheck(){
         this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
         this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
         this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
-        
+        this.bestPrice = await getBestPrice({priceBookIds:this.priceBooks , productId:this.productId })
+        console.log('BP ', this.bestPrice)
         if(this.newProd != null){
-
             this.selection = [
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
+                    Description: `Best Price ${this.bestPrice[0].UnitPrice} from ${this.bestPrice[0].Pricebook2.Name}`,
                     Id: '',
                     PricebookEntryId: this.pbeId,
                     Product2Id: this.productId,
@@ -267,6 +290,7 @@ priceCheck(){
                 ...this.selection, {
                     sObjectType: 'OpportunityLineItem',
                     PricebookEntryId: this.pbeId,
+                    Description: `Best Price ${this.bestPrice[0].UnitPrice} from ${this.bestPrice[0].Pricebook2.Name}`,
                     Id: '',
                     Product2Id: this.productId,
                     agency: this.agency,

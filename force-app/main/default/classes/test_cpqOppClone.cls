@@ -43,9 +43,11 @@ public class test_cpqOppClone {
         PricebookEntry shovelpbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=shovel.id,
                                                  unitprice=4, IsActive = True, UseStandardPrice=False);
         insert shovelpbe; 
+        //get recordtype
+        string recType = [select id from recordtype where name ='CPQ'].Id; 
         //create test opportunity
-        opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,
-                                         stagename='Estimate(10%)', job_type__c = 'Construction', closedate = myDate, Order_Type__c='EOP');
+        opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,recordTypeId= recType,
+                                         stagename='Working', closedate = myDate, Order_Type__c='EOP', Ship_Type__c='FG');
        
         //insert w/o synced quote
         insert opp; 
@@ -76,7 +78,7 @@ public class test_cpqOppClone {
             PageReference method = clone.cloneOpp();
             widget.IsActive = false; 
             update widget;
-        	string eopClone = cpqOppClone.cloneOppEOP(opp.id, 'Yes'); 
+        	string eopClone = cpqOppClone.cloneOppEOP(opp.id, 'EOP'); 
         
             opportunity clonedOp = [select id from opportunity where id =: clone.newOppID];
 			system.debug('eopClone ===> '+eopClone); 

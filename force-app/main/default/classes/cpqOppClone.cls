@@ -35,6 +35,9 @@ public class cpqOppClone {
             newOp.Name = newOp.Account.Name+ ' '+ nameDate;
             newOp.StageName = 'Working';
             newOp.CloseDate = cd;
+            if(newOp.Ship_Type__c == 'FG'){
+                newOp.Ship_Type__c = 'UG'; 
+            }
             //newOp.Warehouse__c = opp.Warehouse__c;
            //newOp.CloseDate = cd;  
             insert newOp; 
@@ -95,6 +98,9 @@ public class cpqOppClone {
                 newOp.EOP_Order__c = 'Yes';
             }else{
                 newOp.EOP_Order__c = 'No'; 
+            }
+            if(newOp.Ship_Type__c == 'FG'){
+                newOp.Ship_Type__c = 'UG'; 
             }
             //newOp.Warehouse__c = opp.Warehouse__c;
          //   newOp.CloseDate = cd;  

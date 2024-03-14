@@ -5,6 +5,7 @@ import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import getInventory from '@salesforce/apex/cpqApex.getInventory';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
+import wareHouses from '@salesforce/apex/quickPriceSearch.getWarehouse';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
@@ -785,6 +786,7 @@ allowSave(){
         return sum; 
     }
 
+
     //warehouse information
     get warehouseOptions(){
         
@@ -793,6 +795,7 @@ allowSave(){
             {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
             {label:'115 | ATS Ingalls', value:'1312M00000001nsQAA'},
             {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
+            {label:'180 | ATS Fort Wayne', value:'131VH0000003JpJYAU'},
             {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
             {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
             {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},

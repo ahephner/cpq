@@ -116,6 +116,8 @@
             manLine: x.Product2.ProductCode.includes('MANUAL CHARGE')  ? true : false,
             Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c) ,
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`, 
+            //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${x.Product2Id}/view`,
+            prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${x.Product2Id}/view`,
             OpportunityId: recordId
         } 
       })

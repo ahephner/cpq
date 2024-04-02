@@ -116,6 +116,8 @@
             manLine: x.Product2.ProductCode.includes('MANUAL CHARGE')  ? true : false,
             Line_Order__c: isNaN(Number(x.Line_Order__c))? count : Number(x.Line_Order__c) ,
             url: `https://advancedturf.lightning.force.com/lightning/r/${x.Product2Id}/related/ProductItems/view`, 
+            //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${x.Product2Id}/view`,
+            prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${x.Product2Id}/view`,
             OpportunityId: recordId
         } 
       })
@@ -337,7 +339,16 @@ const checkRUP = (items)=>{
   return isRup; 
 }
 
-
+//set the opportunity product id to the metrics object for reporting purposes. 
+const setOPMetric = (metrics, salesLines)=>{
+  for(let i=0; i<metrics.length; i++){
+    console.log(metrics[i])
+    let lineitem = salesLines.find(x => x.Product2Id === metrics[i].Product);
+        metrics[i].Opportunity_Product__c = lineitem.Id; 
+        
+  }
+  return metrics
+}
 // make it so functions can be used other pages
 export{ validate, 
         mergeInv, 
@@ -362,5 +373,6 @@ export{ validate,
         removeLineItem,
         loadCheck,
         sumByKey,
-        reNameKey
+        reNameKey,
+        setOPMetric
       }

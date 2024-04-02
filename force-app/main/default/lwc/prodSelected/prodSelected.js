@@ -9,6 +9,7 @@ import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
+import wareHouses from '@salesforce/apex/quickPriceSearch.getWarehouse';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -97,6 +98,24 @@ export default class ProdSelected extends LightningElement {
         this.loadProducts(); 
         
     }
+        //get warehouse
+        @wire(wareHouses)
+        wiredWarehouse({ error, data }) {
+            if (data) {
+                let back  = data.map((item, index) =>({
+                    ...item, 
+                    label:item.Name, 
+                    value:item.Id
+                
+                }))
+                //back.unshift({label:'All', value:'All'})
+                this.warehouseOptions = [...back]; 
+                
+            } else if (error) {
+                this.error = error;
+                console.error(this.error)
+            }
+        } 
     renderedCallback(){
         if(this.selection.length>0 && this.hasRendered){
             let startCheck = loadCheck(this.selection); 
@@ -258,6 +277,8 @@ priceCheck(){
                     manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
                     Line_Order__c: this.lineOrderNumber,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                    //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
+                    prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
                     OpportunityId: this.recordId
                 }
             ]
@@ -302,6 +323,8 @@ priceCheck(){
                     manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
                     Line_Order__c: this.lineOrderNumber,
                     url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                    //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
+                    prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
                     OpportunityId: this.recordId
                 }
             ]
@@ -362,6 +385,7 @@ priceCheck(){
             manLine: false,
             Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/01t2M0000062XwhQAE/view`,
             OpportunityId: this.recordId
         }
         this.lineOrderNumber ++;
@@ -404,6 +428,7 @@ priceCheck(){
             manLine: false,
             Line_Order__c: this.lineOrderNumber,
             url:`https://advancedturf.lightning.force.com/lightning/r/01t2M0000062XwhQAE/related/ProductItems/view`,
+            prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/01t6T000006OzAyQAK/view`,
             OpportunityId: this.recordId
         }
         const checkShip = this.selection.findIndex(x => x.Product2Id === '01t2M0000062XwhQAE')
@@ -739,39 +764,39 @@ priceCheck(){
     //get warehouse options
 //these are hardcoded to full NEED TO GET DYNAMIC
 
-    get warehouseOptions(){
-        return [
-            {label:'All', value:'All'},
-            {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
-            {label:'115 | ATS Ingalls', value:'1312M00000001nsQAA'},
-            {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
-            {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
-            {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
-            {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
-            {label:'310 | ATS Tomball', value:'1312M000000PB6AQAW'},
-            {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
-            {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
-            {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
-            {label:'440 | ATS Lewis Center', value:'1312M00000001o0QAA'},
-            {label:'450 | ATS Brecksville', value:'1312M00000001o1QAA'},
-            {label:'470 | ATS Boardman', value:'1312M00000001o2QAA'},
-            {label:'510 | ATS Travis City', value:'1312M00000001o3QAA'},
-            {label:'520 | ATS Farmington Hills', value:'1312M00000001o4QAA'},
-            {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},
-            {label:'710 | ATS - St. Peters', value:'1312M00000001o6QAA'},
-            {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
-            {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
-            {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
-            {label:'790 | ATS - Springfield', value:'1312M0000004D7IQAU'},
-            {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
-            {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
-            {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
-            {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
-            {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'},
-            {label:'999 | ATS - Fishers', value:'1312M000000PB3FQAW'}
+    // get warehouseOptions(){
+    //     return [
+    //         {label:'All', value:'All'},
+    //         {label: '105 | Noblesville', value:'1312M000000PB0ZQAW'}, 
+    //         {label:'115 | ATS Ingalls', value:'1312M00000001nsQAA'},
+    //         {label:'125 | ATS Lebanon (Parts)', value:'1312M00000001ntQAA'},
+    //         {label:'200 | ATS Louisville', value:'1312M00000001nuQAA'},
+    //         {label:'250 | ATS Florence', value:'1312M00000001nvQAA'},
+    //         {label:'270 | ATS Winston-Salem', value:'1312M00000001nwQAA'},
+    //         {label:'310 | ATS Tomball', value:'1312M000000PB6AQAW'},
+    //         {label:'360 | ATS Nashville', value:'1312M00000001nxQAA'},
+    //         {label:'400 | ATS Columbus', value:'1312M00000001nyQAA'},
+    //         {label:'415 | ATS Sharonville', value:'1312M00000001nzQAA'},
+    //         {label:'440 | ATS Lewis Center', value:'1312M00000001o0QAA'},
+    //         {label:'450 | ATS Brecksville', value:'1312M00000001o1QAA'},
+    //         {label:'470 | ATS Boardman', value:'1312M00000001o2QAA'},
+    //         {label:'510 | ATS Travis City', value:'1312M00000001o3QAA'},
+    //         {label:'520 | ATS Farmington Hills', value:'1312M00000001o4QAA'},
+    //         {label:'600 | ATS - Elkhart', value:'1312M00000001o5QAA'},
+    //         {label:'710 | ATS - St. Peters', value:'1312M00000001o6QAA'},
+    //         {label:'720 | ATS - Cape Girardeau', value:'1312M00000001o7QAA'},
+    //         {label:'730 | ATS - Columbia', value:'1312M00000001o8QAA'},
+    //         {label:'770 | ATS - Riverside', value:'1312M00000001o9QAA'},
+    //         {label:'790 | ATS - Springfield', value:'1312M0000004D7IQAU'},
+    //         {label:'820 | ATS - Wheeling', value:'1312M000000PB0UQAW'},
+    //         {label:'850 | ATS - Madison', value:'1312M00000001oAQAQ'},
+    //         {label:'860 | ATS - East Peoria', value:'1312M000000PB2BQAW'},
+    //         {label:'960 | ATS - Monroeville', value:'1312M00000001oBQAQ'},
+    //         {label:'980 | ATS - Ashland', value:'1312M00000001oCQAQ'},
+    //         {label:'999 | ATS - Fishers', value:'1312M000000PB3FQAW'}
 
-        ];
-    }
+    //     ];
+    // }
 
     //check other inventory
     async checkInventory(locId){

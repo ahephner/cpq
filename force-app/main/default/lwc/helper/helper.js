@@ -339,7 +339,16 @@ const checkRUP = (items)=>{
   return isRup; 
 }
 
-
+//set the opportunity product id to the metrics object for reporting purposes. 
+const setOPMetric = (metrics, salesLines)=>{
+  for(let i=0; i<metrics.length; i++){
+    console.log(metrics[i])
+    let lineitem = salesLines.find(x => x.Product2Id === metrics[i].Product);
+        metrics[i].Opportunity_Product__c = lineitem.Id; 
+        
+  }
+  return metrics
+}
 // make it so functions can be used other pages
 export{ validate, 
         mergeInv, 
@@ -364,5 +373,6 @@ export{ validate,
         removeLineItem,
         loadCheck,
         sumByKey,
-        reNameKey
+        reNameKey,
+        setOPMetric
       }

@@ -1,10 +1,8 @@
 //IMPORTANT this branch is the most up to date branch prior to search tag was used 5/25/2023
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
-import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
+import getDetailsPricing from '@salesforce/apex/cpqApex.getDetailsPricing';
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
-import getInventory from '@salesforce/apex/cpqApex.getInventory';
-import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
@@ -232,9 +230,18 @@ priceCheck(){
         //get last paid only works on new adding product
         let totalPrice;
         let totalQty; 
-        this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
-        this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
-        this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
+        let result; 
+        try{
+            if(this.accountId){
+                result = await getDetailsPricing({pId:this.productId , locationId: this.warehouse, accId:this.accountId, 
+                                                pc:this.productCode , recId: this.recordId, priceBookId: this.pbId})
+            }else{
+                result = await getDetailsPricing({pId:this.productId , locationId: this.warehouse, accId: undefined, 
+                    pc:this.productCode , recId: this.recordId, priceBookId: this.pbId})
+            }
+        this.newProd = result[0].lastPaid;
+        this.invCount = result[0].inventory;
+        this.lastQuote = result[0].lastQuote
         
         if(this.newProd != null){
 
@@ -341,6 +348,9 @@ priceCheck(){
             this.lineOrderNumber ++;
             this.unsavedProducts = true; 
             this.startEventListener()
+        }catch(error){
+            alert(error);
+       }
     }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 

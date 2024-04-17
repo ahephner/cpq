@@ -198,7 +198,8 @@
   }
   //on load get product totals for ship weight, total price and quantity. 
   const getTotals = (products)=>{
-    const totals = products.reduce((basket, items) => {
+    const totals = products.filter((x)=>!x.ProductCode.toLowerCase().includes('shipping'))
+    .reduce((basket, items) => {
                             //console.log(basket) //is the const first loop blank
                             //console.log(items) //is the object of data you want to reduce
           for (const [keyName, valueCount] of Object.entries(items)) {
@@ -219,10 +220,12 @@
   const getCost = (list)=>{ 
     let totalCost = 0;
     for(let i=0; i<list.length;i++){
-       let x = Number(list[i].Cost__c * list[i].Quantity);
-       //console.log('x '+x);
-       
-       totalCost += x; 
+      if(!list[i].ProductCode.toLowerCase().includes('shipping')){
+        let x = Number(list[i].Cost__c * list[i].Quantity);
+        //console.log('x '+x);
+        
+        totalCost += x; 
+      }
     }
     return totalCost; 
   }

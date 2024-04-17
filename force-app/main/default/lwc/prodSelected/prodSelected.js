@@ -545,6 +545,7 @@ priceCheck(){
             this.handleWarning(targetId,lOne, floor, unitp, index)
             let totals =  getTotals(this.selection);
             this.tPrice = roundNum(totals.TotalPrice, 2);
+            this.tCost = getCost(this.selection) 
             if(!this.selection[index].agency){
                 let margin = setMargin(this.tCost, this.tPrice)
                 this.tMargin = roundNum(margin, 2);
@@ -584,6 +585,7 @@ priceCheck(){
             //update order totals
             let totals =  getTotals(this.selection);
             this.tPrice = roundNum(totals.TotalPrice, 2)
+            this.tCost = getCost(this.selection) 
             if(!this.selection[index].agency){
                 let margin = setMargin(this.tCost, this.tPrice)
                 this.tMargin = roundNum(margin, 2);

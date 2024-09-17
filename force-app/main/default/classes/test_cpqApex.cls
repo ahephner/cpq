@@ -22,7 +22,7 @@ public class test_cpqApex {
         Id pricebookId = Test.getStandardPricebookId();
 
         product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
-                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+                                    Subcategory__c='Herbicide - Premium', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
         insert prod; 
         
         product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
@@ -39,12 +39,12 @@ public class test_cpqApex {
         
         Test.startTest();
         	List<PricebookEntry> nameOnly = cpqApex.searchProduct('widget', 'All', 'All', pricebookId);
-        	List<PricebookEntry> nullName = cpqApex.searchProduct('null', 'Chemicals-Herbicide', 'FMC', priceBookId);
+        	List<PricebookEntry> nullName = cpqApex.searchProduct('null', 'Herbicide - Premium', 'FMC', priceBookId);
         	List<PricebookEntry> nameandfamily = cpqApex.searchProduct('widget', 'All', 'FoliarPak', priceBookId);
-        	List<PricebookEntry> nameandcat = cpqApex.searchProduct('product', 'Chemicals-Herbicide', 'All', priceBookId);
-        	List<PricebookEntry> catOnly = cpqApex.searchProduct('null', 'Chemicals-Herbicide', 'All', priceBookId);
+        	List<PricebookEntry> nameandcat = cpqApex.searchProduct('product', 'Herbicide - Premium', 'All', priceBookId);
+        	List<PricebookEntry> catOnly = cpqApex.searchProduct('null', 'Herbicide - Premium', 'All', priceBookId);
         	List<PricebookEntry> famOnly = cpqApex.searchProduct('null', 'All', 'FMC', priceBookId);
-        	List<PricebookEntry> allThree = cpqApex.searchProduct('widget', 'Chemicals-Herbicide', 'All', priceBookId);
+        	List<PricebookEntry> allThree = cpqApex.searchProduct('widget', 'Herbicide - Premium', 'All', priceBookId);
         	list<priceBookWrapper> pbw = cpqApex.getPriceBooks();
         Test.stopTest();
     }
@@ -62,7 +62,7 @@ public class test_cpqApex {
         Id pricebookId = Test.getStandardPricebookId();
 
         product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
-                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+                                    Subcategory__c='Herbicide - Premium', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
         insert prod; 
         
         product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
@@ -79,16 +79,53 @@ public class test_cpqApex {
         
         Test.startTest();
         	List<PricebookEntry> nameOnly = cpqApex.mobileSearchProduct('widget', 'All', 'All', pricebookId);
-        	List<PricebookEntry> nullName = cpqApex.mobileSearchProduct('%%', 'Chemicals-Herbicide', 'FMC', priceBookId);
+        	List<PricebookEntry> nullName = cpqApex.mobileSearchProduct('%%', 'Herbicide - Premium', 'FMC', priceBookId);
         	List<PricebookEntry> nameandfamily = cpqApex.mobileSearchProduct('widget', 'All', 'FoliarPak', priceBookId);
-        	List<PricebookEntry> nameandcat = cpqApex.mobileSearchProduct('product', 'Chemicals-Herbicide', 'All', priceBookId);
-        	List<PricebookEntry> catOnly = cpqApex.mobileSearchProduct('%%', 'Chemicals-Herbicide', 'All', priceBookId);
+        	List<PricebookEntry> nameandcat = cpqApex.mobileSearchProduct('product', 'Herbicide - Premium', 'All', priceBookId);
+        	List<PricebookEntry> catOnly = cpqApex.mobileSearchProduct('%%', 'Herbicide - Premium', 'All', priceBookId);
         	List<PricebookEntry> famOnly = cpqApex.mobileSearchProduct('%%', 'All', 'FMC', priceBookId);
-        	List<PricebookEntry> allThree = cpqApex.mobileSearchProduct('widget', 'Chemicals-Herbicide', 'All', priceBookId);
+        	List<PricebookEntry> allThree = cpqApex.mobileSearchProduct('widget', 'Herbicide - Premium', 'All', priceBookId);
         	list<priceBookWrapper> pbw = cpqApex.getPriceBooks();
         Test.stopTest();
     }
+    @isTest
+    static void Test_getLastPaid(){
+                //get record type
+        ID recordType = Schema.SObjectType.Account.getRecordTypeInfosByName().get('Customer').getRecordTypeId();
+        Account acct = new Account(); 
+        acct.name = '509-Test Comp';
+        acct.Customer_Name__c = 'New Company';
+        acct.Customer__c = '1010';
+        acct.RecordTypeId = recordType;
+        insert acct;
 
+        //create product
+        Product__c prod = new Product__c(Product_Name__c='Something', Name='123'); 
+        insert prod; 
+
+        
+        //Create Sales Doc
+        Sales_Document__c sd = new Sales_Document__c();
+        sd.name = 'test from sf';
+        sd.sales_Doc_num__c = '454';
+        //get new account recordid
+        sd.Customer__c = acct.id;
+        sd.Doc_Type__c = 'Invoice';
+        
+        insert sd; 
+        
+        Sales_Doc_Detail__c testSale = new Sales_Doc_Detail__c();
+        testSale.name = 'Test';
+        testSale.sales_document__c = sd.ID;
+        testSale.Product__c = prod.ID;
+        testSale.Product_Code__c = prod.Name;
+        insert testSale;
+        
+        Test.startTest();
+        	Sales_Doc_Detail__c detail = cpqApex.getLastPaid(acct.id, prod.name);
+        Test.stopTest();
+        system.debug('detail '+detail);
+    }
     @isTest
     static void Test_getProducts(){
         //date for opp
@@ -196,7 +233,7 @@ public class test_cpqApex {
 	Test.startTest();
         pc.Add(prod.ProductCode);
         pc.Add(widget.ProductCode);
-        //OpportunityLineItem oneLine = cpqApex.getLastQuote(cust.ID, prod.ProductCode, opp2.id);
+        OpportunityLineItem oneLine = cpqApex.getLastQuote(cust.ID, prod.ProductCode, opp2.id);
         list<OpportunityLineItem> multiple = cpqApex.onLoadGetLastQuoted(cust.Id, pc, opp2.id);
     Test.stopTest();
         system.debug('pc => '+widgetli2.ProductCode);
@@ -279,7 +316,7 @@ public class test_cpqApex {
         	idList.add(widget.Id);
         	idList.add(widget2.Id);
         	list<productitem> count = cpqApex.inventoryCount(idList); 
-        	//productitem count2 = cpqApex.getInventory(warehouse.id, widget.id);
+        	productitem count2 = cpqApex.getInventory(warehouse.id, widget.id);
         	list<productitem> onLoadCount = cpqApex.onLoadGetInventory(warehouse.id, idList); 
         	list<productitem> changeInventory = cpqApex.inCounts(pcList, warehouse.id); 
         	list<productitem> changeInventoryAll = cpqApex.inCounts(pcList, 'All'); 
@@ -393,7 +430,7 @@ public class test_cpqApex {
         Id pbId = Test.getStandardPricebookId();
 
         product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
-                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+                                    Subcategory__c='Herbicide - Premium', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
         insert prod; 
         
         product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
@@ -431,9 +468,9 @@ public class test_cpqApex {
         cpa2.Name = 'Test Address2';
         cpa2.ParentId = cust.Id;
         	insert cpa2;
-        
+        string userId = UserInfo.getUserId(); 
         Test.startTest();
-        	list<ContactPointAddress> addresses = cpqApex.getAddress(cust.Id); 
+        	list<ContactPointAddress> addresses = cpqApex.getAddress(cust.Id, userId); 
         Test.stopTest();
         system.assertEquals(2, addresses.size());
     }
@@ -451,7 +488,7 @@ public class test_cpqApex {
         Id pricebook = Test.getStandardPricebookId();
 
         product2 prod = new product2(name ='product', IsActive= True, ProductCode='123', Product_Status__c ='Stock', 
-                                    Subcategory__c='Chemicals-Herbicide', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
+                                    Subcategory__c='Herbicide - Premium', Product_Family__c='FMC', Floor_Type__c ='Floor', Floor_Price__c = 100); 
         insert prod; 
         
         product2 prod2= new product2(name ='widget', IsActive= True, ProductCode='321', Product_Status__c ='Stock', 
@@ -472,115 +509,4 @@ public class test_cpqApex {
         	
         Test.stopTest();
     } 
-
-        @isTest
-        static void testGetDetails(){
-            //odds and ends
-		Date myDate = Date.newInstance(2040, 1, 4);
-//account
-		Account cust = new Account();
-        cust.Name = 'Test123456';
-        cust.Type = 'Customer';
-        cust.RecordTypeId = '01241000001Dy64AAC'; 
-        cust.Customer_Name__c = 'Test Customer 123456';
-        insert cust;
-//product
- 		Product2 r1 = new Product2();
-  		Product2 r2 = new Product2();         
-         r1.Name='Product 1';
-         r1.Primary_Category__c = 'Chemicals';
-         r1.Subcategory__c ='Chemicals-Herbicide';
-         r1.Include_in_Programs__c = True;
-         r1.IsActive= True; 
-         r1.ProductCode='123';
-         r1.Product_Status__c ='Stock';
-         r1.Size__c = 1;
-         r1.Floor_Type__c ='Floor'; 
-         r1.Floor_Price__c = 100;
-         r1.IsActive = true; 
-         
-        
-         r2.Name='Product 2';
-         r2.Primary_Category__c = 'Chemicals';
-         r2.Subcategory__c = 'Chemicals-Herbicide';
-         r2.Include_in_Programs__c = True;
-         r2.IsActive= True; 
-         r2.ProductCode='123';
-         r2.Product_Status__c ='Stock';
-         r2.Size__c = 1;
-         r2.Floor_Type__c ='Floor'; 
-         r2.Floor_Price__c = 100;
-     	insert r1; 
-     	insert r2; 
-//price book 
-		Id pricebookId = Test.getStandardPricebookId();
-//price book items
-        PricebookEntry pbe = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=r1.id,
-                                                 unitprice=100, IsActive = True, UseStandardPrice=False);
-        PricebookEntry pbe2 = new PricebookEntry(Pricebook2Id = pricebookId, Product2Id=r2.id,
-                                                 unitprice=100, IsActive = True, UseStandardPrice=False);
-
-        insert pbe;
-        insert pbe2;
-//location
-        Schema.Location warehouse = new Schema.Location();
-        warehouse.Name= 'ATS Warehouse';
-        warehouse.Location_Number__c ='2';
-        warehouse.IsInventoryLocation = true; 
-        warehouse.LocationType = 'ATS'; 
-        
-        insert warehouse; 
-//opportunity
-        opportunity opp = new opportunity(name = 'test name', accountID= cust.id, pricebook2id = pricebookId,
-                                         stagename='Working', Warehouse__c = warehouse.Id, closedate = myDate);
-       
-        //insert w/o synced quote
-        insert opp; 
-//opportunity line item
-        opportunitylineitem li2 = new opportunitylineitem(opportunityid = opp.id, product2id = r1.Id, PricebookEntryId=pbe.id,
-                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c=5, CPQ_Margin__c=32); 
-        insert li2; 
-        opportunitylineitem widgetli2 = new opportunitylineitem(opportunityid = opp.id, product2id = r2.Id, PricebookEntryId=pbe2.id,
-                                                         unitprice= 4, quantity= 3, CPQ_Unit_Price__c=100, CPQ_Margin__c=35); 
-        insert widgetli2;
-//product items
-		ProductItem inv1 = new ProductItem(Product2Id = r1.id, LocationId= warehouse.id, QuantityOnHand= 3);
-        ProductItem inv2 = new ProductItem(Product2Id = r2.id, LocationId= warehouse.id, QuantityOnHand= 4);
-        insert inv1; 
-        insert inv2; 
-//Because ATS Products is used in reporting need an ats product
-		Product__c ats1 = new Product__c(Name= r1.ProductCode, Product_Name__c = r1.Name, active__c = True, Product_Code__c = r1.ProductCode); 
-        Product__c ats2 = new Product__c(Name= r2.ProductCode, Product_Name__c = r2.Name, active__c = True, Product_Code__c = r2.ProductCode); 
-        insert ats1;
-        insert ats2; 
-//sales doc and details
-		Sales_Document__c header = new Sales_Document__c();
-        	header.Sales_Doc_Num__c = 'SO132';
-        	header.Customer__c = cust.Id; 
-        	header.Doc_Type__c = 'Invoice';
-        	header.Doc_Date__c = MyDate.addDays(-10);
-        	header.Number_of_Payments__c = 1;
-        insert header; 
-        
-        Sales_Doc_Detail__c detail1 = new Sales_Doc_Detail__c();
-        Sales_Doc_Detail__c detail2 = new Sales_Doc_Detail__c();
-        	detail1.Sales_Document__c = header.Id; 
-        	detail1.Name = 'detail 1'; 
-        	detail1.Quantity__c  = 1;
-        	detail1.Product__c = ats1.Id; 
-        
-            detail2.Sales_Document__c = header.Id; 
-        	detail2.Name = 'detail 1'; 
-        	detail2.Quantity__c  = 1;
-        	detail2.Product__c = ats2.Id;
-        insert detail1;
-        insert detail2;
-
-   //Test
-		test.startTest(); 
-        	list<cpqApex.prodWrapper> detail = cpqApex.getDetailsPricing(r1.id, warehouse.id, cust.id, r1.ProductCode, opp.id,  pricebookId);
-        test.stopTest(); 
-//Verify
-	system.assertNotEquals(detail, null);   
-        }
 }

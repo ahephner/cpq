@@ -2,6 +2,7 @@ import { LightningElement, api, wire, track } from 'lwc';
 import ACCID from '@salesforce/schema/Opportunity.AccountId';
 import SHIPID from '@salesforce/schema/Opportunity.Shipping_Address__c';
 import ID_FIELD from '@salesforce/schema/Opportunity.Id';
+import USER_ID from '@salesforce/user/Id';
 import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import getAddress from '@salesforce/apex/cpqApex.getAddress'
@@ -11,6 +12,7 @@ export default class ContactAddress extends LightningElement {
         recId; 
         customer;
         selected; 
+        userId = USER_ID; 
        // @track selectObj;
         @track options;
         isRendered = false;   
@@ -36,7 +38,7 @@ export default class ContactAddress extends LightningElement {
             }
 //get the avaliable ship to options
         findAddress(rec){
-             getAddress({accID: rec})
+             getAddress({accID: rec, user:this.userId})
                 .then((res)=>{
                     this.options = res.map(item=>({
                                         ...item,

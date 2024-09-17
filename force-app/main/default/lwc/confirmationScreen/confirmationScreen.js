@@ -12,6 +12,7 @@ export default class ConfirmationScreen extends LightningElement {
     goodMargin;
     showDate;
     formSize; 
+    showPricing = false; 
     connectedCallback(){
         console.log(this.info)
         this.init(); 
@@ -65,6 +66,11 @@ screenSize = (screen) => {
         })
     }
     handleConfirm(){
+        //this.dispatchEvent(new CustomEvent('close'));
+        this.showPricing = true; 
+    }
+
+    closeScreen(){
         this.dispatchEvent(new CustomEvent('close'));
     }
 }

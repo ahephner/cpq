@@ -1,12 +1,14 @@
 //IMPORTANT this branch is the most up to date branch prior to search tag was used 5/25/2023
 //has to be a way to call apex on the new products selected here
 import { LightningElement, api, wire, track } from 'lwc';
-import getDetailsPricing from '@salesforce/apex/cpqApex.getDetailsPricing';
+import getLastPaid from '@salesforce/apex/cpqApex.getLastPaid'; 
 import getProducts from '@salesforce/apex/cpqApex.getProducts';
-import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
+import getInventory from '@salesforce/apex/cpqApex.getInventory';
+import getLastQuote from '@salesforce/apex/cpqApex.getLastQuote';
 import onLoadGetLastPaid from '@salesforce/apex/cpqApex.onLoadGetLastPaid';
 import onLoadGetLevels from '@salesforce/apex/cpqApex.getLevelPricing';
 import onLoadGetLastQuoted from '@salesforce/apex/cpqApex.onLoadGetLastQuoted';
+import onLoadGetInventory from '@salesforce/apex/cpqApex.onLoadGetInventory';
 import wareHouses from '@salesforce/apex/quickPriceSearch.getWarehouse';
 import inCounts from '@salesforce/apex/cpqApex.inCounts';
 import { refreshApex } from '@salesforce/apex';
@@ -226,132 +228,120 @@ priceCheck(){
                 
             }
         }
-    async handleNewProd(){
-        //get last paid only works on new adding product
-        let totalPrice;
-        let totalQty; 
-        let result; 
-        try{
-            if(this.accountId){
-                result = await getDetailsPricing({pId:this.productId , locationId: this.warehouse, accId:this.accountId, 
-                                                pc:this.productCode , recId: this.recordId, priceBookId: this.pbId})
-            }else{
-                result = await getDetailsPricing({pId:this.productId , locationId: this.warehouse, accId: undefined, 
-                    pc:this.productCode , recId: this.recordId, priceBookId: this.pbId})
-            }
-        this.newProd = result[0].lastPaid;
-        this.invCount = result[0].inventory;
-        this.lastQuote = result[0].lastQuote
-        
-        if(this.newProd != null){
-
-            this.selection = [
-                ...this.selection, {
-                    sObjectType: 'OpportunityLineItem',
-                    Id: '',
-                    PricebookEntryId: this.pbeId,
-                    Product2Id: this.productId,
-                    agency: this.agency,
-                    name: this.productName,
-                    ProductCode: this.productCode,
-                    Ship_Weight__c: this.unitWeight,
-                    Quantity: 1,
-                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
-                    floorPrice: this.fPrice,
-                    lOne: this.agency? this.fPrice : this.levelOne,
-                    lTwo: this.levelTwo, 
-                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
-                    Cost__c: this.unitCost,
-                    displayCost: this.agency ? 'Agency' : this.unitCost,
-                    lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
-                    lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
-                    docDate: this.newProd.Doc_Date__c,
-                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    Discount: this.lineDiscount ? this.lineDiscount : '',
-                    wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
-                    showLastPaid: true,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
-                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
-                    flrText: 'flr price $'+ this.fPrice,
-                    lOneText: 'lev 1 $'+this.levelOne,
-                    companyLastPaid: this.companyLastPaid,
-                    palletConfig: this.palletConfig,
-                    sgn: this.sgn, 
-                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
-                    goodPrice: true,
-                    resUse: this.resUse,
-                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
-                    Line_Order__c: this.lineOrderNumber,
-                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
-                    //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
-                    prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
-                    OpportunityId: this.recordId
-                }
-            ]
+        async handleNewProd(){
+            //get last paid only works on new adding product
+            let totalPrice;
+            let totalQty; 
+            this.newProd = await getLastPaid({accountID: this.accountId, Code: this.productCode});
+            this.invCount = await getInventory({locId: this.warehouse, pId: this.productId });
+            this.lastQuote = await getLastQuote({accountID: this.accountId, Code: this.productCode, opportunityId:this.recordId});
             
-        }else{
-            this.selection = [
-                ...this.selection, {
-                    sObjectType: 'OpportunityLineItem',
-                    PricebookEntryId: this.pbeId,
-                    Id: '',
-                    Product2Id: this.productId,
-                    agency: this.agency,
-                    name: this.productName,
-                    ProductCode: this.productCode,
-                    Ship_Weight__c: this.unitWeight,
-                    Quantity: 1,
-                    UnitPrice: this.agency ? this.fPrice: this.levelTwo,
-                    floorPrice: this.fPrice,
-                    lOne: this.agency? this.fPrice : this.levelOne,
-                    lTwo: this.levelTwo,
-                    lastPaid: 0,
-                    lastMarg: 0, 
-                    docDate: 'First Purchase', 
-                    CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
-                    Cost__c: this.unitCost,
-                    displayCost: this.agency ? 'Agency' : this.unitCost,
-                    TotalPrice: this.agency? this.fPrice : this.levelTwo,
-                    Discount: this.lineDiscount ? this.lineDiscount : '',
-                    wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
-                    showLastPaid: true,
-                    lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
-                    lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
-                    lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
-                    flrText: 'flr price $'+ this.fPrice,
-                    lOneText: 'lev 1 $'+this.levelOne, 
-                    companyLastPaid: this.companyLastPaid,
-                    palletConfig: this.palletConfig,
-                    sgn: this.sgn,
-                    //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
-                    goodPrice: true,
-                    resUse: this.resUse,
-                    manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
-                    Line_Order__c: this.lineOrderNumber,
-                    url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
-                    //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
-                    prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
-                    OpportunityId: this.recordId
+            if(this.newProd != null){
+    
+                this.selection = [
+                    ...this.selection, {
+                        sObjectType: 'OpportunityLineItem',
+                        Id: '',
+                        PricebookEntryId: this.pbeId,
+                        Product2Id: this.productId,
+                        agency: this.agency,
+                        name: this.productName,
+                        ProductCode: this.productCode,
+                        Ship_Weight__c: this.unitWeight,
+                        Quantity: 1,
+                        UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                        floorPrice: this.fPrice,
+                        lOne: this.agency? this.fPrice : this.levelOne,
+                        lTwo: this.levelTwo, 
+                        CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
+                        Cost__c: this.unitCost,
+                        displayCost: this.agency ? 'Agency' : this.unitCost,
+                        lastPaid: !this.newProd ? 0 : this.newProd.Unit_Price__c,
+                        lastMarg: this.agency ? '' : (this.newProd.Margin__c / 100),
+                        docDate: this.newProd.Doc_Date__c,
+                        TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                        Discount: this.lineDiscount ? this.lineDiscount : '',
+                        wInv:  !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                        showLastPaid: true,
+                        lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                        lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                        lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
+                        flrText: 'flr price $'+ this.fPrice,
+                        lOneText: 'lev 1 $'+this.levelOne,
+                        companyLastPaid: this.companyLastPaid,
+                        palletConfig: this.palletConfig,
+                        sgn: this.sgn, 
+                        //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid: $' +this.companyLastPaid + ' Code ' +this.productCode,
+                        goodPrice: true,
+                        resUse: this.resUse,
+                        manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
+                        Line_Order__c: this.lineOrderNumber,
+                        url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                        //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
+                        prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
+                        OpportunityId: this.recordId
+                    }
+                ]
+                
+            }else{
+                this.selection = [
+                    ...this.selection, {
+                        sObjectType: 'OpportunityLineItem',
+                        PricebookEntryId: this.pbeId,
+                        Id: '',
+                        Product2Id: this.productId,
+                        agency: this.agency,
+                        name: this.productName,
+                        ProductCode: this.productCode,
+                        Ship_Weight__c: this.unitWeight,
+                        Quantity: 1,
+                        UnitPrice: this.agency ? this.fPrice: this.levelTwo,
+                        floorPrice: this.fPrice,
+                        lOne: this.agency? this.fPrice : this.levelOne,
+                        lTwo: this.levelTwo,
+                        lastPaid: 0,
+                        lastMarg: 0, 
+                        docDate: 'First Purchase', 
+                        CPQ_Margin__c: this.agency?'':this.levelTwoMargin,
+                        Cost__c: this.unitCost,
+                        displayCost: this.agency ? 'Agency' : this.unitCost,
+                        TotalPrice: this.agency? this.fPrice : this.levelTwo,
+                        Discount: this.lineDiscount ? this.lineDiscount : '',
+                        wInv: !this.invCount ? 0 :this.invCount.Quantity_Available__c,
+                        showLastPaid: true,
+                        lastQuoteAmount: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Price__c,
+                        lastQuoteMargin: !this.lastQuote ? 0 : this.lastQuote.Last_Quote_Margin__c,
+                        lastQuoteDate: !this.lastQuote ? '' : this.lastQuote.Quote_Date__c,
+                        flrText: 'flr price $'+ this.fPrice,
+                        lOneText: 'lev 1 $'+this.levelOne, 
+                        companyLastPaid: this.companyLastPaid,
+                        palletConfig: this.palletConfig,
+                        sgn: this.sgn,
+                        //tips: this.agency ? 'Agency' : 'Cost: $'+this.unitCost +' Company Last Paid $' +this.companyLastPaid + ' Code ' +this.productCode,
+                        goodPrice: true,
+                        resUse: this.resUse,
+                        manLine: this.productCode.includes('MANUAL CHARGE') ? true : false,
+                        Line_Order__c: this.lineOrderNumber,
+                        url:`https://advancedturf.lightning.force.com/lightning/r/${this.productId}/related/ProductItems/view`,
+                        //prodURL: `https://advancedturf--full.sandbox.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
+                        prodURL: `https://advancedturf.lightning.force.com/lightning/r/Product2/${this.productId}/view`,
+                        OpportunityId: this.recordId
+                    }
+                ]
+            }    
+                //console.log(JSON.stringify(this.selection));
+                let totals =  getTotals(this.selection);
+                this.tPrice = roundNum(totals.TotalPrice, 2);
+                this.tQty = totals.Quantity;
+                this.tCost = getCost(this.selection) 
+                if(!this.agency){
+                    let margin = setMargin(this.tCost, this.tPrice)
+                    this.tMargin = roundNum(margin, 2);
                 }
-            ]
-        }    
-            //console.log(JSON.stringify(this.selection));
-            let totals =  getTotals(this.selection);
-            this.tPrice = roundNum(totals.TotalPrice, 2);
-            this.tQty = totals.Quantity;
-            this.tCost = getCost(this.selection) 
-            if(!this.agency){
-                let margin = setMargin(this.tCost, this.tPrice)
-                this.tMargin = roundNum(margin, 2);
-            }
-            this.lineOrderNumber ++;
-            this.unsavedProducts = true; 
-            this.startEventListener()
-        }catch(error){
-            alert(error);
-       }
-    }
+                this.lineOrderNumber ++;
+                this.unsavedProducts = true; 
+                this.startEventListener()
+        }
 //need to add 2 shipping line items
 //need to see if the array already has objects. 
 //Make Sure ID's are correct

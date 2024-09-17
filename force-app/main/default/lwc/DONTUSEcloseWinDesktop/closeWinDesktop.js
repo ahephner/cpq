@@ -1,5 +1,5 @@
-//NEED A SPINNER 
-//orderBy Comment
+//DONT PUSH THIS VERSION!!!!!!!
+//PULL IF REQUIRED FROM FULL. NO PRICING FEATURE HERE
 import { LightningElement, api, wire } from 'lwc';
 import { CloseActionScreenEvent } from 'lightning/actions';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -65,6 +65,8 @@ const bhRules = [
      type:'missingInfo'}
 ]
 export default class CloseWinDesktop extends LightningElement {
+    //DONT PUSH THIS VERSION!!!!!!!
+//PULL IF REQUIRED FROM FULL. NO PRICING FEATURE HERE
     @api recordId;
     @api objectApiName; 
     msg = 'Adding an address can slow quote acceptance by up to 10 mins in the system'
@@ -292,10 +294,10 @@ handlePay(event){
     this.firstPayDate = this.handleSetPayDate(this.eopPayType); 
 }
 handleSetPayDate(payType){
-    return payType === 'BASF' ? '2024-06-10' :
-    payType === 'Envu' ? '2024-06-07' :
-    payType === 'FMC' ? '2024-07-02' :
-    payType ==='SePRO' ? '2024-07-01' :  ''; 
+    return payType === 'BASF' ? '2025-06-10' :
+    payType === 'Envu' ? '2025-06-06' :
+    payType === 'FMC' ? '2025-06-13' :
+    payType ==='SePRO' ? '2025-06-15' :  ''; 
 }
 handleEarlyPay(event){
     this.earlyPay = event.detail.value; 

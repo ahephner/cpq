@@ -1,0 +1,18 @@
+<template>
+    <lightning-quick-action-panel header="Pricing Update">
+        <template if:true={prods} for:each={prods} for:item="x" for:index="index">
+            <div key={x.Id}>
+                <p>{x.shortName}</p>
+            </div>
+        </template>
+        <div slot="footer">
+            <!-- define custom footer actions here -->
+            <lightning-button
+                  variant="brand"
+                  label="Close Screen"
+                  class="slds-m-left_x-small"
+                  onclick={handleConfirm}
+                  ></lightning-button>
+        </div>
+    </lightning-quick-action-panel>
+</template>

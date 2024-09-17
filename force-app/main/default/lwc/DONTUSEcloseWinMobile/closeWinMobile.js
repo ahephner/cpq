@@ -1,3 +1,5 @@
+//DONT PUSH THIS VERSION!!!!!!!
+//PULL IF REQUIRED FROM FULL. NO PRICING FEATURE HERE
 import { LightningElement,wire,api } from 'lwc';
 import { getRecord, getFieldValue, updateRecord, getRecordNotifyChange } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -60,7 +62,8 @@ const bhRules = [
      type:'missingInfo'}
 ]
 export default class CloseWinMobile extends LightningElement {
-    
+    //DONT PUSH THIS VERSION!!!!!!!
+//PULL IF REQUIRED FROM FULL. NO PRICING FEATURE HERE
     @api recordId; 
     msg = 'Adding an address can slow quote acceptance by up to 10 mins in the system'
     info=true; 
@@ -104,6 +107,8 @@ export default class CloseWinMobile extends LightningElement {
     //for evaluating time
     today = new Date().toJSON().substring(0,10);
     orderHeaders ={}
+    //DONT PUSH THIS VERSION!!!!!!!
+//PULL IF REQUIRED FROM FULL. NO PRICING FEATURE HERE
     @wire(getRecord,{recordId: '$recordId', fields:FIELDS})
         loadFields({data,error}){
             if(data){
@@ -413,10 +418,10 @@ handleEarlyPay(event){
 }
 
 handleSetPayDate(payType){
-    return payType === 'BASF' ? '2024-06-10' :
-    payType === 'Envu' ? '2024-06-07' :
-    payType === 'FMC' ? '2024-07-02' :
-    payType === 'SePRO' ? '2024-07-01' : ''; 
+    return payType === 'BASF' ? '2025-06-10' :
+    payType === 'Envu' ? '2025-06-06' :
+    payType === 'FMC' ? '2025-06-13' :
+    payType === 'SePRO' ? '2025-06-15' : ''; 
 }
 handleNumbOpts(event){
     this.numPayments = event.detail.value; 

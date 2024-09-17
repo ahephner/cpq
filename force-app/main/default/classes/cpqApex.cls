@@ -352,8 +352,7 @@ public with sharing class cpqApex {
         @AuraEnabled(cacheable=true)
     public static list<OpportunityLineItem> onLoadGetLastQuoted(id accountId,list<string> productCodes, string opportunityId){
         list<OpportunityLineItem> lastPaidList = new list<OpportunityLineItem>(); 
-		system.debug('pc');
-        system.debug(productCodes);
+
         try {
             OpportunityLineItem[] temp;
 			Map<String, OpportunityLineItem[]> sales = new map<String, OpportunityLineItem[]>();

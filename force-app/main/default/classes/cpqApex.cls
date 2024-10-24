@@ -124,12 +124,12 @@ public with sharing class cpqApex {
          
         if(locId == 'All'){
             
-            counts = [select Total_Product_Items__c, Product_Code__c,Quantity_Available__c from
-                                    ProductItem where Product_Class__c = 'Simple' and Product_Code__c In :(pc)];
+            counts = [select Total_Product_Items__c, Product_Code__c from
+                                    ProductItem where Product_Class__c != 'Variation Parent' and Product_Code__c In :(pc)];
             
         }else{
             counts = [select QuantityOnHand, Product_Code__c, Quantity_Available__c from
-                             ProductItem where Product_Class__c = 'Simple' and LocationId =: locId 
+                             ProductItem where Product_Class__c != 'Variation Parent' and LocationId =: locId 
                              and Product_Code__c In :(pc)];
         
         }

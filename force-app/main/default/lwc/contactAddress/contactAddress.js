@@ -5,7 +5,7 @@ import ID_FIELD from '@salesforce/schema/Opportunity.Id';
 import USER_ID from '@salesforce/user/Id';
 import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
-import getAddress from '@salesforce/apex/cpqApex.getAddress'
+import getAddress from '@salesforce/apex/getAddress.getAddress'
 import { MessageContext, publish} from 'lightning/messageService';
 export default class ContactAddress extends LightningElement {
         @api recordId; 

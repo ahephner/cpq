@@ -6,6 +6,7 @@ import USER_ID from '@salesforce/user/Id';
 import {getRecord, getFieldValue, updateRecord } from 'lightning/uiRecordApi';
 import Opportunity_Builder from '@salesforce/messageChannel/Opportunity_Builder__c';
 import getAddress from '@salesforce/apex/getAddress.getAddress'
+import SearchContact from 'c/searchContactAddress'
 import { MessageContext, publish} from 'lightning/messageService';
 export default class ContactAddress extends LightningElement {
         @api recordId; 
@@ -72,6 +73,9 @@ export default class ContactAddress extends LightningElement {
             let newValue = this.template.querySelector('.slds-select').value;
             if(newValue === "new"){
                 this.template.querySelector('c-new-ship-address').openAddress(); 
+            }else if(newValue === 'search'){
+                this.openSearch()
+
             }else{
                // this.updateOpp(newValue); 
                 const fields = {}
@@ -86,6 +90,30 @@ export default class ContactAddress extends LightningElement {
                 })
 
             }
+        }
+
+        async openSearch(){
+            const show = await SearchContact.open({
+                size: 'medium',
+                description: 'address',
+                content: this.options
+            }).then((res)=>{
+                console.log(1, res)
+                if(res!='Cancel' || res!= undefined){
+                    const fields = {}
+                    fields[ID_FIELD.fieldApiName] = this.recordId;
+                    fields[SHIPID.fieldApiName] = res;
+                    const fieldsToUpdate = {fields}
+                    updateRecord(fieldsToUpdate).then(back=>{
+                        const payLoad = {shipAddress: res}; 
+                        //send to main comp
+                        publish(this.messageContext,Opportunity_Builder, payLoad);
+                        
+                    }) 
+                    this.template.querySelector('.slds-select').value = res; 
+                    
+                }
+            })
         }
 //listens for the new ship to address then pushs it to the avaliable array
         updateAddress(event){

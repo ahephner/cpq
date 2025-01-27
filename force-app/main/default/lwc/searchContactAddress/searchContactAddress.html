@@ -1,0 +1,33 @@
+<template>
+    <!-- this should be incapsulated in its own component, see https://developer.salesforce.com/docs/component-library/bundle/lightning-modal/documentation -->
+      <lightning-modal-header label='search address'></lightning-modal-header>
+      <lightning-modal-body>
+        <div onchange={handleKeyUp}>
+          <lightning-input
+            type="search"
+            name="enter-search"
+            label="Search address"
+          ></lightning-input>
+        </div>
+        <div class="slds-scrollable_y" style="height:10rem;width:100%">
+
+        <template  for:each={searchList} for:item="x" for:index="index">
+          <div class='outside' key={x.value}> 
+            <div data-id={x.Id} class="hover slds-text-heading_small slds-p-left_medium" onclick={addThisAddress}>
+              {x.label}
+            </div>
+
+          </div>
+        </template>
+      </div>
+        
+      </lightning-modal-body>
+      <lightning-modal-footer>
+        <lightning-button 
+          variant="destructive"
+          label="Close" 
+          onclick={handleCancel} 
+        ></lightning-button>
+      </lightning-modal-footer>
+    
+</template>
